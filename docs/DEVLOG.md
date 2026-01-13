@@ -233,3 +233,53 @@ GuitarPractice/
 
 ### Next Steps
 - Phase 5: Menu Bar Integration (timer in menu bar when practicing)
+
+---
+
+## 2026-01-13: Phase 5 - Menu Bar Integration
+
+### Features Implemented
+- **MenuBarExtra**: Always-visible menu bar icon with contextual content
+  - Guitar icon when idle, guitar icon + countdown timer when practicing
+  - `.monospacedDigit()` for stable timer display without width jitter
+- **Idle Menu**:
+  - "Show Window" button to bring app to foreground
+  - "Quit" with ⌘Q keyboard shortcut
+- **Practicing Menu**:
+  - Current item name and artist display
+  - Timer showing remaining time (or overtime duration)
+  - Progress indicator (e.g., "2 of 5")
+  - Pause/Resume control
+  - "Save & Next" to continue to next item
+  - "Finish & Exit" to save and return to session view
+  - "Exit Practice" to cancel without saving
+  - "Show Window" to bring main window to front
+
+### Architecture Changes
+- **Lifted AppState to App level**: `@StateObject` in `GuitarPracticeApp` shared between WindowGroup and MenuBarExtra
+- **ContentView accepts AppState**: Changed from `@StateObject` to `@ObservedObject var appState: AppState`
+- **AppDelegate for window management**:
+  - `applicationDidFinishLaunching` brings window to front on launch
+  - `applicationShouldHandleReopen` shows window when clicking dock icon
+  - Uses `orderFrontRegardless()` to ensure window appears even when app wasn't active
+
+### Bug Fixes
+- **Window not appearing with MenuBarExtra**:
+  - Symptom: Adding MenuBarExtra caused main window to not show
+  - Investigation: Tried `isInserted` binding, various activation policies
+  - Fix: Always-visible MenuBarExtra with AppDelegate handling window activation
+- **Window not coming to foreground on launch**:
+  - Fix: `DispatchQueue.main.async` in `applicationDidFinishLaunching` with `orderFrontRegardless()`
+
+### Technical Notes
+- `LSUIElement = false` in Info.plist keeps app in dock and app switcher
+- MenuBarExtra label uses HStack with Image and Text for timer display
+- Timer state observed reactively - menu bar updates every 0.1s during practice
+
+### Future Enhancement Ideas
+- Format actual time as MM:SS instead of decimal minutes (e.g., "2:30" instead of "2.5m")
+- `Ctrl-F`/`Ctrl-B` for page up/down in library list
+- Open in Notion (⌘O) - planned for Phase 6
+
+### Next Steps
+- Phase 6: Polish (keyboard shortcuts refinement, Open in Notion, visual polish)

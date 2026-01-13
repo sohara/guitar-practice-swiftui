@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct ContentView: View {
-    @StateObject private var appState = AppState()
+    @ObservedObject var appState: AppState
 
     var body: some View {
         ZStack {
@@ -1538,5 +1538,5 @@ struct PracticeKeyHint: View {
 // MARK: - Preview
 
 #Preview {
-    ContentView()
+    ContentView(appState: AppState())
 }
