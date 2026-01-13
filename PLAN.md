@@ -1,0 +1,173 @@
+# Guitar Practice - SwiftUI Mac App
+
+A native macOS app for managing guitar practice sessions, backed by Notion databases.
+
+## Overview
+
+This is a SwiftUI port of the [guitar-tui](../guitar-tui/) terminal app. The goal is to provide the same functionality with a better UX and native Mac features like a menu bar timer.
+
+## Notion Integration
+
+The app integrates with three Notion databases:
+
+| Database | Purpose | Data Source ID |
+|----------|---------|----------------|
+| Practice Library | Master list of songs/exercises | `2d709433-8b1b-804c-897c-000b76c9e481` |
+| Practice Sessions | Date-based session containers | `f4658dc0-2eb2-43fe-b268-1bba231c0156` |
+| Practice Logs | Junction: items ↔ sessions with time tracking | `2d709433-8b1b-809b-bae2-000b1343e18f` |
+
+## Architecture
+
+```
+GuitarPractice/
+├── App/
+│   ├── GuitarPracticeApp.swift      # Main entry, window + menu bar
+│   └── ContentView.swift            # Root view with navigation
+├── Features/
+│   ├── Library/                     # Browse practice items
+│   ├── Sessions/                    # Manage practice sessions
+│   ├── Selected/                    # Current session items
+│   └── Practice/                    # Timer + menu bar widget
+├── Services/
+│   ├── NotionClient.swift           # API calls
+│   └── KeychainService.swift        # Secure API key storage
+└── Models/
+    └── Types.swift                  # Data models
+```
+
+## Development Phases
+
+### Phase 1: Core Data Layer
+- [ ] Create data models (LibraryItem, PracticeSession, PracticeLog, SelectedItem)
+- [ ] Implement NotionClient with async/await
+  - [ ] Fetch Practice Library items
+  - [ ] Fetch Practice Sessions
+  - [ ] Fetch Practice Logs for a session
+  - [ ] Create new Practice Log entries
+  - [ ] Update Practice Log (actual time, order)
+- [ ] Store API key in Keychain (not hardcoded)
+- [ ] Add error handling and loading states
+
+### Phase 2: Library View
+- [ ] Split view layout (NavigationSplitView)
+- [ ] Library list with item rows showing:
+  - Name, type icon, artist (if song)
+  - Last practiced date
+  - Times practiced count
+- [ ] Search with live filtering
+- [ ] Filter by type (Song/Exercise/Course Lesson)
+- [ ] Sort options (name, last practiced, times practiced)
+- [ ] Reverse sort toggle
+- [ ] Keyboard navigation (j/k or arrows)
+
+### Phase 3: Session Management
+- [ ] Session picker (sidebar or dropdown)
+- [ ] Create new session (auto-named by date)
+- [ ] Selected items pane showing:
+  - Item name and planned time
+  - Actual time (if practiced)
+  - Completion status indicator
+- [ ] Add items from library (double-click or space)
+- [ ] Remove items from session
+- [ ] Adjust planned time (+/- buttons or direct input)
+- [ ] Reorder items (drag and drop)
+- [ ] Delta save (only sync changed items to Notion)
+
+### Phase 4: Practice Timer
+- [ ] Full-window practice mode
+- [ ] Large timer display (MM:SS)
+- [ ] Current item name prominent
+- [ ] Start/pause/resume controls
+- [ ] Finish with confirmation dialog
+- [ ] Track actual time (stored as decimal minutes)
+- [ ] Resume from previous actual time if re-practicing
+- [ ] Keyboard shortcuts (space = pause, enter = finish)
+
+### Phase 5: Menu Bar Integration
+- [ ] MenuBarExtra showing timer when practicing
+- [ ] Display current item name
+- [ ] Pause/resume/finish controls in dropdown
+- [ ] Timer continues when main window closed
+- [ ] Click to bring main window to front
+
+### Phase 6: Polish
+- [ ] Refresh data command (⌘R)
+- [ ] Open item in Notion (⌘O or double-click)
+- [ ] Settings view (API key configuration)
+- [ ] Error states and retry UI
+- [ ] Empty states for lists
+- [ ] Loading skeletons
+
+## Data Models
+
+```swift
+struct LibraryItem: Identifiable, Hashable {
+    let id: String
+    let name: String
+    let type: ItemType?
+    let artist: String?
+    let tags: [String]
+    let lastPracticed: Date?
+    let timesPracticed: Int
+
+    enum ItemType: String, CaseIterable {
+        case song = "Song"
+        case exercise = "Exercise"
+        case courseLesson = "Course Lesson"
+    }
+}
+
+struct PracticeSession: Identifiable {
+    let id: String
+    let name: String
+    let date: Date
+    let logIds: [String]
+}
+
+struct PracticeLog: Identifiable {
+    let id: String
+    let itemId: String
+    let sessionId: String
+    let plannedMinutes: Int
+    let actualMinutes: Double?
+    let order: Int
+}
+
+struct SelectedItem: Identifiable {
+    let id: String  // Use logId if saved, otherwise UUID
+    let item: LibraryItem
+    var plannedMinutes: Int
+    var actualMinutes: Double?
+    var logId: String?  // nil if not yet saved to Notion
+    var isDirty: Bool   // Track if needs sync
+}
+```
+
+## Keyboard Shortcuts
+
+| Action | Shortcut |
+|--------|----------|
+| Navigate list | ↑/↓ or j/k |
+| Select/toggle item | Space |
+| Search | ⌘F or / |
+| Save session | ⌘S |
+| Refresh data | ⌘R |
+| Open in Notion | ⌘O |
+| Adjust time up | + or = |
+| Adjust time down | - |
+| Remove item | Delete or ⌘⌫ |
+| Start practice | Enter or ⌘P |
+
+## Technical Notes
+
+- **Notion API**: Use URLSession with async/await. API version `2022-06-28`.
+- **Data Source IDs**: Notion SDK v5 uses "data source IDs" for queries (not database IDs).
+- **Time Format**: Actual time stored as decimal minutes (e.g., 5.5 = 5m 30s).
+- **Delta Saves**: Track dirty items and only sync changes to reduce API calls.
+- **Keychain**: Use Security framework to store API key securely.
+
+## References
+
+- [SwiftUI Handoff Doc](../guitar-tui/docs/SWIFTUI_HANDOFF.md)
+- [Architecture Sketch](../guitar-tui/docs/NATIVE_MAC_APP.md)
+- [TUI Source Code](../guitar-tui/src/)
