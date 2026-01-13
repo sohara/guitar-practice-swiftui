@@ -26,8 +26,8 @@ Carthage/Build/
 .env
 *.env
 
-# Claude Code
-.claude/
+# Claude Code (keep settings.json, ignore local permissions)
+.claude/settings.local.json
 
 # IDE
 .idea/
