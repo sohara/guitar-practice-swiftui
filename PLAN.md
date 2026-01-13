@@ -90,13 +90,16 @@ GuitarPractice/
 - [ ] Timer continues when main window closed
 - [ ] Click to bring main window to front
 
-### Phase 6: Polish
-- [ ] Refresh data command (⌘R)
-- [ ] Open item in Notion (⌘O or double-click)
-- [ ] Settings view (API key configuration)
-- [ ] Error states and retry UI
-- [ ] Empty states for lists
-- [ ] Loading skeletons
+### Phase 6: Polish ✅
+- [x] Refresh data command (⌘R)
+- [x] Open item in Notion (⌘O) - uses notion:// protocol
+- [x] Format actual time as MM:SS instead of decimal minutes
+- [x] Ctrl-F/Ctrl-B for page up/down in library list
+- [x] Loading skeletons with shimmer animation
+- [x] Auto-select today's session on launch
+- [x] Settings view (API key configuration)
+- [x] Error states and retry UI
+- [x] Empty states for lists
 
 ## Data Models
 

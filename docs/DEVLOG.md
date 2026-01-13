@@ -283,3 +283,50 @@ GuitarPractice/
 
 ### Next Steps
 - Phase 6: Polish (keyboard shortcuts refinement, Open in Notion, visual polish)
+
+---
+
+## 2026-01-13: Phase 6 - Polish
+
+### Features Implemented
+- **Open in Notion (⌘O)**: Opens focused item in Notion app
+  - Uses `notion://` protocol to launch native app instead of browser
+  - Works for both library items and selected session items based on focused panel
+- **Time Format Improvement**: Actual time now displays as MM:SS (e.g., "2:30") instead of decimal minutes ("2.5m")
+  - Added `formatMinutesAsTime()` helper function
+  - Updated session header and selected item rows
+- **Page Navigation (Ctrl-F/Ctrl-B)**: Jump 10 items at a time in library list
+  - Ctrl-F for page down, Ctrl-B for page up
+  - Uses `onKeyPress` with modifier check
+- **Loading Skeletons**: Shimmer placeholders while data loads
+  - `ShimmerView` with animated gradient sweep
+  - `SkeletonLibraryRow` mimics actual row layout
+  - `SkeletonFilterBar` for search/filter area
+- **Auto-Select Today's Session**: On app launch, automatically selects session matching today's date if one exists
+
+### Performance Improvement
+- **No Reload After Practice**: Added `loadDataIfNeeded()` that skips fetch if data already loaded
+  - Prevents unnecessary API calls when returning from practice mode
+  - `refresh()` still forces full reload when explicitly requested
+
+### Keyboard Shortcuts Added
+| Key | Action |
+|-----|--------|
+| ⌘O | Open focused item in Notion app |
+| ⌘R | Refresh data (already existed) |
+| Ctrl-F | Page down in library (10 items) |
+| Ctrl-B | Page up in library (10 items) |
+
+### Technical Notes
+- `NSWorkspace.shared.open()` with `notion://notion.so/{id}` URL scheme
+- `Calendar.startOfDay(for:)` for date comparison in session auto-select
+- Footer updated to show current keyboard hints including ^F/B and ⌘O
+
+### Project Complete
+All 6 phases implemented:
+1. ✅ Core Data Layer
+2. ✅ Library View
+3. ✅ Session Management
+4. ✅ Practice Timer
+5. ✅ Menu Bar Integration
+6. ✅ Polish

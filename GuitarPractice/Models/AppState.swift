@@ -1,4 +1,5 @@
 import SwiftUI
+import AppKit
 
 // MARK: - Sort Options
 
@@ -190,6 +191,30 @@ class AppState: ObservableObject {
         await withTaskGroup(of: Void.self) { group in
             group.addTask { await self.fetchLibrary(client: client) }
             group.addTask { await self.fetchSessions(client: client) }
+        }
+    }
+
+    /// Load data only if not already loaded (for initial app launch)
+    func loadDataIfNeeded() async {
+        // Skip if we already have data loaded
+        if case .loaded = libraryState, case .loaded = sessionsState {
+            return
+        }
+        await loadData()
+
+        // Auto-select today's session if it exists and no session is selected
+        if currentSession == nil {
+            await selectTodaysSessionIfExists()
+        }
+    }
+
+    /// Select today's session if one exists
+    private func selectTodaysSessionIfExists() async {
+        let calendar = Calendar.current
+        let today = calendar.startOfDay(for: Date())
+
+        if let todaysSession = sessions.first(where: { calendar.startOfDay(for: $0.date) == today }) {
+            await selectSession(todaysSession)
         }
     }
 
@@ -428,6 +453,30 @@ class AppState: ObservableObject {
         }
     }
 
+    func pageUp() {
+        let items = filteredLibrary
+        guard !items.isEmpty else { return }
+        let pageSize = 10
+
+        if let current = focusedItemIndex {
+            focusedItemIndex = max(0, current - pageSize)
+        } else {
+            focusedItemIndex = 0
+        }
+    }
+
+    func pageDown() {
+        let items = filteredLibrary
+        guard !items.isEmpty else { return }
+        let pageSize = 10
+
+        if let current = focusedItemIndex {
+            focusedItemIndex = min(items.count - 1, current + pageSize)
+        } else {
+            focusedItemIndex = min(items.count - 1, pageSize - 1)
+        }
+    }
+
     func toggleFocusedItem() {
         let items = filteredLibrary
         guard let index = focusedItemIndex, index < items.count else { return }
@@ -439,6 +488,30 @@ class AppState: ObservableObject {
         let items = filteredLibrary
         guard index < items.count else { return nil }
         return items[index]
+    }
+
+    func openFocusedItemInNotion() {
+        // Determine which item to open based on focused panel
+        let itemId: String?
+        switch focusedPanel {
+        case .library:
+            itemId = focusedItem?.id
+        case .selectedItems:
+            if let index = focusedSelectedIndex, index < selectedItems.count {
+                itemId = selectedItems[index].item.id
+            } else {
+                itemId = nil
+            }
+        }
+
+        guard let id = itemId else { return }
+
+        // Remove dashes from UUID for Notion URL
+        let cleanId = id.replacingOccurrences(of: "-", with: "")
+        // Use notion:// protocol to open in Notion app instead of browser
+        if let url = URL(string: "notion://notion.so/\(cleanId)") {
+            NSWorkspace.shared.open(url)
+        }
     }
 
     // MARK: - Selected Items Navigation

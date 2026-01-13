@@ -77,7 +77,7 @@ struct MainContentView: View {
                 .padding(.vertical, 12)
         }
         .task {
-            await appState.loadData()
+            await appState.loadDataIfNeeded()
         }
         .focusable()
         .focusEffectDisabled()
@@ -145,6 +145,20 @@ struct MainContentView: View {
             }
             return .ignored
         }
+        .onKeyPress(keys: [KeyEquivalent("f")], phases: .down) { press in
+            if press.modifiers.contains(.control) && appState.focusedPanel == .library && !isSearchFocused {
+                appState.pageDown()
+                return .handled
+            }
+            return .ignored
+        }
+        .onKeyPress(keys: [KeyEquivalent("b")], phases: .down) { press in
+            if press.modifiers.contains(.control) && appState.focusedPanel == .library && !isSearchFocused {
+                appState.pageUp()
+                return .handled
+            }
+            return .ignored
+        }
     }
 }
 
@@ -198,6 +212,18 @@ struct HeaderView: View {
 
             Spacer()
                 .frame(width: 20)
+
+            // Open in Notion button
+            Button {
+                appState.openFocusedItemInNotion()
+            } label: {
+                Image(systemName: "arrow.up.right.square")
+                    .font(.system(size: 16))
+                    .foregroundColor(.gray)
+            }
+            .buttonStyle(.plain)
+            .keyboardShortcut("o", modifiers: .command)
+            .help("Open in Notion")
 
             // Settings button
             Button {
@@ -719,7 +745,7 @@ struct SessionHeaderView: View {
 
                     // Actual time (if any)
                     if appState.totalActualMinutes > 0 {
-                        Label(String(format: "%.1fm actual", appState.totalActualMinutes), systemImage: "checkmark.circle")
+                        Label("\(formatMinutesAsTime(appState.totalActualMinutes)) actual", systemImage: "checkmark.circle")
                             .font(.custom("SF Mono", size: 11))
                             .foregroundColor(.green.opacity(0.8))
                     }
@@ -905,7 +931,7 @@ struct SelectedItemRow: View {
 
             // Actual time (if practiced)
             if let actual = selected.actualMinutes, actual > 0 {
-                Text(String(format: "%.1fm", actual))
+                Text(formatMinutesAsTime(actual))
                     .font(.custom("SF Mono", size: 10))
                     .foregroundColor(.green.opacity(0.7))
             }
@@ -986,15 +1012,17 @@ struct FooterView: View {
         HStack(spacing: 12) {
             KeyHint(key: "tab", action: "switch panel")
             KeyHint(key: "↑↓", action: "navigate")
+            KeyHint(key: "^F/B", action: "page")
             KeyHint(key: "enter", action: "add/remove")
             KeyHint(key: "+/-", action: "time")
             KeyHint(key: "⌫", action: "remove")
+            KeyHint(key: "⌘O", action: "notion")
             KeyHint(key: "⌘P", action: "practice")
             KeyHint(key: "⌘S", action: "save")
 
             Spacer()
 
-            Text("Phase 4: Practice Timer")
+            Text("Guitar Practice")
                 .font(.custom("SF Mono", size: 10))
                 .foregroundColor(.gray.opacity(0.4))
         }
@@ -1029,16 +1057,138 @@ struct KeyHint: View {
 
 struct LoadingView: View {
     var body: some View {
-        VStack(spacing: 16) {
-            ProgressView()
-                .scaleEffect(1.5)
-                .tint(.orange)
+        NavigationSplitView {
+            // Left: Skeleton library
+            VStack(spacing: 0) {
+                // Fake filter bar
+                SkeletonFilterBar()
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 12)
 
-            Text("Loading from Notion...")
-                .font(.custom("SF Mono", size: 14))
-                .foregroundColor(.gray)
+                Divider()
+                    .background(Color.white.opacity(0.1))
+
+                // Skeleton rows
+                ScrollView {
+                    LazyVStack(spacing: 2) {
+                        ForEach(0..<12, id: \.self) { _ in
+                            SkeletonLibraryRow()
+                        }
+                    }
+                    .padding(.vertical, 8)
+                }
+            }
+            .background(Color(red: 0.06, green: 0.06, blue: 0.09))
+            .navigationSplitViewColumnWidth(min: 400, ideal: 500, max: 700)
+        } detail: {
+            // Right: Skeleton selected items
+            VStack {
+                Spacer()
+                ProgressView()
+                    .scaleEffect(1.2)
+                    .tint(.orange)
+                Text("Loading from Notion...")
+                    .font(.custom("SF Mono", size: 12))
+                    .foregroundColor(.gray)
+                    .padding(.top, 8)
+                Spacer()
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .background(Color(red: 0.07, green: 0.07, blue: 0.10))
+            .navigationSplitViewColumnWidth(min: 280, ideal: 350)
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .navigationSplitViewStyle(.balanced)
+    }
+}
+
+struct SkeletonFilterBar: View {
+    var body: some View {
+        VStack(spacing: 10) {
+            // Search field skeleton
+            ShimmerView()
+                .frame(height: 36)
+                .clipShape(RoundedRectangle(cornerRadius: 8))
+
+            // Filter buttons skeleton
+            HStack(spacing: 12) {
+                ShimmerView()
+                    .frame(width: 60, height: 26)
+                    .clipShape(RoundedRectangle(cornerRadius: 6))
+                ShimmerView()
+                    .frame(width: 100, height: 26)
+                    .clipShape(RoundedRectangle(cornerRadius: 6))
+                Spacer()
+            }
+        }
+    }
+}
+
+struct SkeletonLibraryRow: View {
+    var body: some View {
+        HStack(spacing: 12) {
+            // Circle placeholder
+            ShimmerView()
+                .frame(width: 16, height: 16)
+                .clipShape(Circle())
+
+            // Icon placeholder
+            ShimmerView()
+                .frame(width: 20, height: 14)
+                .clipShape(RoundedRectangle(cornerRadius: 2))
+
+            // Name placeholder
+            ShimmerView()
+                .frame(width: CGFloat.random(in: 100...200), height: 14)
+                .clipShape(RoundedRectangle(cornerRadius: 2))
+
+            // Artist placeholder (sometimes)
+            if Bool.random() {
+                ShimmerView()
+                    .frame(width: CGFloat.random(in: 60...120), height: 12)
+                    .clipShape(RoundedRectangle(cornerRadius: 2))
+            }
+
+            Spacer()
+
+            // Date placeholder
+            ShimmerView()
+                .frame(width: 50, height: 10)
+                .clipShape(RoundedRectangle(cornerRadius: 2))
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 10)
+    }
+}
+
+struct ShimmerView: View {
+    @State private var isAnimating = false
+
+    var body: some View {
+        GeometryReader { geometry in
+            Color.white.opacity(0.05)
+                .overlay(
+                    LinearGradient(
+                        colors: [
+                            Color.white.opacity(0.0),
+                            Color.white.opacity(0.1),
+                            Color.white.opacity(0.0)
+                        ],
+                        startPoint: .leading,
+                        endPoint: .trailing
+                    )
+                    .frame(width: geometry.size.width * 0.6)
+                    .offset(x: isAnimating ? geometry.size.width : -geometry.size.width * 0.6)
+                )
+                .clipped()
+        }
+        .onAppear {
+            withAnimation(
+                .linear(duration: 1.5)
+                .repeatForever(autoreverses: false)
+            ) {
+                isAnimating = true
+            }
+        }
     }
 }
 
@@ -1533,6 +1683,16 @@ struct PracticeKeyHint: View {
                 .foregroundColor(.gray.opacity(0.5))
         }
     }
+}
+
+// MARK: - Helpers
+
+/// Formats decimal minutes as MM:SS (e.g., 2.5 -> "2:30")
+func formatMinutesAsTime(_ minutes: Double) -> String {
+    let totalSeconds = Int(minutes * 60)
+    let mins = totalSeconds / 60
+    let secs = totalSeconds % 60
+    return String(format: "%d:%02d", mins, secs)
 }
 
 // MARK: - Preview
