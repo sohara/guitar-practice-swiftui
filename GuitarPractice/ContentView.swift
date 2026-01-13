@@ -77,6 +77,7 @@ struct MainContentView: View {
         .task {
             await appState.loadData()
         }
+        .focusable()
         .onKeyPress(.upArrow) {
             appState.moveFocusUp()
             return .handled
@@ -106,9 +107,40 @@ struct MainContentView: View {
             }
             return .ignored
         }
+        .onKeyPress(.return) {
+            if appState.focusedPanel == .library {
+                appState.toggleFocusedItem()
+            }
+            return .handled
+        }
         .onKeyPress(characters: CharacterSet(charactersIn: "/")) { _ in
             isSearchFocused = true
             return .handled
+        }
+        .onKeyPress(.tab) {
+            appState.toggleFocusedPanel()
+            return .handled
+        }
+        .onKeyPress(characters: CharacterSet(charactersIn: "=+")) { _ in
+            if appState.focusedPanel == .selectedItems {
+                appState.adjustFocusedSelectedTime(delta: 1)
+                return .handled
+            }
+            return .ignored
+        }
+        .onKeyPress(characters: CharacterSet(charactersIn: "-_")) { _ in
+            if appState.focusedPanel == .selectedItems {
+                appState.adjustFocusedSelectedTime(delta: -1)
+                return .handled
+            }
+            return .ignored
+        }
+        .onKeyPress(.delete) {
+            if appState.focusedPanel == .selectedItems {
+                appState.removeFocusedSelected()
+                return .handled
+            }
+            return .ignored
         }
     }
 }
@@ -387,10 +419,15 @@ struct LibraryListView: View {
                         LibraryItemRow(
                             item: item,
                             isSelected: appState.isSelected(item),
-                            isFocused: appState.focusedItemIndex == index
-                        ) {
-                            appState.toggleSelection(item)
-                        }
+                            isFocused: appState.focusedPanel == .library && appState.focusedItemIndex == index,
+                            onFocus: {
+                                appState.focusedPanel = .library
+                                appState.focusedItemIndex = index
+                            },
+                            onToggle: {
+                                appState.toggleSelection(item)
+                            }
+                        )
                         .id(item.id)
                     }
                 }
@@ -411,10 +448,11 @@ struct LibraryItemRow: View {
     let item: LibraryItem
     let isSelected: Bool
     let isFocused: Bool
-    let onTap: () -> Void
+    let onFocus: () -> Void
+    let onToggle: () -> Void
 
     var body: some View {
-        Button(action: onTap) {
+        Button(action: onFocus) {
             HStack(spacing: 12) {
                 // Selection indicator
                 Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
@@ -478,6 +516,12 @@ struct LibraryItemRow: View {
             )
         }
         .buttonStyle(.plain)
+        .onTapGesture(count: 2) {
+            onToggle()
+        }
+        .onTapGesture(count: 1) {
+            onFocus()
+        }
     }
 
     private func typeColor(_ type: ItemType?) -> Color {
@@ -506,21 +550,149 @@ struct SelectedItemsView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            // Header
+            // Session picker header
+            SessionHeaderView(appState: appState)
+
+            Divider()
+                .background(Color.white.opacity(0.1))
+
+            // Items list or empty state
+            if appState.isLoadingSession {
+                VStack {
+                    Spacer()
+                    ProgressView()
+                        .scaleEffect(1.2)
+                        .tint(.orange)
+                    Text("Loading session...")
+                        .font(.custom("SF Mono", size: 12))
+                        .foregroundColor(.gray)
+                        .padding(.top, 8)
+                    Spacer()
+                }
+            } else if appState.currentSession == nil {
+                EmptySessionView(appState: appState)
+            } else if appState.selectedItems.isEmpty {
+                VStack(spacing: 12) {
+                    Spacer()
+                    Image(systemName: "music.note.list")
+                        .font(.system(size: 32))
+                        .foregroundColor(.gray.opacity(0.3))
+                    Text("Session is empty")
+                        .font(.custom("SF Mono", size: 13))
+                        .foregroundColor(.gray.opacity(0.5))
+                    Text("Add items from the library")
+                        .font(.custom("SF Mono", size: 11))
+                        .foregroundColor(.gray.opacity(0.3))
+                    Spacer()
+                }
+            } else {
+                // Items list with drag and drop
+                List {
+                    ForEach(Array(appState.selectedItems.enumerated()), id: \.element.id) { index, selected in
+                        SelectedItemRow(
+                            selected: selected,
+                            isFocused: appState.focusedPanel == .selectedItems && appState.focusedSelectedIndex == index,
+                            onFocus: {
+                                appState.focusedPanel = .selectedItems
+                                appState.focusedSelectedIndex = index
+                            },
+                            onRemove: {
+                                appState.removeSelectedItem(at: index)
+                            },
+                            onAdjustTime: { delta in
+                                appState.updatePlannedTime(at: index, minutes: selected.plannedMinutes + delta)
+                            }
+                        )
+                        .listRowBackground(Color.clear)
+                        .listRowSeparator(.hidden)
+                        .listRowInsets(EdgeInsets(top: 2, leading: 0, bottom: 2, trailing: 0))
+                    }
+                    .onMove { source, destination in
+                        appState.moveSelectedItem(from: source, to: destination)
+                    }
+                }
+                .listStyle(.plain)
+                .scrollContentBackground(.hidden)
+            }
+
+            // Footer with save button
+            if appState.currentSession != nil {
+                SessionFooterView(appState: appState)
+            }
+        }
+        .background(Color(red: 0.07, green: 0.07, blue: 0.10))
+    }
+}
+
+struct SessionHeaderView: View {
+    @ObservedObject var appState: AppState
+
+    private let dateFormatter: DateFormatter = {
+        let f = DateFormatter()
+        f.dateFormat = "MMM d, yyyy"
+        return f
+    }()
+
+    private func formatSessionLabel(_ session: PracticeSession) -> String {
+        dateFormatter.string(from: session.date)
+    }
+
+    var body: some View {
+        VStack(spacing: 8) {
             HStack {
-                Text("Selected Items")
-                    .font(.custom("SF Mono", size: 16))
-                    .fontWeight(.semibold)
-                    .foregroundColor(.white)
+                // Session picker
+                Menu {
+                    Button("New Session...") {
+                        Task {
+                            if let session = await appState.createNewSession() {
+                                await appState.selectSession(session)
+                            }
+                        }
+                    }
+
+                    if !appState.sessions.isEmpty {
+                        Divider()
+
+                        ForEach(appState.sessions) { session in
+                            Button {
+                                Task {
+                                    await appState.selectSession(session)
+                                }
+                            } label: {
+                                HStack {
+                                    Text(formatSessionLabel(session))
+                                    if appState.currentSession?.id == session.id {
+                                        Image(systemName: "checkmark")
+                                    }
+                                }
+                            }
+                        }
+                    }
+                } label: {
+                    HStack(spacing: 6) {
+                        Image(systemName: "calendar")
+                            .font(.system(size: 12))
+                        Text(appState.currentSession.map { formatSessionLabel($0) } ?? "Select Session")
+                            .font(.custom("SF Mono", size: 14))
+                            .fontWeight(.medium)
+                        Image(systemName: "chevron.down")
+                            .font(.system(size: 10))
+                    }
+                    .foregroundColor(appState.currentSession != nil ? .white : .gray)
+                }
+                .menuStyle(.borderlessButton)
 
                 Spacer()
 
-                if !appState.selectedItems.isEmpty {
-                    let totalMinutes = appState.selectedItems.reduce(0) { $0 + $1.plannedMinutes }
-                    Text("\(totalMinutes) min")
-                        .font(.custom("SF Mono", size: 12))
-                        .foregroundColor(.orange)
+                // Unsaved indicator
+                if appState.hasUnsavedChanges {
+                    Circle()
+                        .fill(Color.orange)
+                        .frame(width: 8, height: 8)
+                }
 
+                // Clear button
+                if !appState.selectedItems.isEmpty {
                     Button {
                         appState.clearSelection()
                     } label: {
@@ -529,110 +701,218 @@ struct SelectedItemsView: View {
                             .foregroundColor(.red.opacity(0.8))
                     }
                     .buttonStyle(.plain)
-                    .padding(.leading, 12)
                 }
             }
-            .padding(.horizontal, 20)
-            .padding(.vertical, 16)
 
-            Divider()
-                .background(Color.white.opacity(0.1))
-
-            if appState.selectedItems.isEmpty {
-                VStack(spacing: 12) {
-                    Spacer()
-                    Image(systemName: "music.note.list")
-                        .font(.system(size: 32))
-                        .foregroundColor(.gray.opacity(0.3))
-                    Text("No items selected")
-                        .font(.custom("SF Mono", size: 13))
-                        .foregroundColor(.gray.opacity(0.5))
-                    Text("Click items in the library or press Space")
+            // Time summary
+            if !appState.selectedItems.isEmpty {
+                HStack {
+                    // Planned time
+                    Label("\(appState.totalPlannedMinutes)m planned", systemImage: "clock")
                         .font(.custom("SF Mono", size: 11))
-                        .foregroundColor(.gray.opacity(0.3))
+                        .foregroundColor(.orange.opacity(0.8))
+
                     Spacer()
-                }
-            } else {
-                ScrollView {
-                    LazyVStack(spacing: 2) {
-                        ForEach(Array(appState.selectedItems.enumerated()), id: \.element.id) { index, selected in
-                            SelectedItemRow(
-                                selected: selected,
-                                onRemove: {
-                                    appState.removeSelectedItem(at: index)
-                                },
-                                onAdjustTime: { delta in
-                                    appState.updatePlannedTime(at: index, minutes: selected.plannedMinutes + delta)
-                                }
-                            )
-                        }
+
+                    // Actual time (if any)
+                    if appState.totalActualMinutes > 0 {
+                        Label(String(format: "%.1fm actual", appState.totalActualMinutes), systemImage: "checkmark.circle")
+                            .font(.custom("SF Mono", size: 11))
+                            .foregroundColor(.green.opacity(0.8))
                     }
-                    .padding(.vertical, 8)
+
+                    // Item count
+                    Text("\(appState.selectedItems.count) items")
+                        .font(.custom("SF Mono", size: 11))
+                        .foregroundColor(.gray.opacity(0.6))
                 }
             }
         }
-        .background(Color(red: 0.07, green: 0.07, blue: 0.10))
+        .padding(.horizontal, 16)
+        .padding(.vertical, 12)
+    }
+}
+
+struct EmptySessionView: View {
+    @ObservedObject var appState: AppState
+
+    var body: some View {
+        VStack(spacing: 16) {
+            Spacer()
+
+            Image(systemName: "calendar.badge.plus")
+                .font(.system(size: 40))
+                .foregroundColor(.gray.opacity(0.3))
+
+            Text("No session selected")
+                .font(.custom("SF Mono", size: 14))
+                .foregroundColor(.gray.opacity(0.6))
+
+            Text("Select an existing session or create a new one")
+                .font(.custom("SF Mono", size: 11))
+                .foregroundColor(.gray.opacity(0.4))
+                .multilineTextAlignment(.center)
+
+            Button {
+                Task {
+                    if let session = await appState.createNewSession() {
+                        await appState.selectSession(session)
+                    }
+                }
+            } label: {
+                HStack {
+                    Image(systemName: "plus")
+                    Text("New Session")
+                }
+                .font(.custom("SF Mono", size: 12))
+                .foregroundColor(.orange)
+                .padding(.horizontal, 16)
+                .padding(.vertical, 8)
+                .background(
+                    RoundedRectangle(cornerRadius: 6)
+                        .stroke(Color.orange.opacity(0.5), lineWidth: 1)
+                )
+            }
+            .buttonStyle(.plain)
+
+            Spacer()
+        }
+        .padding()
+    }
+}
+
+struct SessionFooterView: View {
+    @ObservedObject var appState: AppState
+
+    var body: some View {
+        VStack(spacing: 0) {
+            Divider()
+                .background(Color.white.opacity(0.1))
+
+            HStack {
+                // Error message
+                if let error = appState.sessionError {
+                    Text(error.localizedDescription)
+                        .font(.custom("SF Mono", size: 10))
+                        .foregroundColor(.red)
+                        .lineLimit(1)
+                }
+
+                Spacer()
+
+                // Save button
+                Button {
+                    Task {
+                        await appState.saveSession()
+                    }
+                } label: {
+                    HStack(spacing: 4) {
+                        if appState.isSavingSession {
+                            ProgressView()
+                                .scaleEffect(0.7)
+                                .tint(.white)
+                        } else {
+                            Image(systemName: "square.and.arrow.up")
+                                .font(.system(size: 11))
+                        }
+                        Text("Save")
+                            .font(.custom("SF Mono", size: 12))
+                    }
+                    .foregroundColor(.white)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 6)
+                    .background(
+                        RoundedRectangle(cornerRadius: 6)
+                            .fill(appState.hasUnsavedChanges ? Color.orange : Color.gray.opacity(0.3))
+                    )
+                }
+                .buttonStyle(.plain)
+                .disabled(appState.isSavingSession || !appState.hasUnsavedChanges)
+                .keyboardShortcut("s", modifiers: .command)
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 10)
+        }
     }
 }
 
 struct SelectedItemRow: View {
     let selected: SelectedItem
+    let isFocused: Bool
+    let onFocus: () -> Void
     let onRemove: () -> Void
     let onAdjustTime: (Int) -> Void
 
+    var isCompleted: Bool {
+        selected.actualMinutes != nil && selected.actualMinutes! > 0
+    }
+
     var body: some View {
-        HStack(spacing: 12) {
+        HStack(spacing: 10) {
+            // Completion indicator / drag handle
+            Image(systemName: isCompleted ? "checkmark.circle.fill" : "line.3.horizontal")
+                .font(.system(size: 12))
+                .foregroundColor(isCompleted ? .green : .gray.opacity(0.4))
+                .frame(width: 16)
+
             // Type icon
             Image(systemName: selected.item.type?.icon ?? "questionmark")
-                .font(.system(size: 14))
+                .font(.system(size: 12))
                 .foregroundColor(typeColor(selected.item.type))
-                .frame(width: 20)
+                .frame(width: 16)
 
-            // Name
-            VStack(alignment: .leading, spacing: 2) {
+            // Name and artist
+            VStack(alignment: .leading, spacing: 1) {
                 Text(selected.item.name)
-                    .font(.custom("SF Mono", size: 13))
+                    .font(.custom("SF Mono", size: 12))
                     .foregroundColor(.white)
                     .lineLimit(1)
 
                 if let artist = selected.item.artist {
                     Text(artist)
-                        .font(.custom("SF Mono", size: 10))
-                        .foregroundColor(.gray.opacity(0.6))
+                        .font(.custom("SF Mono", size: 9))
+                        .foregroundColor(.gray.opacity(0.5))
                         .lineLimit(1)
                 }
             }
 
             Spacer()
 
+            // Actual time (if practiced)
+            if let actual = selected.actualMinutes, actual > 0 {
+                Text(String(format: "%.1fm", actual))
+                    .font(.custom("SF Mono", size: 10))
+                    .foregroundColor(.green.opacity(0.7))
+            }
+
             // Time adjustment
-            HStack(spacing: 4) {
+            HStack(spacing: 3) {
                 Button {
                     onAdjustTime(-1)
                 } label: {
                     Image(systemName: "minus")
-                        .font(.system(size: 10))
+                        .font(.system(size: 9))
                         .foregroundColor(.gray)
-                        .frame(width: 20, height: 20)
+                        .frame(width: 18, height: 18)
                         .background(Color.white.opacity(0.05))
-                        .cornerRadius(4)
+                        .cornerRadius(3)
                 }
                 .buttonStyle(.plain)
 
                 Text("\(selected.plannedMinutes)m")
-                    .font(.custom("SF Mono", size: 12))
+                    .font(.custom("SF Mono", size: 11))
                     .foregroundColor(.orange)
-                    .frame(width: 36)
+                    .frame(width: 28)
 
                 Button {
                     onAdjustTime(1)
                 } label: {
                     Image(systemName: "plus")
-                        .font(.system(size: 10))
+                        .font(.system(size: 9))
                         .foregroundColor(.gray)
-                        .frame(width: 20, height: 20)
+                        .frame(width: 18, height: 18)
                         .background(Color.white.opacity(0.05))
-                        .cornerRadius(4)
+                        .cornerRadius(3)
                 }
                 .buttonStyle(.plain)
             }
@@ -640,14 +920,28 @@ struct SelectedItemRow: View {
             // Remove button
             Button(action: onRemove) {
                 Image(systemName: "xmark")
-                    .font(.system(size: 10))
-                    .foregroundColor(.red.opacity(0.6))
-                    .frame(width: 20, height: 20)
+                    .font(.system(size: 9))
+                    .foregroundColor(.red.opacity(0.5))
+                    .frame(width: 18, height: 18)
             }
             .buttonStyle(.plain)
         }
-        .padding(.horizontal, 20)
-        .padding(.vertical, 10)
+        .padding(.horizontal, 16)
+        .padding(.vertical, 6)
+        .background(
+            RoundedRectangle(cornerRadius: 4)
+                .fill(isFocused ? Color.cyan.opacity(0.15) : (isCompleted ? Color.green.opacity(0.05) : Color.clear))
+        )
+        .overlay(
+            isFocused ?
+                RoundedRectangle(cornerRadius: 4)
+                    .stroke(Color.cyan.opacity(0.5), lineWidth: 1)
+                : nil
+        )
+        .contentShape(Rectangle())
+        .onTapGesture {
+            onFocus()
+        }
     }
 
     private func typeColor(_ type: ItemType?) -> Color {
@@ -664,17 +958,18 @@ struct SelectedItemRow: View {
 
 struct FooterView: View {
     var body: some View {
-        HStack(spacing: 16) {
+        HStack(spacing: 12) {
+            KeyHint(key: "tab", action: "switch panel")
             KeyHint(key: "↑↓", action: "navigate")
-            KeyHint(key: "j/k", action: "navigate")
-            KeyHint(key: "space", action: "select")
+            KeyHint(key: "enter", action: "add/remove")
+            KeyHint(key: "+/-", action: "time")
+            KeyHint(key: "⌫", action: "remove")
             KeyHint(key: "/", action: "search")
-            KeyHint(key: "⌘R", action: "refresh")
-            KeyHint(key: "⌘,", action: "settings")
+            KeyHint(key: "⌘S", action: "save")
 
             Spacer()
 
-            Text("Phase 2: Library View")
+            Text("Phase 3: Session Management")
                 .font(.custom("SF Mono", size: 10))
                 .foregroundColor(.gray.opacity(0.4))
         }

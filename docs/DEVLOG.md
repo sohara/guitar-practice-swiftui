@@ -129,3 +129,57 @@ GuitarPractice/
 
 ### Next Steps
 - Phase 3: Session Management (pick/create sessions, save to Notion)
+
+---
+
+## 2026-01-13: Phase 3 - Session Management
+
+### Features Implemented
+- **Session Picker**: Dropdown menu to select existing sessions or create new ones
+  - Sessions displayed by date (MMM d, yyyy format) instead of name
+  - Checkmark indicator for currently selected session
+  - "New Session..." option creates session named by current date
+- **Session Loading**: Fetches practice logs for selected session from Notion
+  - Converts logs to SelectedItems matched with library items
+  - Loading spinner while fetching
+- **Delta Saves**: Only syncs changes to Notion
+  - Tracks dirty items (modified plannedMinutes or order)
+  - Tracks deleted items for removal from Notion
+  - Creates new logs for items not yet saved
+  - Updates existing logs for modified items
+- **Selected Items Panel**:
+  - Drag and drop reordering with `.onMove`
+  - Actual time display for practiced items
+  - Completion indicator (checkmark) for items with actual time
+  - Unsaved changes indicator (orange dot)
+- **Dual Panel Focus System**:
+  - `Tab` key switches focus between Library and Selected Items panels
+  - Arrow keys (↑/↓) and j/k navigate whichever panel is focused
+  - Orange highlight for focused library item (when library panel active)
+  - Cyan highlight for focused selected item (when selected panel active)
+- **Keyboard Shortcuts for Selected Items**:
+  - `+`/`-` adjusts planned time on focused item
+  - `Delete` removes focused item from session
+  - `Enter` adds/removes item (library panel only)
+
+### UX Refinements
+- Single click focuses item, double-click or Enter toggles selection
+- Click on selected item row sets panel focus and item focus
+- `.focusable()` modifier required on main view for key events to work
+
+### Bug Fix: Key Events Not Firing
+- Symptom: Arrow keys and other shortcuts played error sound, no action
+- Cause: View wasn't focusable, so key events weren't being handled
+- Fix: Added `.focusable()` modifier to MainContentView
+
+### Technical Notes
+- `FocusedPanel` enum tracks which panel has keyboard focus
+- `moveFocusUp()`/`moveFocusDown()` dispatch to appropriate panel based on focus
+- Session footer shows Save button (orange when unsaved, gray when clean)
+- `⌘S` keyboard shortcut for save
+
+### Future Enhancement Ideas
+- `Ctrl-F`/`Ctrl-B` for page up/down in library list
+
+### Next Steps
+- Phase 4: Practice Timer (full-window timer mode, track actual time)
