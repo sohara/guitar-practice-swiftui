@@ -78,6 +78,54 @@ GuitarPractice/
 - LoadingState enum with idle/loading/loaded/error cases
 - Parallel data fetching with TaskGroup
 
+### Bug Fix: Database IDs vs Data Source IDs
+- Initial implementation used data source IDs for queries (matching TUI's SDK approach)
+- REST API requires database IDs for `/databases/{id}/query` endpoint
+- Fixed by switching to `Config.Notion.Databases.*` for all query operations
+- Data source IDs are SDK-specific; database IDs work with raw REST API
+
 ### Next Steps
 - Phase 2: Search/filter/sort for library
 - Split view layout (Library | Selected)
+
+---
+
+## 2026-01-13: Phase 2 - Library View
+
+### Features Implemented
+- **NavigationSplitView Layout**: Library on left, Selected Items on right
+  - Set minimum column widths (400pt library, 280pt selected) to prevent content truncation
+- **Search**: Live filtering by name, artist, and tags
+  - Press `/` to focus search field
+  - Clear button (×) when text entered
+- **Type Filter**: Dropdown to filter by All/Song/Exercise/Course Lesson
+- **Sort Options**: Name, Last Practiced, Times Practiced
+  - Click same option to toggle ascending/descending
+  - Visual indicator (chevron) shows current direction
+- **Keyboard Navigation**:
+  - `↑`/`↓` or `j`/`k` to navigate library
+  - `Space` to toggle selection
+  - Orange highlight shows focused item
+  - Auto-scroll to keep focused item visible
+- **Selected Items Panel**:
+  - Shows total planned time
+  - Per-item time adjustment (+/- buttons)
+  - Remove button per item
+  - Clear all button
+  - Empty state with instructions
+- **Header Stats**: Now shows filtered/total count (e.g., "45/129") when filters active
+
+### Bug Fix: Keychain Prompts
+- Debug builds were prompting for keychain access on every launch
+- Cause: Data Protection keychain is strict about app identity for unsigned builds
+- Fix: Use legacy file-based keychain (`kSecUseDataProtectionKeychain: false`)
+
+### Technical Notes
+- `SortOption` enum for type-safe sort options
+- `filteredLibrary` computed property chains search → type filter → sort
+- `@FocusState` for search field focus management
+- `ScrollViewReader` with `scrollTo()` for auto-scrolling to focused item
+- `onKeyPress` modifiers for keyboard shortcuts
+
+### Next Steps
+- Phase 3: Session Management (pick/create sessions, save to Notion)

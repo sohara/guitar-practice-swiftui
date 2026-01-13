@@ -33,6 +33,7 @@ struct ContentView: View {
 
 struct MainContentView: View {
     @ObservedObject var appState: AppState
+    @FocusState private var isSearchFocused: Bool
 
     var body: some View {
         VStack(spacing: 0) {
@@ -45,7 +46,7 @@ struct MainContentView: View {
             Divider()
                 .background(Color.white.opacity(0.1))
 
-            // Main content
+            // Main split view content
             if appState.isLoading && appState.library.isEmpty {
                 LoadingView()
             } else if let error = appState.libraryState.error {
@@ -53,7 +54,16 @@ struct MainContentView: View {
                     Task { await appState.refresh() }
                 }
             } else {
-                LibraryListView(appState: appState)
+                NavigationSplitView {
+                    // Left: Library with search/filter
+                    LibrarySidebarView(appState: appState, isSearchFocused: $isSearchFocused)
+                        .navigationSplitViewColumnWidth(min: 400, ideal: 500, max: 700)
+                } detail: {
+                    // Right: Selected items
+                    SelectedItemsView(appState: appState)
+                        .navigationSplitViewColumnWidth(min: 280, ideal: 350)
+                }
+                .navigationSplitViewStyle(.balanced)
             }
 
             Divider()
@@ -66,6 +76,39 @@ struct MainContentView: View {
         }
         .task {
             await appState.loadData()
+        }
+        .onKeyPress(.upArrow) {
+            appState.moveFocusUp()
+            return .handled
+        }
+        .onKeyPress(.downArrow) {
+            appState.moveFocusDown()
+            return .handled
+        }
+        .onKeyPress(characters: CharacterSet(charactersIn: "jJ")) { _ in
+            if !isSearchFocused {
+                appState.moveFocusDown()
+                return .handled
+            }
+            return .ignored
+        }
+        .onKeyPress(characters: CharacterSet(charactersIn: "kK")) { _ in
+            if !isSearchFocused {
+                appState.moveFocusUp()
+                return .handled
+            }
+            return .ignored
+        }
+        .onKeyPress(.space) {
+            if !isSearchFocused {
+                appState.toggleFocusedItem()
+                return .handled
+            }
+            return .ignored
+        }
+        .onKeyPress(characters: CharacterSet(charactersIn: "/")) { _ in
+            isSearchFocused = true
+            return .handled
         }
     }
 }
@@ -102,7 +145,8 @@ struct HeaderView: View {
             HStack(spacing: 20) {
                 StatBadge(
                     icon: "music.note.list",
-                    value: "\(appState.library.count)",
+                    value: "\(appState.filteredLibrary.count)",
+                    total: appState.library.count,
                     color: .cyan
                 )
                 StatBadge(
@@ -129,6 +173,7 @@ struct HeaderView: View {
                     .foregroundColor(.gray)
             }
             .buttonStyle(.plain)
+            .keyboardShortcut(",", modifiers: .command)
 
             // Refresh button
             Button {
@@ -142,6 +187,7 @@ struct HeaderView: View {
             }
             .buttonStyle(.plain)
             .disabled(appState.isLoading)
+            .keyboardShortcut("r", modifiers: .command)
         }
     }
 }
@@ -149,6 +195,7 @@ struct HeaderView: View {
 struct StatBadge: View {
     let icon: String
     let value: String
+    var total: Int? = nil
     let color: Color
 
     var body: some View {
@@ -157,10 +204,17 @@ struct StatBadge: View {
                 .font(.system(size: 12))
                 .foregroundColor(color)
 
-            Text(value)
-                .font(.custom("SF Mono", size: 14))
-                .fontWeight(.semibold)
-                .foregroundColor(.white)
+            if let total = total, value != "\(total)" {
+                Text("\(value)/\(total)")
+                    .font(.custom("SF Mono", size: 14))
+                    .fontWeight(.semibold)
+                    .foregroundColor(.white)
+            } else {
+                Text(value)
+                    .font(.custom("SF Mono", size: 14))
+                    .fontWeight(.semibold)
+                    .foregroundColor(.white)
+            }
         }
         .padding(.horizontal, 10)
         .padding(.vertical, 6)
@@ -175,24 +229,180 @@ struct StatBadge: View {
     }
 }
 
+// MARK: - Library Sidebar
+
+struct LibrarySidebarView: View {
+    @ObservedObject var appState: AppState
+    var isSearchFocused: FocusState<Bool>.Binding
+
+    var body: some View {
+        VStack(spacing: 0) {
+            // Search and filters bar
+            FilterBarView(appState: appState, isSearchFocused: isSearchFocused)
+                .padding(.horizontal, 16)
+                .padding(.vertical, 12)
+
+            Divider()
+                .background(Color.white.opacity(0.1))
+
+            // Library list
+            LibraryListView(appState: appState)
+        }
+        .background(Color(red: 0.06, green: 0.06, blue: 0.09))
+    }
+}
+
+// MARK: - Filter Bar
+
+struct FilterBarView: View {
+    @ObservedObject var appState: AppState
+    var isSearchFocused: FocusState<Bool>.Binding
+
+    var body: some View {
+        VStack(spacing: 10) {
+            // Search field
+            HStack(spacing: 8) {
+                Image(systemName: "magnifyingglass")
+                    .font(.system(size: 12))
+                    .foregroundColor(.gray)
+
+                TextField("Search...", text: $appState.searchText)
+                    .font(.custom("SF Mono", size: 13))
+                    .textFieldStyle(.plain)
+                    .focused(isSearchFocused)
+                    .onSubmit {
+                        isSearchFocused.wrappedValue = false
+                    }
+
+                if !appState.searchText.isEmpty {
+                    Button {
+                        appState.searchText = ""
+                    } label: {
+                        Image(systemName: "xmark.circle.fill")
+                            .font(.system(size: 12))
+                            .foregroundColor(.gray)
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+            .padding(.horizontal, 10)
+            .padding(.vertical, 8)
+            .background(
+                RoundedRectangle(cornerRadius: 8)
+                    .fill(Color.white.opacity(0.05))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 8)
+                            .stroke(Color.white.opacity(0.1), lineWidth: 1)
+                    )
+            )
+
+            // Filter and sort row
+            HStack(spacing: 12) {
+                // Type filter
+                Menu {
+                    Button("All Types") {
+                        appState.typeFilter = nil
+                    }
+                    Divider()
+                    ForEach(ItemType.allCases, id: \.self) { type in
+                        Button {
+                            appState.typeFilter = type
+                        } label: {
+                            Label(type.rawValue, systemImage: type.icon)
+                        }
+                    }
+                } label: {
+                    HStack(spacing: 4) {
+                        Image(systemName: appState.typeFilter?.icon ?? "line.3.horizontal.decrease")
+                            .font(.system(size: 10))
+                        Text(appState.typeFilter?.rawValue ?? "All")
+                            .font(.custom("SF Mono", size: 11))
+                        Image(systemName: "chevron.down")
+                            .font(.system(size: 8))
+                    }
+                    .foregroundColor(.gray)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 5)
+                    .background(
+                        RoundedRectangle(cornerRadius: 6)
+                            .fill(Color.white.opacity(0.05))
+                    )
+                }
+                .menuStyle(.borderlessButton)
+
+                // Sort option
+                Menu {
+                    ForEach(SortOption.allCases, id: \.self) { option in
+                        Button {
+                            if appState.sortOption == option {
+                                appState.sortAscending.toggle()
+                            } else {
+                                appState.sortOption = option
+                                appState.sortAscending = true
+                            }
+                        } label: {
+                            HStack {
+                                Text(option.rawValue)
+                                if appState.sortOption == option {
+                                    Image(systemName: appState.sortAscending ? "chevron.up" : "chevron.down")
+                                }
+                            }
+                        }
+                    }
+                } label: {
+                    HStack(spacing: 4) {
+                        Image(systemName: "arrow.up.arrow.down")
+                            .font(.system(size: 10))
+                        Text(appState.sortOption.rawValue)
+                            .font(.custom("SF Mono", size: 11))
+                        Image(systemName: appState.sortAscending ? "chevron.up" : "chevron.down")
+                            .font(.system(size: 8))
+                    }
+                    .foregroundColor(.gray)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 5)
+                    .background(
+                        RoundedRectangle(cornerRadius: 6)
+                            .fill(Color.white.opacity(0.05))
+                    )
+                }
+                .menuStyle(.borderlessButton)
+
+                Spacer()
+            }
+        }
+    }
+}
+
 // MARK: - Library List
 
 struct LibraryListView: View {
     @ObservedObject var appState: AppState
 
     var body: some View {
-        ScrollView {
-            LazyVStack(spacing: 2) {
-                ForEach(appState.library) { item in
-                    LibraryItemRow(
-                        item: item,
-                        isSelected: appState.isSelected(item)
-                    ) {
-                        appState.toggleSelection(item)
+        ScrollViewReader { proxy in
+            ScrollView {
+                LazyVStack(spacing: 2) {
+                    ForEach(Array(appState.filteredLibrary.enumerated()), id: \.element.id) { index, item in
+                        LibraryItemRow(
+                            item: item,
+                            isSelected: appState.isSelected(item),
+                            isFocused: appState.focusedItemIndex == index
+                        ) {
+                            appState.toggleSelection(item)
+                        }
+                        .id(item.id)
+                    }
+                }
+                .padding(.vertical, 8)
+            }
+            .onChange(of: appState.focusedItemIndex) { _, newIndex in
+                if let index = newIndex, index < appState.filteredLibrary.count {
+                    withAnimation(.easeInOut(duration: 0.2)) {
+                        proxy.scrollTo(appState.filteredLibrary[index].id, anchor: .center)
                     }
                 }
             }
-            .padding(.vertical, 8)
         }
     }
 }
@@ -200,6 +410,7 @@ struct LibraryListView: View {
 struct LibraryItemRow: View {
     let item: LibraryItem
     let isSelected: Bool
+    let isFocused: Bool
     let onTap: () -> Void
 
     var body: some View {
@@ -245,12 +456,25 @@ struct LibraryItemRow: View {
                         .foregroundColor(.cyan.opacity(0.6))
                 }
             }
-            .padding(.horizontal, 24)
+            .padding(.horizontal, 16)
             .padding(.vertical, 10)
             .background(
-                isSelected
-                    ? Color.green.opacity(0.08)
-                    : Color.clear
+                Group {
+                    if isFocused {
+                        Color.orange.opacity(0.15)
+                    } else if isSelected {
+                        Color.green.opacity(0.08)
+                    } else {
+                        Color.clear
+                    }
+                }
+            )
+            .overlay(
+                isFocused ?
+                    RoundedRectangle(cornerRadius: 4)
+                        .stroke(Color.orange.opacity(0.5), lineWidth: 1)
+                        .padding(.horizontal, 4)
+                    : nil
             )
         }
         .buttonStyle(.plain)
@@ -275,20 +499,182 @@ struct LibraryItemRow: View {
     }
 }
 
+// MARK: - Selected Items View
+
+struct SelectedItemsView: View {
+    @ObservedObject var appState: AppState
+
+    var body: some View {
+        VStack(spacing: 0) {
+            // Header
+            HStack {
+                Text("Selected Items")
+                    .font(.custom("SF Mono", size: 16))
+                    .fontWeight(.semibold)
+                    .foregroundColor(.white)
+
+                Spacer()
+
+                if !appState.selectedItems.isEmpty {
+                    let totalMinutes = appState.selectedItems.reduce(0) { $0 + $1.plannedMinutes }
+                    Text("\(totalMinutes) min")
+                        .font(.custom("SF Mono", size: 12))
+                        .foregroundColor(.orange)
+
+                    Button {
+                        appState.clearSelection()
+                    } label: {
+                        Text("Clear")
+                            .font(.custom("SF Mono", size: 11))
+                            .foregroundColor(.red.opacity(0.8))
+                    }
+                    .buttonStyle(.plain)
+                    .padding(.leading, 12)
+                }
+            }
+            .padding(.horizontal, 20)
+            .padding(.vertical, 16)
+
+            Divider()
+                .background(Color.white.opacity(0.1))
+
+            if appState.selectedItems.isEmpty {
+                VStack(spacing: 12) {
+                    Spacer()
+                    Image(systemName: "music.note.list")
+                        .font(.system(size: 32))
+                        .foregroundColor(.gray.opacity(0.3))
+                    Text("No items selected")
+                        .font(.custom("SF Mono", size: 13))
+                        .foregroundColor(.gray.opacity(0.5))
+                    Text("Click items in the library or press Space")
+                        .font(.custom("SF Mono", size: 11))
+                        .foregroundColor(.gray.opacity(0.3))
+                    Spacer()
+                }
+            } else {
+                ScrollView {
+                    LazyVStack(spacing: 2) {
+                        ForEach(Array(appState.selectedItems.enumerated()), id: \.element.id) { index, selected in
+                            SelectedItemRow(
+                                selected: selected,
+                                onRemove: {
+                                    appState.removeSelectedItem(at: index)
+                                },
+                                onAdjustTime: { delta in
+                                    appState.updatePlannedTime(at: index, minutes: selected.plannedMinutes + delta)
+                                }
+                            )
+                        }
+                    }
+                    .padding(.vertical, 8)
+                }
+            }
+        }
+        .background(Color(red: 0.07, green: 0.07, blue: 0.10))
+    }
+}
+
+struct SelectedItemRow: View {
+    let selected: SelectedItem
+    let onRemove: () -> Void
+    let onAdjustTime: (Int) -> Void
+
+    var body: some View {
+        HStack(spacing: 12) {
+            // Type icon
+            Image(systemName: selected.item.type?.icon ?? "questionmark")
+                .font(.system(size: 14))
+                .foregroundColor(typeColor(selected.item.type))
+                .frame(width: 20)
+
+            // Name
+            VStack(alignment: .leading, spacing: 2) {
+                Text(selected.item.name)
+                    .font(.custom("SF Mono", size: 13))
+                    .foregroundColor(.white)
+                    .lineLimit(1)
+
+                if let artist = selected.item.artist {
+                    Text(artist)
+                        .font(.custom("SF Mono", size: 10))
+                        .foregroundColor(.gray.opacity(0.6))
+                        .lineLimit(1)
+                }
+            }
+
+            Spacer()
+
+            // Time adjustment
+            HStack(spacing: 4) {
+                Button {
+                    onAdjustTime(-1)
+                } label: {
+                    Image(systemName: "minus")
+                        .font(.system(size: 10))
+                        .foregroundColor(.gray)
+                        .frame(width: 20, height: 20)
+                        .background(Color.white.opacity(0.05))
+                        .cornerRadius(4)
+                }
+                .buttonStyle(.plain)
+
+                Text("\(selected.plannedMinutes)m")
+                    .font(.custom("SF Mono", size: 12))
+                    .foregroundColor(.orange)
+                    .frame(width: 36)
+
+                Button {
+                    onAdjustTime(1)
+                } label: {
+                    Image(systemName: "plus")
+                        .font(.system(size: 10))
+                        .foregroundColor(.gray)
+                        .frame(width: 20, height: 20)
+                        .background(Color.white.opacity(0.05))
+                        .cornerRadius(4)
+                }
+                .buttonStyle(.plain)
+            }
+
+            // Remove button
+            Button(action: onRemove) {
+                Image(systemName: "xmark")
+                    .font(.system(size: 10))
+                    .foregroundColor(.red.opacity(0.6))
+                    .frame(width: 20, height: 20)
+            }
+            .buttonStyle(.plain)
+        }
+        .padding(.horizontal, 20)
+        .padding(.vertical, 10)
+    }
+
+    private func typeColor(_ type: ItemType?) -> Color {
+        switch type {
+        case .song: return .pink
+        case .exercise: return .cyan
+        case .courseLesson: return .orange
+        case nil: return .gray
+        }
+    }
+}
+
 // MARK: - Footer
 
 struct FooterView: View {
     var body: some View {
         HStack(spacing: 16) {
             KeyHint(key: "↑↓", action: "navigate")
+            KeyHint(key: "j/k", action: "navigate")
             KeyHint(key: "space", action: "select")
-            KeyHint(key: "⌘F", action: "search")
+            KeyHint(key: "/", action: "search")
             KeyHint(key: "⌘R", action: "refresh")
             KeyHint(key: "⌘,", action: "settings")
 
             Spacer()
 
-            Text("Phase 1: Data Layer")
+            Text("Phase 2: Library View")
                 .font(.custom("SF Mono", size: 10))
                 .foregroundColor(.gray.opacity(0.4))
         }

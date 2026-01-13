@@ -1,5 +1,13 @@
 import SwiftUI
 
+// MARK: - Sort Options
+
+enum SortOption: String, CaseIterable {
+    case name = "Name"
+    case lastPracticed = "Last Practiced"
+    case timesPracticed = "Times Practiced"
+}
+
 @MainActor
 class AppState: ObservableObject {
     // MARK: - Published State
@@ -12,10 +20,55 @@ class AppState: ObservableObject {
     @Published var needsAPIKey: Bool = false
     @Published var isSettingsPresented: Bool = false
 
+    // MARK: - Search, Filter, Sort State
+
+    @Published var searchText: String = ""
+    @Published var typeFilter: ItemType? = nil  // nil = all types
+    @Published var sortOption: SortOption = .name
+    @Published var sortAscending: Bool = true
+    @Published var focusedItemIndex: Int? = nil
+
     // MARK: - Computed Properties
 
     var library: [LibraryItem] {
         libraryState.value ?? []
+    }
+
+    var filteredLibrary: [LibraryItem] {
+        var items = library
+
+        // Filter by search text
+        if !searchText.isEmpty {
+            let query = searchText.lowercased()
+            items = items.filter { item in
+                item.name.lowercased().contains(query) ||
+                (item.artist?.lowercased().contains(query) ?? false) ||
+                item.tags.contains { $0.lowercased().contains(query) }
+            }
+        }
+
+        // Filter by type
+        if let typeFilter = typeFilter {
+            items = items.filter { $0.type == typeFilter }
+        }
+
+        // Sort
+        items.sort { a, b in
+            let result: Bool
+            switch sortOption {
+            case .name:
+                result = a.name.localizedCaseInsensitiveCompare(b.name) == .orderedAscending
+            case .lastPracticed:
+                let aDate = a.lastPracticed ?? .distantPast
+                let bDate = b.lastPracticed ?? .distantPast
+                result = aDate > bDate  // More recent first by default
+            case .timesPracticed:
+                result = a.timesPracticed > b.timesPracticed  // Higher count first by default
+            }
+            return sortAscending ? result : !result
+        }
+
+        return items
     }
 
     var sessions: [PracticeSession] {
@@ -126,5 +179,42 @@ class AppState: ObservableObject {
     func clearSelection() {
         selectedItems.removeAll()
         currentSession = nil
+    }
+
+    // MARK: - Keyboard Navigation
+
+    func moveFocusUp() {
+        let items = filteredLibrary
+        guard !items.isEmpty else { return }
+
+        if let current = focusedItemIndex {
+            focusedItemIndex = max(0, current - 1)
+        } else {
+            focusedItemIndex = items.count - 1
+        }
+    }
+
+    func moveFocusDown() {
+        let items = filteredLibrary
+        guard !items.isEmpty else { return }
+
+        if let current = focusedItemIndex {
+            focusedItemIndex = min(items.count - 1, current + 1)
+        } else {
+            focusedItemIndex = 0
+        }
+    }
+
+    func toggleFocusedItem() {
+        let items = filteredLibrary
+        guard let index = focusedItemIndex, index < items.count else { return }
+        toggleSelection(items[index])
+    }
+
+    var focusedItem: LibraryItem? {
+        guard let index = focusedItemIndex else { return nil }
+        let items = filteredLibrary
+        guard index < items.count else { return nil }
+        return items[index]
     }
 }

@@ -22,6 +22,15 @@ enum KeychainError: LocalizedError {
 enum KeychainService {
     // MARK: - API Key
 
+    // Use legacy file-based keychain to avoid prompts during development
+    // (Data Protection keychain is stricter about app identity)
+    private static let baseQuery: [String: Any] = [
+        kSecClass as String: kSecClassGenericPassword,
+        kSecAttrService as String: Config.Keychain.service,
+        kSecAttrAccount as String: Config.Keychain.apiKeyAccount,
+        kSecUseDataProtectionKeychain as String: false
+    ]
+
     static func saveAPIKey(_ apiKey: String) throws {
         guard let data = apiKey.data(using: .utf8) else {
             throw KeychainError.unexpectedData
@@ -30,13 +39,8 @@ enum KeychainService {
         // Delete existing key first
         try? deleteAPIKey()
 
-        let query: [String: Any] = [
-            kSecClass as String: kSecClassGenericPassword,
-            kSecAttrService as String: Config.Keychain.service,
-            kSecAttrAccount as String: Config.Keychain.apiKeyAccount,
-            kSecValueData as String: data,
-            kSecAttrAccessible as String: kSecAttrAccessibleWhenUnlocked
-        ]
+        var query = baseQuery
+        query[kSecValueData as String] = data
 
         let status = SecItemAdd(query as CFDictionary, nil)
         guard status == errSecSuccess else {
@@ -45,13 +49,9 @@ enum KeychainService {
     }
 
     static func getAPIKey() throws -> String {
-        let query: [String: Any] = [
-            kSecClass as String: kSecClassGenericPassword,
-            kSecAttrService as String: Config.Keychain.service,
-            kSecAttrAccount as String: Config.Keychain.apiKeyAccount,
-            kSecReturnData as String: true,
-            kSecMatchLimit as String: kSecMatchLimitOne
-        ]
+        var query = baseQuery
+        query[kSecReturnData as String] = true
+        query[kSecMatchLimit as String] = kSecMatchLimitOne
 
         var result: AnyObject?
         let status = SecItemCopyMatching(query as CFDictionary, &result)
@@ -73,13 +73,7 @@ enum KeychainService {
     }
 
     static func deleteAPIKey() throws {
-        let query: [String: Any] = [
-            kSecClass as String: kSecClassGenericPassword,
-            kSecAttrService as String: Config.Keychain.service,
-            kSecAttrAccount as String: Config.Keychain.apiKeyAccount
-        ]
-
-        let status = SecItemDelete(query as CFDictionary)
+        let status = SecItemDelete(baseQuery as CFDictionary)
         guard status == errSecSuccess || status == errSecItemNotFound else {
             throw KeychainError.unableToDelete
         }

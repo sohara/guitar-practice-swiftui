@@ -37,28 +37,28 @@ GuitarPractice/
 
 ## Development Phases
 
-### Phase 1: Core Data Layer
-- [ ] Create data models (LibraryItem, PracticeSession, PracticeLog, SelectedItem)
-- [ ] Implement NotionClient with async/await
-  - [ ] Fetch Practice Library items
-  - [ ] Fetch Practice Sessions
-  - [ ] Fetch Practice Logs for a session
-  - [ ] Create new Practice Log entries
-  - [ ] Update Practice Log (actual time, order)
-- [ ] Store API key in Keychain (not hardcoded)
-- [ ] Add error handling and loading states
+### Phase 1: Core Data Layer ✅
+- [x] Create data models (LibraryItem, PracticeSession, PracticeLog, SelectedItem)
+- [x] Implement NotionClient with async/await
+  - [x] Fetch Practice Library items
+  - [x] Fetch Practice Sessions
+  - [x] Fetch Practice Logs for a session
+  - [x] Create new Practice Log entries
+  - [x] Update Practice Log (actual time, order)
+- [x] Store API key in Keychain (not hardcoded)
+- [x] Add error handling and loading states
 
-### Phase 2: Library View
-- [ ] Split view layout (NavigationSplitView)
-- [ ] Library list with item rows showing:
-  - Name, type icon, artist (if song)
-  - Last practiced date
-  - Times practiced count
-- [ ] Search with live filtering
-- [ ] Filter by type (Song/Exercise/Course Lesson)
-- [ ] Sort options (name, last practiced, times practiced)
-- [ ] Reverse sort toggle
-- [ ] Keyboard navigation (j/k or arrows)
+### Phase 2: Library View ✅
+- [x] Split view layout (NavigationSplitView)
+- [x] Library list with item rows showing:
+  - [x] Name, type icon, artist (if song)
+  - [x] Last practiced date
+  - [x] Times practiced count
+- [x] Search with live filtering
+- [x] Filter by type (Song/Exercise/Course Lesson)
+- [x] Sort options (name, last practiced, times practiced)
+- [x] Reverse sort toggle
+- [x] Keyboard navigation (j/k or arrows)
 
 ### Phase 3: Session Management
 - [ ] Session picker (sidebar or dropdown)
@@ -161,7 +161,7 @@ struct SelectedItem: Identifiable {
 ## Technical Notes
 
 - **Notion API**: Use URLSession with async/await. API version `2022-06-28`.
-- **Data Source IDs**: Notion SDK v5 uses "data source IDs" for queries (not database IDs).
+- **Database IDs**: REST API uses database IDs (from URLs) for queries. The TUI's SDK uses "data source IDs" but those don't work with raw REST API.
 - **Time Format**: Actual time stored as decimal minutes (e.g., 5.5 = 5m 30s).
 - **Delta Saves**: Track dirty items and only sync changes to reduce API calls.
 - **Keychain**: Use Security framework to store API key securely.
