@@ -183,3 +183,53 @@ GuitarPractice/
 
 ### Next Steps
 - Phase 4: Practice Timer (full-window timer mode, track actual time)
+
+---
+
+## 2026-01-13: Phase 4 - Practice Timer
+
+### Features Implemented
+- **Full-Screen Practice Mode**: Dedicated view for focused practice
+  - Large item name and artist display
+  - Type icon with color coding
+  - Progress indicator (e.g., "2 of 5")
+- **Countdown Timer**: Shows remaining time from planned minutes
+  - Large MM:SS display
+  - Switches to orange "OVERTIME" mode when time exceeded
+  - Elapsed time shown below (e.g., "Elapsed: 2:30 / 5:00")
+- **Timer Controls**:
+  - Start/Pause/Resume with visual "PAUSED" indicator
+  - Automatic start when entering practice mode
+  - Timer runs at 0.1s precision using async Task
+- **Practice Flow**:
+  - **Finish** (Enter): Saves actual time to Notion immediately, exits to session view
+  - **Next** (N): Saves actual time to Notion immediately, moves to next item
+  - **Skip** (S): Moves to next item without saving time
+  - **Exit** (Esc): Exits practice mode without saving current item
+- **Auto-Save to Notion**: Actual time saved immediately on Finish/Next (no manual save required)
+- **Resume Support**: If re-practicing an item, timer resumes from previous actual time
+
+### Keyboard Shortcuts
+| Key | Action |
+|-----|--------|
+| Space | Pause/Resume timer |
+| Enter | Finish & Exit (save time, return to session) |
+| N | Save & Next (save time, continue to next item) |
+| S | Skip (no save, move to next) |
+| Esc | Exit practice mode |
+
+### Bug Fixes
+- **Focus Ring on Load**: Red rectangle visible on app launch
+  - Cause: Default macOS focus ring on `.focusable()` view
+  - Fix: Added `.focusEffectDisabled()` to hide system focus indicator
+- **Practice View Key Events**: Same focusable issue as main view
+  - Fix: Added `@FocusState` with `.focused()` and `.onAppear { isFocused = true }` to auto-focus
+
+### Technical Notes
+- Practice state in AppState: `isPracticing`, `practiceItemIndex`, `practiceElapsedSeconds`, `isTimerRunning`
+- Timer uses `Task` with `Task.sleep(nanoseconds:)` for 0.1s updates
+- `saveCurrentItemToNotion()` called on finish/next for immediate persistence
+- Practice button added to session footer with `⌘P` shortcut
+
+### Next Steps
+- Phase 5: Menu Bar Integration (timer in menu bar when practicing)

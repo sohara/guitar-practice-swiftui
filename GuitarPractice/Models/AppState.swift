@@ -26,6 +26,14 @@ class AppState: ObservableObject {
     @Published var needsAPIKey: Bool = false
     @Published var isSettingsPresented: Bool = false
 
+    // MARK: - Practice State
+
+    @Published var isPracticing: Bool = false
+    @Published var practiceItemIndex: Int = 0
+    @Published var practiceElapsedSeconds: Double = 0
+    @Published var isTimerRunning: Bool = false
+    private var timerTask: Task<Void, Never>?
+
     // MARK: - Search, Filter, Sort State
 
     @Published var searchText: String = ""
@@ -102,6 +110,39 @@ class AppState: ObservableObject {
 
     var totalActualMinutes: Double {
         selectedItems.reduce(0.0) { $0 + ($1.actualMinutes ?? 0) }
+    }
+
+    var currentPracticeItem: SelectedItem? {
+        guard isPracticing, practiceItemIndex < selectedItems.count else { return nil }
+        return selectedItems[practiceItemIndex]
+    }
+
+    var practiceProgress: String {
+        "\(practiceItemIndex + 1) of \(selectedItems.count)"
+    }
+
+    var practiceElapsedFormatted: String {
+        let totalSeconds = Int(practiceElapsedSeconds)
+        let minutes = totalSeconds / 60
+        let seconds = totalSeconds % 60
+        return String(format: "%d:%02d", minutes, seconds)
+    }
+
+    var practiceRemainingSeconds: Double {
+        guard let item = currentPracticeItem else { return 0 }
+        let plannedSeconds = Double(item.plannedMinutes * 60)
+        return max(0, plannedSeconds - practiceElapsedSeconds)
+    }
+
+    var practiceRemainingFormatted: String {
+        let totalSeconds = Int(practiceRemainingSeconds)
+        let minutes = totalSeconds / 60
+        let seconds = totalSeconds % 60
+        return String(format: "%d:%02d", minutes, seconds)
+    }
+
+    var isPracticeOvertime: Bool {
+        practiceRemainingSeconds <= 0
     }
 
     // MARK: - Private
@@ -434,5 +475,140 @@ class AppState: ObservableObject {
         } else if index >= selectedItems.count {
             focusedSelectedIndex = selectedItems.count - 1
         }
+    }
+
+    // MARK: - Practice Mode
+
+    func startPractice() {
+        guard !selectedItems.isEmpty else { return }
+
+        isPracticing = true
+        practiceItemIndex = 0
+
+        // Resume from previous actual time if exists
+        if let existingTime = selectedItems[practiceItemIndex].actualMinutes {
+            practiceElapsedSeconds = existingTime * 60
+        } else {
+            practiceElapsedSeconds = 0
+        }
+
+        resumeTimer()
+    }
+
+    func pauseTimer() {
+        isTimerRunning = false
+        timerTask?.cancel()
+        timerTask = nil
+    }
+
+    func resumeTimer() {
+        guard !isTimerRunning else { return }
+        isTimerRunning = true
+
+        timerTask = Task { [weak self] in
+            while !Task.isCancelled {
+                try? await Task.sleep(nanoseconds: 100_000_000) // 0.1 second
+                guard !Task.isCancelled else { break }
+                await MainActor.run {
+                    self?.practiceElapsedSeconds += 0.1
+                }
+            }
+        }
+    }
+
+    func toggleTimer() {
+        if isTimerRunning {
+            pauseTimer()
+        } else {
+            resumeTimer()
+        }
+    }
+
+    func finishCurrentItem() async {
+        guard practiceItemIndex < selectedItems.count else { return }
+
+        // Save actual time (convert seconds to minutes)
+        let actualMinutes = practiceElapsedSeconds / 60.0
+        selectedItems[practiceItemIndex].actualMinutes = actualMinutes
+
+        // Save to Notion immediately
+        await saveCurrentItemToNotion()
+
+        // Exit practice mode
+        endPractice()
+    }
+
+    func finishAndNextItem() async {
+        guard practiceItemIndex < selectedItems.count else { return }
+
+        // Save actual time (convert seconds to minutes)
+        let actualMinutes = practiceElapsedSeconds / 60.0
+        selectedItems[practiceItemIndex].actualMinutes = actualMinutes
+
+        // Save to Notion immediately
+        await saveCurrentItemToNotion()
+
+        // Move to next item or end practice
+        if practiceItemIndex < selectedItems.count - 1 {
+            moveToNextPracticeItem()
+        } else {
+            endPractice()
+        }
+    }
+
+    private func saveCurrentItemToNotion() async {
+        guard let client = notionClient else { return }
+        let index = practiceItemIndex
+        guard index < selectedItems.count else { return }
+
+        let item = selectedItems[index]
+
+        do {
+            if let logId = item.logId {
+                // Update existing log
+                try await client.updateLog(
+                    logId: logId,
+                    plannedMinutes: item.plannedMinutes,
+                    actualMinutes: item.actualMinutes,
+                    order: index
+                )
+                selectedItems[index].isDirty = false
+            }
+            // If no logId, the item hasn't been saved to session yet
+            // User will need to save the session first
+        } catch {
+            sessionError = error
+        }
+    }
+
+    func skipToNextItem() {
+        if practiceItemIndex < selectedItems.count - 1 {
+            moveToNextPracticeItem()
+        } else {
+            endPractice()
+        }
+    }
+
+    private func moveToNextPracticeItem() {
+        practiceItemIndex += 1
+
+        // Resume from previous actual time if exists
+        if let existingTime = selectedItems[practiceItemIndex].actualMinutes {
+            practiceElapsedSeconds = existingTime * 60
+        } else {
+            practiceElapsedSeconds = 0
+        }
+
+        // Keep timer running
+        if !isTimerRunning {
+            resumeTimer()
+        }
+    }
+
+    func endPractice() {
+        pauseTimer()
+        isPracticing = false
+        practiceItemIndex = 0
+        practiceElapsedSeconds = 0
     }
 }
