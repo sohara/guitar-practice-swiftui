@@ -113,6 +113,12 @@ GuitarPractice/
   - Most practiced items
   - Time trends over weeks/months
   - Goals and streaks
+- [ ] **Local Cache**: Cache Notion data locally for performance
+  - Instant app launch with cached data, background refresh
+  - Fewer API calls to Notion
+  - Could use SwiftData, Core Data, or simple JSON file
+  - Sync strategy: cache-first, then refresh; or periodic sync
+  - Potential for offline support (queue writes, sync when online)
 
 *Note: This app is evolving to be the primary UI, with Notion serving as the backend for editing practice library items.*
 
