@@ -101,6 +101,21 @@ GuitarPractice/
 - [x] Error states and retry UI
 - [x] Empty states for lists
 
+### Phase 7: Future Enhancements (Ideas)
+- [ ] **Timer Alert**: Sound chime + macOS notification when practice time elapses
+  - Especially useful when app is backgrounded / viewing menu bar only
+  - Consider a setting to toggle on/off
+- [ ] **Calendar View**: Visual calendar showing practice history
+  - Heat map or day-by-day view of sessions
+  - Click to view/load past sessions
+  - See streaks, total time per day/week/month
+- [ ] **Stats Dashboard**: Practice analytics
+  - Most practiced items
+  - Time trends over weeks/months
+  - Goals and streaks
+
+*Note: This app is evolving to be the primary UI, with Notion serving as the backend for editing practice library items.*
+
 ## Data Models
 
 ```swift
