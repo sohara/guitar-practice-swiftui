@@ -37,8 +37,8 @@ actor NotionClient {
         var cursor: String? = nil
 
         repeat {
-            let (results, nextCursor) = try await queryDataSource(
-                dataSourceId: Config.Notion.DataSources.practiceLibrary,
+            let (results, nextCursor) = try await queryDatabase(
+                databaseId: Config.Notion.Databases.practiceLibrary,
                 cursor: cursor
             )
 
@@ -61,8 +61,8 @@ actor NotionClient {
         var cursor: String? = nil
 
         repeat {
-            let (results, nextCursor) = try await queryDataSource(
-                dataSourceId: Config.Notion.DataSources.practiceSessions,
+            let (results, nextCursor) = try await queryDatabase(
+                databaseId: Config.Notion.Databases.practiceSessions,
                 cursor: cursor,
                 sorts: [["property": "Date", "direction": "descending"]]
             )
@@ -86,8 +86,8 @@ actor NotionClient {
         var cursor: String? = nil
 
         repeat {
-            let (results, nextCursor) = try await queryDataSource(
-                dataSourceId: Config.Notion.DataSources.practiceLogs,
+            let (results, nextCursor) = try await queryDatabase(
+                databaseId: Config.Notion.Databases.practiceLogs,
                 cursor: cursor,
                 filter: [
                     "property": "Session",
@@ -192,8 +192,8 @@ actor NotionClient {
 
     // MARK: - Private Helpers
 
-    private func queryDataSource(
-        dataSourceId: String,
+    private func queryDatabase(
+        databaseId: String,
         cursor: String? = nil,
         filter: [String: Any]? = nil,
         sorts: [[String: String]]? = nil
@@ -210,7 +210,7 @@ actor NotionClient {
         }
 
         let data = try await postRequest(
-            endpoint: "/databases/\(dataSourceId)/query",
+            endpoint: "/databases/\(databaseId)/query",
             body: body
         )
 
