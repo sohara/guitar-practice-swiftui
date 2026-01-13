@@ -10,6 +10,11 @@
 		A01234560001 /* GuitarPracticeApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A01234560011 /* GuitarPracticeApp.swift */; };
 		A01234560002 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A01234560012 /* ContentView.swift */; };
 		A01234560003 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A01234560013 /* Assets.xcassets */; };
+		A01234560004 /* Types.swift in Sources */ = {isa = PBXBuildFile; fileRef = A01234560015 /* Types.swift */; };
+		A01234560005 /* AppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = A01234560016 /* AppState.swift */; };
+		A01234560006 /* Config.swift in Sources */ = {isa = PBXBuildFile; fileRef = A01234560017 /* Config.swift */; };
+		A01234560007 /* KeychainService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A01234560018 /* KeychainService.swift */; };
+		A01234560008 /* NotionClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = A01234560019 /* NotionClient.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -18,6 +23,11 @@
 		A01234560012 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		A01234560013 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		A01234560014 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		A01234560015 /* Types.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Types.swift; sourceTree = "<group>"; };
+		A01234560016 /* AppState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppState.swift; sourceTree = "<group>"; };
+		A01234560017 /* Config.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Config.swift; sourceTree = "<group>"; };
+		A01234560018 /* KeychainService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainService.swift; sourceTree = "<group>"; };
+		A01234560019 /* NotionClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotionClient.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -44,6 +54,8 @@
 			children = (
 				A01234560011 /* GuitarPracticeApp.swift */,
 				A01234560012 /* ContentView.swift */,
+				A01234560033 /* Models */,
+				A01234560034 /* Services */,
 				A01234560013 /* Assets.xcassets */,
 				A01234560014 /* Info.plist */,
 			);
@@ -56,6 +68,25 @@
 				A01234560010 /* GuitarPractice.app */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		A01234560033 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				A01234560015 /* Types.swift */,
+				A01234560016 /* AppState.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		A01234560034 /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				A01234560017 /* Config.swift */,
+				A01234560018 /* KeychainService.swift */,
+				A01234560019 /* NotionClient.swift */,
+			);
+			path = Services;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -129,6 +160,11 @@
 			files = (
 				A01234560001 /* GuitarPracticeApp.swift in Sources */,
 				A01234560002 /* ContentView.swift in Sources */,
+				A01234560004 /* Types.swift in Sources */,
+				A01234560005 /* AppState.swift in Sources */,
+				A01234560006 /* Config.swift in Sources */,
+				A01234560007 /* KeychainService.swift in Sources */,
+				A01234560008 /* NotionClient.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
