@@ -28,6 +28,19 @@ open ~/Library/Developer/Xcode/DerivedData/GuitarPractice-*/Build/Products/Debug
 open GuitarPractice.xcodeproj
 ```
 
+## Development Iteration Workflow
+
+After making changes, you must kill the running app and relaunch to see updates:
+
+```bash
+# Build, kill running app, and relaunch
+xcodebuild -scheme GuitarPractice -configuration Debug build
+pkill -x GuitarPractice
+open ~/Library/Developer/Xcode/DerivedData/GuitarPractice-*/Build/Products/Debug/GuitarPractice.app
+```
+
+Always do this before reviewing changes and before committing.
+
 ## Documentation
 
 - `PLAN.md` - Development roadmap, architecture, Phase 7 ideas

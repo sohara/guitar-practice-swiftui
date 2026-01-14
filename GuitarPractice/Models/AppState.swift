@@ -57,6 +57,7 @@ class AppState: ObservableObject {
 
     @Published var searchText: String = ""
     @Published var typeFilter: ItemType? = nil  // nil = all types
+    @Published var showRecentOnly: Bool = false  // Show only items practiced in last 7 days
     @Published var sortOption: SortOption = .name
     @Published var sortAscending: Bool = true
     @Published var focusedItemIndex: Int? = nil
@@ -76,6 +77,15 @@ class AppState: ObservableObject {
 
     var filteredLibrary: [LibraryItem] {
         var items = library
+
+        // Filter by recent (practiced in last 7 days)
+        if showRecentOnly {
+            let sevenDaysAgo = Calendar.current.date(byAdding: .day, value: -7, to: Date()) ?? Date()
+            items = items.filter { item in
+                guard let lastPracticed = item.lastPracticed else { return false }
+                return lastPracticed >= sevenDaysAgo
+            }
+        }
 
         // Filter by search text
         if !searchText.isEmpty {

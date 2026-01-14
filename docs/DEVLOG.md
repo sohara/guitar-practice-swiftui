@@ -780,3 +780,23 @@ GuitarPractice/Views/
 - **Cell spacing** - Increased from 2pt to 6pt for less cramped appearance
 - **Time format** - Changed from "1h5" to "1h 5m" for clarity
 - **Streak bug fix** - Now correctly counts streak from yesterday if no practice today
+
+---
+
+## 2026-01-14: Phase 9.1 - Recent Items Filter
+
+### Features Implemented
+- **Recent Items Toggle**: Filter to show only items practiced in the last 7 days
+  - Toggle button with clock icon in filter bar
+  - Cyan highlight when filter is active
+  - Tooltip: "Show only items practiced in last 7 days"
+  - Reduces library list from 100+ items to ~10-15 recent items
+
+### Files Modified
+- `GuitarPractice/Models/AppState.swift` - Added `showRecentOnly` property, updated `filteredLibrary`
+- `GuitarPractice/Views/Library/FilterBarView.swift` - Added Recent toggle button
+
+### Technical Notes
+- Filter applies before search text and type filters
+- Uses `Calendar.current.date(byAdding: .day, value: -7, to: Date())` for 7-day cutoff
+- Items with no `lastPracticed` date are excluded when filter is active

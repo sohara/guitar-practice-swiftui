@@ -283,11 +283,11 @@ struct SelectedItem: Identifiable {
 
 ## Phase 9: Future Enhancements
 
-### 9.1 Recent Items Filter
+### 9.1 Recent Items Filter ✅
 Add a dedicated filter to show only items practiced in the last 7 days.
 
 - **Rationale**: While "Sort by Last Practiced" shows recent items first, a filter reduces the list from 100+ items to just 10-15, making it faster to rebuild similar sessions
-- **UI**: Toggle button with clock icon next to type filter, or add "Recent" to type dropdown
+- **UI**: Toggle button with clock icon next to type filter (cyan highlight when active)
 - **Implementation**: Filter `filteredLibrary` by `lastPracticed` within 7 days
 
 ### 9.2 Practice Log Notes

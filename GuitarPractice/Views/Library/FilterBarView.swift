@@ -44,6 +44,27 @@ struct FilterBarView: View {
 
             // Filter and sort row
             HStack(spacing: 12) {
+                // Recent items toggle
+                Button {
+                    appState.showRecentOnly.toggle()
+                } label: {
+                    HStack(spacing: 4) {
+                        Image(systemName: "clock")
+                            .font(.system(size: 10))
+                        Text("Recent")
+                            .font(.custom("SF Mono", size: 11))
+                    }
+                    .foregroundColor(appState.showRecentOnly ? .cyan : .gray)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 5)
+                    .background(
+                        RoundedRectangle(cornerRadius: 6)
+                            .fill(appState.showRecentOnly ? Color.cyan.opacity(0.15) : Color.white.opacity(0.05))
+                    )
+                }
+                .buttonStyle(.plain)
+                .help("Show only items practiced in last 7 days")
+
                 // Type filter
                 Menu {
                     Button("All Types") {
