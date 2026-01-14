@@ -281,6 +281,42 @@ struct SelectedItem: Identifiable {
 - **Delta Saves**: Track dirty items and only sync changes to reduce API calls.
 - **Keychain**: Use Security framework to store API key securely.
 
+## Phase 9: Future Enhancements
+
+### 9.1 Recent Items Filter
+Add a dedicated filter to show only items practiced in the last 7 days.
+
+- **Rationale**: While "Sort by Last Practiced" shows recent items first, a filter reduces the list from 100+ items to just 10-15, making it faster to rebuild similar sessions
+- **UI**: Toggle button with clock icon next to type filter, or add "Recent" to type dropdown
+- **Implementation**: Filter `filteredLibrary` by `lastPracticed` within 7 days
+
+### 9.2 Practice Log Notes
+Add notes field to Practice Logs for tracking progress over time.
+
+- **Rationale**: Users want to record observations like "got to 80bpm" tied to specific practice sessions, not just global item notes
+- **Data model**: Add `notes: String?` field to Practice Logs database in Notion
+- **UI - Edit**: Note icon on each session item row, click to expand/edit
+- **UI - View**: Collated notes history when viewing a library item:
+  ```
+  "Autumn Leaves" - Practice Notes
+  ─────────────────────────────
+  Jan 13: Got to 80bpm cleanly
+  Jan 11: Still struggling with bridge
+  Jan 5:  Started learning, 60bpm
+  ```
+- **Implementation steps**:
+  1. Add `notes` text property to Notion Practice Logs database
+  2. Update `PracticeLog` struct and `CachedPracticeLog` model
+  3. Update `NotionClient` to read/write notes
+  4. Add edit UI in session view (expand/collapse per item)
+  5. Add collated notes view for library items (new detail panel or popover)
+
+### 9.3 Other Ideas (Unprioritized)
+- **Jump to Today**: Press `T` to return to today's date in calendar
+- **Practice Goals**: Set daily target (e.g., 30 min) with progress indicator
+- **Session Templates**: Save/load sets of items for quick session creation
+- **Per-Item Progress Chart**: Visualize practice time trends for specific items
+
 ## References
 
 - [SwiftUI Handoff Doc](../guitar-tui/docs/SWIFTUI_HANDOFF.md)
