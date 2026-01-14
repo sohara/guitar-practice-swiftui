@@ -160,7 +160,8 @@ final class CacheService {
                     sessionId: log.sessionId,
                     plannedMinutes: log.plannedMinutes,
                     actualMinutes: log.actualMinutes,
-                    order: log.order
+                    order: log.order,
+                    notes: log.notes
                 )
                 modelContext.insert(cached)
             }

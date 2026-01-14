@@ -375,6 +375,12 @@ class AppState: ObservableObject {
         selectedItems[index].isDirty = true
     }
 
+    func updateNotes(at index: Int, notes: String?) {
+        guard index < selectedItems.count else { return }
+        selectedItems[index].notes = notes
+        selectedItems[index].isDirty = true
+    }
+
     func moveSelectedItem(from source: IndexSet, to destination: Int) {
         selectedItems.move(fromOffsets: source, toOffset: destination)
         // Mark all items as dirty since order changed
@@ -501,7 +507,8 @@ class AppState: ObservableObject {
                         itemId: item.item.id,
                         sessionId: session.id,
                         plannedMinutes: item.plannedMinutes,
-                        order: index
+                        order: index,
+                        notes: item.notes
                     )
                     let logId = try await client.createLog(newLog)
                     selectedItems[index].logId = logId
@@ -512,7 +519,8 @@ class AppState: ObservableObject {
                         logId: item.logId!,
                         plannedMinutes: item.plannedMinutes,
                         actualMinutes: item.actualMinutes,
-                        order: index
+                        order: index,
+                        notes: item.notes
                     )
                     selectedItems[index].isDirty = false
                 }

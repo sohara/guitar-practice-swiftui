@@ -156,6 +156,10 @@ struct SelectedItemRow: View {
         selected.actualMinutes != nil && selected.actualMinutes! > 0
     }
 
+    var hasNotes: Bool {
+        selected.notes != nil && !selected.notes!.isEmpty
+    }
+
     var body: some View {
         HStack(spacing: 10) {
             // Completion indicator / drag handle
@@ -186,6 +190,14 @@ struct SelectedItemRow: View {
             }
 
             Spacer()
+
+            // Notes indicator (read-only, notes are edited in timer view)
+            if hasNotes {
+                Image(systemName: "note.text")
+                    .font(.system(size: 10))
+                    .foregroundColor(.yellow.opacity(0.7))
+                    .help("Has notes")
+            }
 
             // Actual time (if practiced)
             if let actual = selected.actualMinutes, actual > 0 {

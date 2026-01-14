@@ -70,46 +70,63 @@ struct SessionItemReadOnlyRow: View {
     let selected: SelectedItem
 
     var body: some View {
-        HStack(spacing: 10) {
-            // Completion indicator
-            Image(systemName: selected.actualMinutes != nil && selected.actualMinutes! > 0 ? "checkmark.circle.fill" : "circle")
-                .font(.system(size: 12))
-                .foregroundColor(selected.actualMinutes != nil && selected.actualMinutes! > 0 ? .green : .gray.opacity(0.4))
-                .frame(width: 16)
+        VStack(alignment: .leading, spacing: 0) {
+            HStack(spacing: 10) {
+                // Completion indicator
+                Image(systemName: selected.actualMinutes != nil && selected.actualMinutes! > 0 ? "checkmark.circle.fill" : "circle")
+                    .font(.system(size: 12))
+                    .foregroundColor(selected.actualMinutes != nil && selected.actualMinutes! > 0 ? .green : .gray.opacity(0.4))
+                    .frame(width: 16)
 
-            // Type icon
-            Image(systemName: selected.item.type?.icon ?? "questionmark")
-                .font(.system(size: 12))
-                .foregroundColor(typeColor(selected.item.type))
-                .frame(width: 16)
+                // Type icon
+                Image(systemName: selected.item.type?.icon ?? "questionmark")
+                    .font(.system(size: 12))
+                    .foregroundColor(typeColor(selected.item.type))
+                    .frame(width: 16)
 
-            // Name and artist
-            VStack(alignment: .leading, spacing: 1) {
-                Text(selected.item.name)
-                    .font(.custom("SF Mono", size: 12))
-                    .foregroundColor(.white)
-                    .lineLimit(1)
+                // Name and artist
+                VStack(alignment: .leading, spacing: 1) {
+                    Text(selected.item.name)
+                        .font(.custom("SF Mono", size: 12))
+                        .foregroundColor(.white)
+                        .lineLimit(1)
 
-                if let artist = selected.item.artist {
-                    Text(artist)
+                    if let artist = selected.item.artist {
+                        Text(artist)
+                            .font(.custom("SF Mono", size: 9))
+                            .foregroundColor(.gray.opacity(0.5))
+                            .lineLimit(1)
+                    }
+                }
+
+                Spacer()
+
+                // Times
+                VStack(alignment: .trailing, spacing: 1) {
+                    if let actual = selected.actualMinutes, actual > 0 {
+                        Text(formatMinutesAsTime(actual))
+                            .font(.custom("SF Mono", size: 11))
+                            .foregroundColor(.green.opacity(0.8))
+                    }
+                    Text("\(selected.plannedMinutes)m planned")
                         .font(.custom("SF Mono", size: 9))
                         .foregroundColor(.gray.opacity(0.5))
-                        .lineLimit(1)
                 }
             }
 
-            Spacer()
-
-            // Times
-            VStack(alignment: .trailing, spacing: 1) {
-                if let actual = selected.actualMinutes, actual > 0 {
-                    Text(formatMinutesAsTime(actual))
-                        .font(.custom("SF Mono", size: 11))
-                        .foregroundColor(.green.opacity(0.8))
+            // Display notes if present
+            if let notes = selected.notes, !notes.isEmpty {
+                HStack(spacing: 6) {
+                    Image(systemName: "note.text")
+                        .font(.system(size: 9))
+                        .foregroundColor(.yellow.opacity(0.7))
+                    Text(notes)
+                        .font(.custom("SF Mono", size: 10))
+                        .foregroundColor(.gray.opacity(0.7))
+                        .lineLimit(2)
                 }
-                Text("\(selected.plannedMinutes)m planned")
-                    .font(.custom("SF Mono", size: 9))
-                    .foregroundColor(.gray.opacity(0.5))
+                .padding(.top, 4)
+                .padding(.leading, 42)  // Align with name
             }
         }
         .padding(.horizontal, 16)

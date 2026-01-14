@@ -98,6 +98,7 @@ final class CachedPracticeLog {
     var plannedMinutes: Int
     var actualMinutes: Double?
     var order: Int
+    var notes: String?
 
     init(
         id: String,
@@ -106,7 +107,8 @@ final class CachedPracticeLog {
         sessionId: String,
         plannedMinutes: Int,
         actualMinutes: Double?,
-        order: Int
+        order: Int,
+        notes: String?
     ) {
         self.id = id
         self.name = name
@@ -115,6 +117,7 @@ final class CachedPracticeLog {
         self.plannedMinutes = plannedMinutes
         self.actualMinutes = actualMinutes
         self.order = order
+        self.notes = notes
     }
 
     func toPracticeLog() -> PracticeLog {
@@ -125,7 +128,8 @@ final class CachedPracticeLog {
             sessionId: sessionId,
             plannedMinutes: plannedMinutes,
             actualMinutes: actualMinutes,
-            order: order
+            order: order,
+            notes: notes
         )
     }
 
@@ -136,6 +140,7 @@ final class CachedPracticeLog {
         plannedMinutes = log.plannedMinutes
         actualMinutes = log.actualMinutes
         order = log.order
+        notes = log.notes
     }
 }
 

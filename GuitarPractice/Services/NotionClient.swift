@@ -139,15 +139,21 @@ actor NotionClient {
     // MARK: - Create Practice Log
 
     func createLog(_ log: NewPracticeLog) async throws -> String {
+        var properties: [String: Any] = [
+            "Name": ["title": [["text": ["content": log.name]]]],
+            "Item": ["relation": [["id": log.itemId]]],
+            "Session": ["relation": [["id": log.sessionId]]],
+            "Planned Time (min)": ["number": log.plannedMinutes],
+            "Order": ["number": log.order]
+        ]
+
+        if let notes = log.notes, !notes.isEmpty {
+            properties["Notes"] = ["rich_text": [["text": ["content": notes]]]]
+        }
+
         let body: [String: Any] = [
             "parent": ["database_id": Config.Notion.Databases.practiceLogs],
-            "properties": [
-                "Name": ["title": [["text": ["content": log.name]]]],
-                "Item": ["relation": [["id": log.itemId]]],
-                "Session": ["relation": [["id": log.sessionId]]],
-                "Planned Time (min)": ["number": log.plannedMinutes],
-                "Order": ["number": log.order]
-            ]
+            "properties": properties
         ]
 
         let data = try await postRequest(endpoint: "/pages", body: body)
@@ -165,7 +171,8 @@ actor NotionClient {
         logId: String,
         plannedMinutes: Int? = nil,
         actualMinutes: Double? = nil,
-        order: Int? = nil
+        order: Int? = nil,
+        notes: String? = nil
     ) async throws {
         var properties: [String: Any] = [:]
 
@@ -177,6 +184,14 @@ actor NotionClient {
         }
         if let ord = order {
             properties["Order"] = ["number": ord]
+        }
+        if let notes = notes {
+            if notes.isEmpty {
+                // Clear notes by setting to empty array
+                properties["Notes"] = ["rich_text": []]
+            } else {
+                properties["Notes"] = ["rich_text": [["text": ["content": notes]]]]
+            }
         }
 
         let body: [String: Any] = ["properties": properties]
@@ -333,6 +348,7 @@ actor NotionClient {
         let plannedTime = getNumber(properties["Planned Time (min)"]) ?? 5
         let actualTime = getNumber(properties["Actual Time (min)"])
         let order = getNumber(properties["Order"]) ?? 0
+        let notes = getRichText(properties["Notes"])
 
         return PracticeLog(
             id: id,
@@ -341,7 +357,8 @@ actor NotionClient {
             sessionId: sessionIds.first ?? "",
             plannedMinutes: Int(plannedTime),
             actualMinutes: actualTime,
-            order: Int(order)
+            order: Int(order),
+            notes: notes.isEmpty ? nil : notes
         )
     }
 

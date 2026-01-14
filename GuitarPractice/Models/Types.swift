@@ -54,6 +54,7 @@ struct PracticeLog: Identifiable {
     let plannedMinutes: Int
     let actualMinutes: Double?
     let order: Int
+    let notes: String?
 }
 
 // MARK: - Selected Item (UI state)
@@ -63,6 +64,7 @@ struct SelectedItem: Identifiable {
     let item: LibraryItem
     var plannedMinutes: Int
     var actualMinutes: Double?
+    var notes: String?
     var logId: String?  // nil if not yet saved to Notion
     var isDirty: Bool = false  // Track if needs sync
 
@@ -71,6 +73,7 @@ struct SelectedItem: Identifiable {
         self.item = item
         self.plannedMinutes = plannedMinutes
         self.actualMinutes = nil
+        self.notes = nil
         self.logId = nil
         self.isDirty = true
     }
@@ -80,6 +83,7 @@ struct SelectedItem: Identifiable {
         self.item = item
         self.plannedMinutes = log.plannedMinutes
         self.actualMinutes = log.actualMinutes
+        self.notes = log.notes
         self.logId = log.id
         self.isDirty = false
     }
@@ -98,6 +102,7 @@ struct NewPracticeLog {
     let sessionId: String
     let plannedMinutes: Int
     let order: Int
+    let notes: String?
 }
 
 // MARK: - Calendar Day Summary

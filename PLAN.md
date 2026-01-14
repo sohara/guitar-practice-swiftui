@@ -290,28 +290,40 @@ Add a dedicated filter to show only items practiced in the last 7 days.
 - **UI**: Toggle button with clock icon next to type filter (cyan highlight when active)
 - **Implementation**: Filter `filteredLibrary` by `lastPracticed` within 7 days
 
-### 9.2 Practice Log Notes
+### 9.2 Practice Log Notes ✅ (partial)
 Add notes field to Practice Logs for tracking progress over time.
 
 - **Rationale**: Users want to record observations like "got to 80bpm" tied to specific practice sessions, not just global item notes
-- **Data model**: Add `notes: String?` field to Practice Logs database in Notion
-- **UI - Edit**: Note icon on each session item row, click to expand/edit
-- **UI - View**: Collated notes history when viewing a library item:
-  ```
-  "Autumn Leaves" - Practice Notes
-  ─────────────────────────────
-  Jan 13: Got to 80bpm cleanly
-  Jan 11: Still struggling with bridge
-  Jan 5:  Started learning, 60bpm
-  ```
-- **Implementation steps**:
-  1. Add `notes` text property to Notion Practice Logs database
-  2. Update `PracticeLog` struct and `CachedPracticeLog` model
-  3. Update `NotionClient` to read/write notes
-  4. Add edit UI in session view (expand/collapse per item)
-  5. Add collated notes view for library items (new detail panel or popover)
+- **Data model**: ✅ `notes: String?` field added to Practice Logs database in Notion
+- **Backend**: ✅ `PracticeLog`, `CachedPracticeLog`, `NotionClient`, `CacheService` updated
+- **UI - Timer View**: ✅ Add/Edit note while practicing (collapsed card with yellow accent)
+- **UI - Session List**: ✅ Yellow note icon indicator (read-only)
+- **UI - View Mode**: ✅ Notes displayed with yellow icon
 
-### 9.3 Other Ideas (Unprioritized)
+### 9.3 Notes History (Future)
+Show historical notes for the current item in the timer view.
+
+- **Rationale**: When practicing, it's helpful to see what you noted last time
+- **Data requirement**: Fetch all PracticeLogs for current LibraryItem (new query)
+- **UI - Timer View**:
+  ```
+  ┌─────────────────────────────────────┐
+  │ NOTE                                │
+  │ "Got to 85bpm"                      │  ← Current session (editable)
+  └─────────────────────────────────────┘
+
+  ▾ Previous notes (3)                    ← Collapsible, collapsed by default
+    • Jan 12: "Working on the verse"
+    • Jan 10: "Got to 80bpm"
+    • Jan 8: "Started learning"
+  ```
+- **Visual hierarchy**: Current note prominent (yellow card), history secondary (gray, smaller)
+- **Implementation**:
+  1. Add `fetchLogsForItem(itemId:)` to NotionClient
+  2. Cache item history or fetch on-demand when entering timer view
+  3. Add collapsible "Previous notes" section below current note
+
+### 9.4 Other Ideas (Unprioritized)
 - **Jump to Today**: Press `T` to return to today's date in calendar
 - **Practice Goals**: Set daily target (e.g., 30 min) with progress indicator
 - **Session Templates**: Save/load sets of items for quick session creation
