@@ -123,6 +123,11 @@ GuitarPractice/
     - Simple Swift-native API with `@Model` macro
     - Enables efficient queries for calendar/stats features
     - Alternative: Simple JSON file to `~/Library/Application Support/` if we just need fast launch
+- [ ] **Flexible Split View**: Improve two-pane layout
+  - Default to 50/50 split instead of current fixed widths
+  - User-adjustable divider position
+  - Minimum 20% width for either pane
+  - Persist user's preferred split ratio
 
 *Note: This app is evolving to be the primary UI, with Notion serving as the backend for editing practice library items.*
 
