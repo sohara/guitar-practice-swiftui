@@ -4,20 +4,18 @@ A native macOS app for managing guitar practice sessions, backed by Notion datab
 
 ## Project Status
 
-**Phases 1-6 Complete** - The app is fully functional with:
+**Phases 1-7 Complete** - The app is fully functional with:
 - Library browser with search, filter, sort, keyboard navigation
 - Session management with drag-and-drop reordering
 - Practice timer with countdown, overtime mode, menu bar integration
 - Auto-save to Notion, auto-select today's session
 - Loading skeletons, Open in Notion (⌘O)
-
-**Phase 7 In Progress** - Ordered implementation plan (see `PLAN.md`):
-1. ✅ Timer alerts (sound + notification)
-2. ✅ Local cache with SwiftData (foundational for 3-4)
-3. ✅ Calendar view (embedded in right panel, view/edit modes, session summaries)
-4. ✅ App icon (AI-generated guitar with green accents)
-5. Stats dashboard
-6. UI polish (flexible split view, typography)
+- Timer alerts (sound + notification when time elapses)
+- Local cache with SwiftData (instant app launch)
+- Calendar view (embedded in right panel, view/edit modes)
+- Stats dashboard (streaks, top items, weekly trends, type breakdown)
+- Custom app icon (AI-generated guitar with green accents)
+- UI polish (flexible split view, larger footer text, hover labels)
 
 ## Quick Start
 

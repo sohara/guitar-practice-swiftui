@@ -59,21 +59,20 @@ struct MainContentView: View {
                     Task { await appState.refresh() }
                 }
             } else {
-                NavigationSplitView {
+                HSplitView {
                     // Left: Library with search/filter
                     LibrarySidebarView(appState: appState, isSearchFocused: $isSearchFocused)
-                        .navigationSplitViewColumnWidth(min: 400, ideal: 500, max: 700)
-                } detail: {
+                        .frame(minWidth: 300, idealWidth: 450)
+
                     // Right: Stats or Calendar + Session detail
                     if appState.isShowingStats {
                         StatsDashboardView(appState: appState)
-                            .navigationSplitViewColumnWidth(min: 300, ideal: 400)
+                            .frame(minWidth: 280, idealWidth: 450)
                     } else {
                         SessionPanelView(appState: appState)
-                            .navigationSplitViewColumnWidth(min: 300, ideal: 380)
+                            .frame(minWidth: 280, idealWidth: 450)
                     }
                 }
-                .navigationSplitViewStyle(.balanced)
             }
 
             Divider()
@@ -207,16 +206,19 @@ struct HeaderView: View {
                     total: appState.library.count,
                     color: .cyan
                 )
+                .help("Library Items")
                 StatBadge(
                     icon: "clock",
                     value: "\(appState.sessions.count)",
                     color: .orange
                 )
+                .help("Practice Sessions")
                 StatBadge(
                     icon: "checkmark.circle",
                     value: "\(appState.selectedItems.count)",
                     color: .green
                 )
+                .help("Items in Session")
             }
 
             Spacer()
@@ -255,6 +257,7 @@ struct HeaderView: View {
             }
             .buttonStyle(.plain)
             .keyboardShortcut(",", modifiers: .command)
+            .help("Settings")
 
             // Refresh button
             Button {
@@ -269,6 +272,7 @@ struct HeaderView: View {
             .buttonStyle(.plain)
             .disabled(appState.isLoading)
             .keyboardShortcut("r", modifiers: .command)
+            .help("Refresh Data")
         }
     }
 }
@@ -1043,7 +1047,7 @@ struct FooterView: View {
             Spacer()
 
             Text("Guitar Practice")
-                .font(.custom("SF Mono", size: 10))
+                .font(.custom("SF Mono", size: 12))
                 .foregroundColor(.gray.opacity(0.4))
         }
     }
@@ -1056,7 +1060,7 @@ struct KeyHint: View {
     var body: some View {
         HStack(spacing: 6) {
             Text(key)
-                .font(.custom("SF Mono", size: 10))
+                .font(.custom("SF Mono", size: 12))
                 .fontWeight(.semibold)
                 .foregroundColor(.white.opacity(0.8))
                 .padding(.horizontal, 6)
@@ -1067,7 +1071,7 @@ struct KeyHint: View {
                 )
 
             Text(action)
-                .font(.custom("SF Mono", size: 10))
+                .font(.custom("SF Mono", size: 12))
                 .foregroundColor(.gray.opacity(0.6))
         }
     }
@@ -1077,7 +1081,7 @@ struct KeyHint: View {
 
 struct LoadingView: View {
     var body: some View {
-        NavigationSplitView {
+        HSplitView {
             // Left: Skeleton library
             VStack(spacing: 0) {
                 // Fake filter bar
@@ -1099,8 +1103,8 @@ struct LoadingView: View {
                 }
             }
             .background(Color(red: 0.06, green: 0.06, blue: 0.09))
-            .navigationSplitViewColumnWidth(min: 400, ideal: 500, max: 700)
-        } detail: {
+            .frame(minWidth: 300, idealWidth: 450)
+
             // Right: Skeleton selected items
             VStack {
                 Spacer()
@@ -1115,9 +1119,8 @@ struct LoadingView: View {
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .background(Color(red: 0.07, green: 0.07, blue: 0.10))
-            .navigationSplitViewColumnWidth(min: 280, ideal: 350)
+            .frame(minWidth: 280, idealWidth: 450)
         }
-        .navigationSplitViewStyle(.balanced)
     }
 }
 

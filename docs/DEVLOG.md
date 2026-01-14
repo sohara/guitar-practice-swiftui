@@ -652,4 +652,38 @@ Created custom app icon for the macOS app, replacing the default placeholder.
 - Toggle between time/count views for top items
 
 ### Next Steps
-- Phase 7.6: UI Polish (flexible split view, typography)
+- Phase 7.5: UI Polish (flexible split view, typography)
+
+---
+
+## 2026-01-14: Phase 7.5 - UI Polish
+
+### Features Implemented
+- **Hover Labels (Tooltips)**: Added `.help()` modifiers to icon-only buttons
+  - Settings button: "Settings"
+  - Refresh button: "Refresh Data"
+  - (Stats toggle and Open in Notion already had tooltips)
+- **Typography Improvements**: Increased footer text size
+  - All footer text increased from 10pt to 12pt
+  - KeyHint key labels and action text now more readable
+  - "Guitar Practice" footer branding increased to 12pt
+- **Flexible Split View**: Replaced `NavigationSplitView` with native `HSplitView`
+  - User-adjustable divider position (draggable)
+  - Defaults to roughly 50/50 split (equal ideal widths of 450pt)
+  - Minimum widths: 300pt for library, 280pt for session/stats panel
+  - More natural macOS behavior
+
+### Technical Notes
+- `HSplitView` provides native macOS split pane with draggable divider
+- `.help("text")` modifier shows native macOS tooltips on hover
+- Updated both main content view and loading skeleton view for consistency
+
+### Files Modified
+- `GuitarPractice/ContentView.swift` - Tooltip modifiers, font sizes, split view conversion
+
+### All Phase 7 Items Complete
+1. ✅ Timer Alert (7.1)
+2. ✅ SwiftData Cache (7.2)
+3. ✅ Calendar View (7.3)
+4. ✅ Stats Dashboard (7.4)
+5. ✅ UI Polish (7.5)

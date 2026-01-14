@@ -153,19 +153,19 @@ GuitarPractice/
 - [x] Recent 7-day activity bar chart
 - [x] Toggle button in header to switch views
 
-#### 7.5 UI Polish
-- [ ] **Flexible Split View**: Improve two-pane layout
-  - Default to 50/50 split instead of current fixed widths
+#### 7.5 UI Polish ✅
+- [x] **Flexible Split View**: Improve two-pane layout
+  - Replaced NavigationSplitView with HSplitView for native draggable divider
+  - Default to ~50/50 split (equal ideal widths)
   - User-adjustable divider position
-  - Minimum 20% width for either pane
-  - Persist user's preferred split ratio
-- [ ] **Typography Improvements**: Increase text sizes for readability
-  - Footer text too small - increase by at least 2px (currently 10-11pt)
-  - Consider bumping main/regular text sizes throughout
-  - OK to increase footer height if needed
-- [ ] **Hover Labels**: Add tooltip labels to icon-only buttons
-  - Stats toggle, Open in Notion, Settings, Refresh buttons
-  - Use `.help()` modifier for native macOS tooltips
+  - Minimum widths: 300pt library, 280pt session/stats
+- [x] **Typography Improvements**: Increase text sizes for readability
+  - Footer text increased from 10pt to 12pt
+  - KeyHint labels and action text now more readable
+- [x] **Hover Labels**: Add tooltip labels to icon-only buttons
+  - Settings button: "Settings"
+  - Refresh button: "Refresh Data"
+  - (Stats toggle and Open in Notion already had tooltips)
 
 *Note: This app is evolving to be the primary UI, with Notion serving as the backend for editing practice library items.*
 
