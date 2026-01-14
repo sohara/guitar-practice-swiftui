@@ -137,6 +137,13 @@ GuitarPractice/
 - [ ] Week view: More compact horizontal layout option
 - [ ] Collapsible calendar: Toggle to hide/show calendar section
 
+#### App Icon (Priority)
+- [ ] Create custom app icon for macOS
+- [ ] Need 1024x1024 source image
+- [ ] Generate required sizes for Assets.xcassets/AppIcon.appiconset
+- [ ] Consider: guitar pick, music note, metronome, or practice-themed imagery
+- [ ] Should look good at small sizes (16x16 for menu bar)
+
 #### 7.4 Stats Dashboard
 - [ ] Practice analytics with aggregated data
 - [ ] Most practiced items
