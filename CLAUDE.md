@@ -15,8 +15,9 @@ A native macOS app for managing guitar practice sessions, backed by Notion datab
 1. ✅ Timer alerts (sound + notification)
 2. ✅ Local cache with SwiftData (foundational for 3-4)
 3. ✅ Calendar view (embedded in right panel, view/edit modes, session summaries)
-4. Stats dashboard
-5. UI polish (flexible split view, typography)
+4. ✅ App icon (AI-generated guitar with green accents)
+5. Stats dashboard
+6. UI polish (flexible split view, typography)
 
 ## Quick Start
 

@@ -137,16 +137,11 @@ GuitarPractice/
 - [ ] Week view: More compact horizontal layout option
 - [ ] Collapsible calendar: Toggle to hide/show calendar section
 
-#### App Icon (In Progress)
-- [ ] Create custom app icon for macOS
-- [ ] Need 1024x1024 source image
-- [ ] Generate required sizes for Assets.xcassets/AppIcon.appiconset
-- [ ] Consider: guitar pick, music note, metronome, or practice-themed imagery
-- [ ] Should look good at small sizes (16x16 for menu bar)
-
-**Branches with icon approaches:**
-- `icon/guitar-pick-orange` - White guitar pick on orange gradient (programmatic Swift generator)
-- `icon/ai-guitar-green` - Dark guitar with green neon accents (AI-generated, Google)
+#### App Icon ✅
+- [x] Create custom app icon for macOS
+- [x] AI-generated dark guitar with green neon accents (Google Gemini)
+- [x] Applied macOS Big Sur rounded corner mask via `fix_corners.swift`
+- [x] Generated all required sizes (16-1024px)
 
 #### 7.4 Stats Dashboard
 - [ ] Practice analytics with aggregated data

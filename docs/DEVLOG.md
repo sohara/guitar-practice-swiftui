@@ -553,3 +553,35 @@ SessionPanelView
 ### Next Steps
 - Phase 7.4: Stats Dashboard
 - Phase 7.5: UI Polish
+
+---
+
+## 2026-01-14: App Icon
+
+### Custom App Icon Added
+Created custom app icon for the macOS app, replacing the default placeholder.
+
+### Design
+- **Final choice**: Dark guitar with green neon accents and pick
+- Generated using Google Gemini AI image generator
+- Applied macOS Big Sur rounded corner mask (22.37% radius)
+
+### Tools Created
+- `fix_corners.swift` - Applies transparent rounded corners to square source images
+  ```bash
+  swiftc -o fix_corners fix_corners.swift -framework AppKit -framework CoreGraphics
+  ./fix_corners input.png output.png
+  ```
+
+### Alternative Explored
+- `icon/guitar-pick-orange` branch - Programmatically generated white guitar pick on orange gradient
+- Created `generate_icon.swift` for fully programmatic icon generation
+
+### Technical Notes
+- macOS app icons require 10 PNG files (16-1024px at 1x and 2x scales)
+- AI-generated images often have baked-in rounded corners - request square images instead
+- Used `sips` for resizing, custom Swift script for corner masking
+
+### Files Added
+- `GuitarPractice/Assets.xcassets/AppIcon.appiconset/` - All icon sizes
+- `fix_corners.swift` - Corner mask utility
