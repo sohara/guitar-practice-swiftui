@@ -462,3 +462,94 @@ ContentView
 ### Next Steps
 - Phase 7.4: Stats Dashboard
 - Phase 7.5: UI Polish (flexible split view, typography)
+
+---
+
+## 2026-01-13: Phase 7.3 - Calendar as Main View (Complete)
+
+### Major Refactor
+Converted the calendar from a popup sheet to the primary session navigation interface. The calendar now lives permanently in the right panel, replacing the session dropdown as the main way to navigate practice history.
+
+### Architecture Changes
+**Old Structure (Right Panel):**
+```
+SelectedItemsView
+├── SessionHeaderView (dropdown picker)
+├── Selected items list
+└── SessionFooterView
+```
+
+**New Structure (Right Panel):**
+```
+SessionPanelView
+├── CalendarNavigatorView (compact month calendar)
+│   ├── Month navigation
+│   ├── Day grid with practice indicators
+│   └── Mini stats (streak, monthly count)
+└── SessionDetailView
+    ├── SessionDetailHeaderView (date, summary stats)
+    └── Content based on mode:
+        ├── NoSessionView (create option)
+        ├── SessionViewingModeView (read-only for past)
+        └── SessionEditingModeView (full edit)
+```
+
+### New Components Created
+- `SessionPanelView` - Container combining calendar + detail
+- `CalendarNavigatorView` - Compact embedded calendar
+- `CalendarNavigatorDayView` - Individual day cell
+- `MiniStatView` - Compact stat display (streak, monthly)
+- `SessionDetailView` - Session content switcher
+- `SessionDetailHeaderView` - Date and summary display
+- `NoSessionView` - Empty state with create option
+- `SessionViewingModeView` - Read-only past session view
+- `SessionItemReadOnlyRow` - Read-only item display
+- `SessionEditingModeView` - Full edit mode (reuses existing components)
+- `SessionEditingFooterView` - Save/practice buttons
+
+### AppState Changes
+- Added `SessionViewMode` enum (`.viewing`, `.editing`)
+- Added `selectedDate: Date` - Currently selected calendar date
+- Added `sessionViewMode: SessionViewMode` - Current view mode
+- Added `displayedMonth: Date` - Month shown in calendar
+- Added `selectDate(_:)` - Select date and load associated session
+- Added `switchToEditMode()` - Switch from viewing to editing
+- Added `sessionForDate(_:)` - Find session for a date
+- Added `isSelectedDateToday`, `isSelectedDatePast` computed properties
+- Added `createSessionForSelectedDate()` - Create session for selected date
+
+### Behavior
+| Scenario | View Mode | Actions |
+|----------|-----------|---------|
+| Past session exists | viewing | View items read-only, "Edit" button |
+| Past session, after "Edit" | editing | Full edit capabilities |
+| Today's session exists | editing | Full edit (default) |
+| Today, no session | - | "Start Session" button |
+| Past date, no session | - | "No practice recorded" message |
+| Future date, no session | - | "Create Session" button |
+
+### Files Modified
+- `GuitarPractice/Models/AppState.swift` - Added view mode and date selection logic
+- `GuitarPractice/ContentView.swift` - Added all new view components, removed calendar sheet
+
+### Removed
+- Calendar button from HeaderView (calendar now always visible)
+- Calendar sheet presentation (`.sheet(isPresented: $appState.isCalendarPresented)`)
+
+### Technical Notes
+- Old `SelectedItemsView` and related components left in codebase for reference
+- Old `CalendarView` (popup version) also retained
+- Calendar grid uses smaller cells (28pt height vs 44pt in popup)
+- View mode automatically determined by date when selecting
+
+### Future Calendar Enhancements (documented for later)
+- **Day cell stats**: Show actual/planned time directly on each calendar day (e.g., "45m" or "45/60m")
+- **Day cell item count**: Show number of items practiced per day
+- **Heat map intensity**: Color gradient based on practice duration (light green → dark green)
+- **Tooltip/hover**: Quick summary on hover before clicking
+- **Week view**: More compact horizontal layout option
+- **Collapsible calendar**: Toggle to hide/show the calendar section
+
+### Next Steps
+- Phase 7.4: Stats Dashboard
+- Phase 7.5: UI Polish

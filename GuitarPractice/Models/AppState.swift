@@ -11,6 +11,13 @@ enum SortOption: String, CaseIterable {
     case timesPracticed = "Times Practiced"
 }
 
+// MARK: - Session View Mode
+
+enum SessionViewMode {
+    case viewing  // Read-only, for past sessions
+    case editing  // Full edit capabilities
+}
+
 @MainActor
 class AppState: ObservableObject {
     // MARK: - Published State
@@ -29,6 +36,11 @@ class AppState: ObservableObject {
     @Published var needsAPIKey: Bool = false
     @Published var isSettingsPresented: Bool = false
     @Published var isCalendarPresented: Bool = false
+
+    // Calendar navigation state
+    @Published var selectedDate: Date = Date()  // Date selected in calendar
+    @Published var sessionViewMode: SessionViewMode = .editing
+    @Published var displayedMonth: Date = Date()  // Month shown in calendar
 
     // MARK: - Practice State
 
@@ -241,14 +253,9 @@ class AppState: ObservableObject {
         }
     }
 
-    /// Select today's session if one exists
+    /// Select today's date (and session if one exists)
     private func selectTodaysSessionIfExists() async {
-        let calendar = Calendar.current
-        let today = calendar.startOfDay(for: Date())
-
-        if let todaysSession = sessions.first(where: { calendar.startOfDay(for: $0.date) == today }) {
-            await selectSession(todaysSession)
-        }
+        await selectDate(Date())
     }
 
     func refresh() async {
@@ -482,6 +489,87 @@ class AppState: ObservableObject {
         } catch {
             sessionError = error
             isSavingSession = false
+        }
+    }
+
+    // MARK: - Calendar Navigation
+
+    /// Select a date in the calendar and load any associated session
+    func selectDate(_ date: Date) async {
+        let calendar = Calendar.current
+        selectedDate = date
+
+        // Find session for this date
+        let startOfDay = calendar.startOfDay(for: date)
+        if let session = sessions.first(where: { calendar.startOfDay(for: $0.date) == startOfDay }) {
+            // Determine view mode based on whether date is today or past
+            let isToday = calendar.isDateInToday(date)
+            let isFuture = date > Date()
+            sessionViewMode = (isToday || isFuture) ? .editing : .viewing
+
+            await selectSession(session)
+        } else {
+            // No session for this date
+            currentSession = nil
+            selectedItems.removeAll()
+            deletedLogIds.removeAll()
+
+            // For today or future dates, go to edit mode (ready to create)
+            let isToday = calendar.isDateInToday(date)
+            let isFuture = date > Date()
+            sessionViewMode = (isToday || isFuture) ? .editing : .viewing
+        }
+    }
+
+    /// Switch from viewing mode to editing mode (for past sessions)
+    func switchToEditMode() {
+        sessionViewMode = .editing
+    }
+
+    /// Get session for a specific date (if exists)
+    func sessionForDate(_ date: Date) -> PracticeSession? {
+        let calendar = Calendar.current
+        let startOfDay = calendar.startOfDay(for: date)
+        return sessions.first { calendar.startOfDay(for: $0.date) == startOfDay }
+    }
+
+    /// Check if selected date is today
+    var isSelectedDateToday: Bool {
+        Calendar.current.isDateInToday(selectedDate)
+    }
+
+    /// Check if selected date is in the past
+    var isSelectedDatePast: Bool {
+        let calendar = Calendar.current
+        let startOfToday = calendar.startOfDay(for: Date())
+        let startOfSelected = calendar.startOfDay(for: selectedDate)
+        return startOfSelected < startOfToday
+    }
+
+    /// Create a new session for the selected date
+    func createSessionForSelectedDate() async -> PracticeSession? {
+        guard let client = notionClient else { return nil }
+
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "yyyy-MM-dd"
+        let dateString = dateFormatter.string(from: selectedDate)
+
+        let displayFormatter = DateFormatter()
+        displayFormatter.dateFormat = "MMM d, yyyy"
+        let name = displayFormatter.string(from: selectedDate)
+
+        let newSession = NewPracticeSession(name: name, date: dateString)
+
+        do {
+            let session = try await client.createSession(newSession)
+            // Refresh sessions list
+            await fetchSessions(client: client)
+            // Select the new session
+            await selectDate(selectedDate)
+            return session
+        } catch {
+            sessionError = error
+            return nil
         }
     }
 

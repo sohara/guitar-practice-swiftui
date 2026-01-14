@@ -30,9 +30,6 @@ struct ContentView: View {
         .sheet(isPresented: $appState.isSettingsPresented) {
             SettingsView(appState: appState)
         }
-        .sheet(isPresented: $appState.isCalendarPresented) {
-            CalendarView(appState: appState)
-        }
     }
 }
 
@@ -67,9 +64,9 @@ struct MainContentView: View {
                     LibrarySidebarView(appState: appState, isSearchFocused: $isSearchFocused)
                         .navigationSplitViewColumnWidth(min: 400, ideal: 500, max: 700)
                 } detail: {
-                    // Right: Selected items
-                    SelectedItemsView(appState: appState)
-                        .navigationSplitViewColumnWidth(min: 280, ideal: 350)
+                    // Right: Calendar + Session detail
+                    SessionPanelView(appState: appState)
+                        .navigationSplitViewColumnWidth(min: 300, ideal: 380)
                 }
                 .navigationSplitViewStyle(.balanced)
             }
@@ -219,17 +216,6 @@ struct HeaderView: View {
 
             Spacer()
                 .frame(width: 20)
-
-            // Calendar button
-            Button {
-                appState.isCalendarPresented = true
-            } label: {
-                Image(systemName: "calendar")
-                    .font(.system(size: 16))
-                    .foregroundColor(.gray)
-            }
-            .buttonStyle(.plain)
-            .help("Practice History")
 
             // Open in Notion button
             Button {
@@ -1649,6 +1635,729 @@ struct CalendarStatView: View {
                 .font(.custom("SF Mono", size: 10))
                 .foregroundColor(.gray)
                 .textCase(.uppercase)
+        }
+    }
+}
+
+// MARK: - Calendar Navigator (Embedded in Right Panel)
+
+struct CalendarNavigatorView: View {
+    @ObservedObject var appState: AppState
+
+    private let calendar = Calendar.current
+    private let daysOfWeek = ["S", "M", "T", "W", "T", "F", "S"]
+
+    var body: some View {
+        VStack(spacing: 8) {
+            // Month navigation
+            HStack {
+                Button {
+                    withAnimation {
+                        appState.displayedMonth = calendar.date(byAdding: .month, value: -1, to: appState.displayedMonth) ?? appState.displayedMonth
+                    }
+                } label: {
+                    Image(systemName: "chevron.left")
+                        .font(.system(size: 12, weight: .semibold))
+                        .foregroundColor(.cyan)
+                }
+                .buttonStyle(.plain)
+
+                Spacer()
+
+                Text(monthYearString)
+                    .font(.custom("SF Mono", size: 13))
+                    .fontWeight(.semibold)
+                    .foregroundColor(.white)
+
+                Spacer()
+
+                Button {
+                    withAnimation {
+                        appState.displayedMonth = calendar.date(byAdding: .month, value: 1, to: appState.displayedMonth) ?? appState.displayedMonth
+                    }
+                } label: {
+                    Image(systemName: "chevron.right")
+                        .font(.system(size: 12, weight: .semibold))
+                        .foregroundColor(.cyan)
+                }
+                .buttonStyle(.plain)
+            }
+            .padding(.horizontal, 4)
+
+            // Days of week header
+            HStack(spacing: 0) {
+                ForEach(daysOfWeek, id: \.self) { day in
+                    Text(day)
+                        .font(.custom("SF Mono", size: 9))
+                        .foregroundColor(.gray)
+                        .frame(maxWidth: .infinity)
+                }
+            }
+
+            // Calendar grid (compact)
+            LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 2), count: 7), spacing: 2) {
+                ForEach(daysInMonth, id: \.self) { date in
+                    if let date = date {
+                        CalendarNavigatorDayView(
+                            date: date,
+                            hasSession: appState.sessionForDate(date) != nil,
+                            isToday: calendar.isDateInToday(date),
+                            isSelected: calendar.isDate(date, inSameDayAs: appState.selectedDate)
+                        ) {
+                            Task {
+                                await appState.selectDate(date)
+                            }
+                        }
+                    } else {
+                        Color.clear
+                            .frame(height: 28)
+                    }
+                }
+            }
+
+            // Mini stats row
+            HStack(spacing: 16) {
+                MiniStatView(icon: "flame", value: "\(currentStreak)", label: "streak", color: .orange)
+                MiniStatView(icon: "calendar", value: "\(sessionsThisMonth)", label: "this month", color: .cyan)
+            }
+            .padding(.top, 4)
+        }
+        .padding(12)
+        .background(
+            RoundedRectangle(cornerRadius: 10)
+                .fill(Color.white.opacity(0.03))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 10)
+                        .stroke(Color.white.opacity(0.06), lineWidth: 1)
+                )
+        )
+    }
+
+    // MARK: - Computed Properties
+
+    private var monthYearString: String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "MMMM yyyy"
+        return formatter.string(from: appState.displayedMonth)
+    }
+
+    private var daysInMonth: [Date?] {
+        guard let monthInterval = calendar.dateInterval(of: .month, for: appState.displayedMonth),
+              let monthFirstWeek = calendar.dateInterval(of: .weekOfMonth, for: monthInterval.start)
+        else { return [] }
+
+        var days: [Date?] = []
+        var currentDate = monthFirstWeek.start
+
+        // Generate 6 weeks worth of days (max needed for any month)
+        for _ in 0..<42 {
+            if calendar.isDate(currentDate, equalTo: appState.displayedMonth, toGranularity: .month) {
+                days.append(currentDate)
+            } else if days.isEmpty || calendar.compare(currentDate, to: monthInterval.start, toGranularity: .month) == .orderedAscending {
+                days.append(nil) // Padding before month starts
+            } else {
+                days.append(nil) // Padding after month ends
+            }
+            currentDate = calendar.date(byAdding: .day, value: 1, to: currentDate) ?? currentDate
+        }
+
+        // Trim trailing empty rows
+        while days.count > 7 && days.suffix(7).allSatisfy({ $0 == nil }) {
+            days.removeLast(7)
+        }
+
+        return days
+    }
+
+    private var sessionsThisMonth: Int {
+        appState.sessions.filter { session in
+            calendar.isDate(session.date, equalTo: appState.displayedMonth, toGranularity: .month)
+        }.count
+    }
+
+    private var currentStreak: Int {
+        let sortedSessions = appState.sessions.sorted { $0.date > $1.date }
+        guard !sortedSessions.isEmpty else { return 0 }
+
+        var streak = 0
+        var checkDate = calendar.startOfDay(for: Date())
+
+        // Check if practiced today
+        if let mostRecent = sortedSessions.first,
+           calendar.isDate(mostRecent.date, inSameDayAs: checkDate) {
+            streak = 1
+            checkDate = calendar.date(byAdding: .day, value: -1, to: checkDate) ?? checkDate
+        }
+
+        // Count consecutive days
+        for session in sortedSessions {
+            let sessionDay = calendar.startOfDay(for: session.date)
+            if calendar.isDate(sessionDay, inSameDayAs: checkDate) {
+                streak += 1
+                checkDate = calendar.date(byAdding: .day, value: -1, to: checkDate) ?? checkDate
+            } else if sessionDay < checkDate {
+                break // Gap in streak
+            }
+        }
+
+        return streak
+    }
+}
+
+struct CalendarNavigatorDayView: View {
+    let date: Date
+    let hasSession: Bool
+    let isToday: Bool
+    let isSelected: Bool
+    let onTap: () -> Void
+
+    private let calendar = Calendar.current
+
+    var body: some View {
+        Button(action: onTap) {
+            ZStack {
+                // Background
+                RoundedRectangle(cornerRadius: 4)
+                    .fill(backgroundColor)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 4)
+                            .stroke(borderColor, lineWidth: isToday ? 1.5 : 0)
+                    )
+
+                VStack(spacing: 1) {
+                    Text("\(calendar.component(.day, from: date))")
+                        .font(.custom("SF Mono", size: 11))
+                        .fontWeight(isToday ? .bold : .regular)
+                        .foregroundColor(textColor)
+
+                    // Practice indicator dot
+                    if hasSession {
+                        Circle()
+                            .fill(Color.green)
+                            .frame(width: 4, height: 4)
+                    }
+                }
+            }
+            .frame(height: 28)
+        }
+        .buttonStyle(.plain)
+    }
+
+    private var backgroundColor: Color {
+        if isSelected {
+            return .cyan.opacity(0.3)
+        } else if hasSession {
+            return .green.opacity(0.1)
+        }
+        return .clear
+    }
+
+    private var borderColor: Color {
+        isToday ? .cyan : .clear
+    }
+
+    private var textColor: Color {
+        if isSelected || hasSession {
+            return .white
+        }
+        return .gray.opacity(0.5)
+    }
+}
+
+struct MiniStatView: View {
+    let icon: String
+    let value: String
+    let label: String
+    let color: Color
+
+    var body: some View {
+        HStack(spacing: 4) {
+            Image(systemName: icon)
+                .font(.system(size: 10))
+                .foregroundColor(color)
+            Text(value)
+                .font(.custom("SF Mono", size: 12))
+                .fontWeight(.semibold)
+                .foregroundColor(.white)
+            Text(label)
+                .font(.custom("SF Mono", size: 10))
+                .foregroundColor(.gray)
+        }
+    }
+}
+
+// MARK: - Session Panel (Calendar + Detail)
+
+struct SessionPanelView: View {
+    @ObservedObject var appState: AppState
+
+    var body: some View {
+        VStack(spacing: 0) {
+            // Calendar navigator at top
+            CalendarNavigatorView(appState: appState)
+                .padding(.horizontal, 12)
+                .padding(.top, 12)
+                .padding(.bottom, 8)
+
+            Divider()
+                .background(Color.white.opacity(0.1))
+
+            // Session detail below
+            SessionDetailView(appState: appState)
+        }
+        .background(Color(red: 0.07, green: 0.07, blue: 0.10))
+    }
+}
+
+// MARK: - Session Detail View
+
+struct SessionDetailView: View {
+    @ObservedObject var appState: AppState
+
+    private let dateFormatter: DateFormatter = {
+        let f = DateFormatter()
+        f.dateFormat = "EEEE, MMM d, yyyy"
+        return f
+    }()
+
+    var body: some View {
+        VStack(spacing: 0) {
+            // Session header with date
+            SessionDetailHeaderView(appState: appState, dateFormatter: dateFormatter)
+
+            Divider()
+                .background(Color.white.opacity(0.1))
+
+            // Content based on state
+            if appState.isLoadingSession {
+                LoadingSessionView()
+            } else if appState.currentSession == nil {
+                // No session for this date
+                NoSessionView(appState: appState, dateFormatter: dateFormatter)
+            } else if appState.sessionViewMode == .viewing {
+                // Read-only view for past sessions
+                SessionViewingModeView(appState: appState)
+            } else {
+                // Edit mode - existing selected items functionality
+                SessionEditingModeView(appState: appState)
+            }
+        }
+    }
+}
+
+struct SessionDetailHeaderView: View {
+    @ObservedObject var appState: AppState
+    let dateFormatter: DateFormatter
+
+    var body: some View {
+        HStack {
+            VStack(alignment: .leading, spacing: 2) {
+                Text(dateFormatter.string(from: appState.selectedDate))
+                    .font(.custom("SF Mono", size: 14))
+                    .fontWeight(.medium)
+                    .foregroundColor(.white)
+
+                if appState.currentSession != nil {
+                    HStack(spacing: 8) {
+                        Label("\(appState.selectedItems.count) items", systemImage: "list.bullet")
+                            .font(.custom("SF Mono", size: 11))
+                            .foregroundColor(.gray)
+
+                        if appState.totalActualMinutes > 0 {
+                            Label(formatMinutesAsTime(appState.totalActualMinutes), systemImage: "clock.fill")
+                                .font(.custom("SF Mono", size: 11))
+                                .foregroundColor(.green.opacity(0.8))
+                        } else if appState.totalPlannedMinutes > 0 {
+                            Label("\(appState.totalPlannedMinutes)m planned", systemImage: "clock")
+                                .font(.custom("SF Mono", size: 11))
+                                .foregroundColor(.orange.opacity(0.8))
+                        }
+                    }
+                }
+            }
+
+            Spacer()
+
+            // Unsaved indicator
+            if appState.hasUnsavedChanges {
+                Circle()
+                    .fill(Color.orange)
+                    .frame(width: 8, height: 8)
+            }
+
+            // Mode indicator / switch button
+            if appState.currentSession != nil && appState.sessionViewMode == .viewing {
+                Button {
+                    appState.switchToEditMode()
+                } label: {
+                    HStack(spacing: 4) {
+                        Image(systemName: "pencil")
+                            .font(.system(size: 10))
+                        Text("Edit")
+                            .font(.custom("SF Mono", size: 11))
+                    }
+                    .foregroundColor(.cyan)
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 5)
+                    .background(
+                        RoundedRectangle(cornerRadius: 5)
+                            .fill(Color.cyan.opacity(0.1))
+                    )
+                }
+                .buttonStyle(.plain)
+            }
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 12)
+    }
+}
+
+struct LoadingSessionView: View {
+    var body: some View {
+        VStack {
+            Spacer()
+            ProgressView()
+                .scaleEffect(1.2)
+                .tint(.orange)
+            Text("Loading session...")
+                .font(.custom("SF Mono", size: 12))
+                .foregroundColor(.gray)
+                .padding(.top, 8)
+            Spacer()
+        }
+    }
+}
+
+struct NoSessionView: View {
+    @ObservedObject var appState: AppState
+    let dateFormatter: DateFormatter
+
+    var body: some View {
+        VStack(spacing: 16) {
+            Spacer()
+
+            if appState.isSelectedDatePast {
+                // Past date with no session
+                Image(systemName: "calendar.badge.minus")
+                    .font(.system(size: 32))
+                    .foregroundColor(.gray.opacity(0.3))
+
+                Text("No practice recorded")
+                    .font(.custom("SF Mono", size: 13))
+                    .foregroundColor(.gray.opacity(0.5))
+
+                Text("No session exists for this date")
+                    .font(.custom("SF Mono", size: 11))
+                    .foregroundColor(.gray.opacity(0.3))
+            } else {
+                // Today or future date
+                Image(systemName: "calendar.badge.plus")
+                    .font(.system(size: 32))
+                    .foregroundColor(.gray.opacity(0.3))
+
+                Text(appState.isSelectedDateToday ? "Ready to practice?" : "Plan ahead")
+                    .font(.custom("SF Mono", size: 14))
+                    .foregroundColor(.gray.opacity(0.6))
+
+                Button {
+                    Task {
+                        _ = await appState.createSessionForSelectedDate()
+                    }
+                } label: {
+                    HStack {
+                        Image(systemName: "plus")
+                        Text(appState.isSelectedDateToday ? "Start Session" : "Create Session")
+                    }
+                    .font(.custom("SF Mono", size: 12))
+                    .foregroundColor(.orange)
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 8)
+                    .background(
+                        RoundedRectangle(cornerRadius: 6)
+                            .stroke(Color.orange.opacity(0.5), lineWidth: 1)
+                    )
+                }
+                .buttonStyle(.plain)
+            }
+
+            Spacer()
+        }
+        .padding()
+    }
+}
+
+struct SessionViewingModeView: View {
+    @ObservedObject var appState: AppState
+
+    var body: some View {
+        VStack(spacing: 0) {
+            if appState.selectedItems.isEmpty {
+                VStack(spacing: 12) {
+                    Spacer()
+                    Image(systemName: "tray")
+                        .font(.system(size: 28))
+                        .foregroundColor(.gray.opacity(0.3))
+                    Text("Session was empty")
+                        .font(.custom("SF Mono", size: 12))
+                        .foregroundColor(.gray.opacity(0.5))
+                    Spacer()
+                }
+            } else {
+                // Read-only list of practiced items
+                ScrollView {
+                    LazyVStack(spacing: 2) {
+                        ForEach(appState.selectedItems) { selected in
+                            SessionItemReadOnlyRow(selected: selected)
+                        }
+                    }
+                    .padding(.vertical, 8)
+                }
+            }
+
+            // Footer with "Edit" option
+            VStack(spacing: 0) {
+                Divider()
+                    .background(Color.white.opacity(0.1))
+
+                HStack {
+                    Text("Viewing past session")
+                        .font(.custom("SF Mono", size: 11))
+                        .foregroundColor(.gray.opacity(0.5))
+
+                    Spacer()
+
+                    Button {
+                        appState.switchToEditMode()
+                    } label: {
+                        HStack(spacing: 4) {
+                            Image(systemName: "pencil")
+                                .font(.system(size: 10))
+                            Text("Edit Session")
+                                .font(.custom("SF Mono", size: 12))
+                        }
+                        .foregroundColor(.cyan)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 6)
+                        .background(
+                            RoundedRectangle(cornerRadius: 6)
+                                .fill(Color.cyan.opacity(0.1))
+                        )
+                    }
+                    .buttonStyle(.plain)
+                }
+                .padding(.horizontal, 16)
+                .padding(.vertical, 10)
+            }
+        }
+    }
+}
+
+struct SessionItemReadOnlyRow: View {
+    let selected: SelectedItem
+
+    var body: some View {
+        HStack(spacing: 10) {
+            // Completion indicator
+            Image(systemName: selected.actualMinutes != nil && selected.actualMinutes! > 0 ? "checkmark.circle.fill" : "circle")
+                .font(.system(size: 12))
+                .foregroundColor(selected.actualMinutes != nil && selected.actualMinutes! > 0 ? .green : .gray.opacity(0.4))
+                .frame(width: 16)
+
+            // Type icon
+            Image(systemName: selected.item.type?.icon ?? "questionmark")
+                .font(.system(size: 12))
+                .foregroundColor(typeColor(selected.item.type))
+                .frame(width: 16)
+
+            // Name and artist
+            VStack(alignment: .leading, spacing: 1) {
+                Text(selected.item.name)
+                    .font(.custom("SF Mono", size: 12))
+                    .foregroundColor(.white)
+                    .lineLimit(1)
+
+                if let artist = selected.item.artist {
+                    Text(artist)
+                        .font(.custom("SF Mono", size: 9))
+                        .foregroundColor(.gray.opacity(0.5))
+                        .lineLimit(1)
+                }
+            }
+
+            Spacer()
+
+            // Times
+            VStack(alignment: .trailing, spacing: 1) {
+                if let actual = selected.actualMinutes, actual > 0 {
+                    Text(formatMinutesAsTime(actual))
+                        .font(.custom("SF Mono", size: 11))
+                        .foregroundColor(.green.opacity(0.8))
+                }
+                Text("\(selected.plannedMinutes)m planned")
+                    .font(.custom("SF Mono", size: 9))
+                    .foregroundColor(.gray.opacity(0.5))
+            }
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 8)
+        .background(
+            selected.actualMinutes != nil && selected.actualMinutes! > 0
+                ? Color.green.opacity(0.05)
+                : Color.clear
+        )
+    }
+
+    private func typeColor(_ type: ItemType?) -> Color {
+        switch type {
+        case .song: return .pink
+        case .exercise: return .cyan
+        case .courseLesson: return .orange
+        case nil: return .gray
+        }
+    }
+}
+
+struct SessionEditingModeView: View {
+    @ObservedObject var appState: AppState
+
+    var body: some View {
+        VStack(spacing: 0) {
+            if appState.selectedItems.isEmpty {
+                VStack(spacing: 12) {
+                    Spacer()
+                    Image(systemName: "music.note.list")
+                        .font(.system(size: 32))
+                        .foregroundColor(.gray.opacity(0.3))
+                    Text("Session is empty")
+                        .font(.custom("SF Mono", size: 13))
+                        .foregroundColor(.gray.opacity(0.5))
+                    Text("Add items from the library")
+                        .font(.custom("SF Mono", size: 11))
+                        .foregroundColor(.gray.opacity(0.3))
+                    Spacer()
+                }
+            } else {
+                // Editable items list with drag and drop
+                List {
+                    ForEach(Array(appState.selectedItems.enumerated()), id: \.element.id) { index, selected in
+                        SelectedItemRow(
+                            selected: selected,
+                            isFocused: appState.focusedPanel == .selectedItems && appState.focusedSelectedIndex == index,
+                            onFocus: {
+                                appState.focusedPanel = .selectedItems
+                                appState.focusedSelectedIndex = index
+                            },
+                            onRemove: {
+                                appState.removeSelectedItem(at: index)
+                            },
+                            onAdjustTime: { delta in
+                                appState.updatePlannedTime(at: index, minutes: selected.plannedMinutes + delta)
+                            }
+                        )
+                        .listRowBackground(Color.clear)
+                        .listRowSeparator(.hidden)
+                        .listRowInsets(EdgeInsets(top: 2, leading: 0, bottom: 2, trailing: 0))
+                    }
+                    .onMove { source, destination in
+                        appState.moveSelectedItem(from: source, to: destination)
+                    }
+                }
+                .listStyle(.plain)
+                .scrollContentBackground(.hidden)
+            }
+
+            // Footer with save/practice buttons
+            SessionEditingFooterView(appState: appState)
+        }
+    }
+}
+
+struct SessionEditingFooterView: View {
+    @ObservedObject var appState: AppState
+
+    var body: some View {
+        VStack(spacing: 0) {
+            Divider()
+                .background(Color.white.opacity(0.1))
+
+            HStack {
+                // Error message
+                if let error = appState.sessionError {
+                    Text(error.localizedDescription)
+                        .font(.custom("SF Mono", size: 10))
+                        .foregroundColor(.red)
+                        .lineLimit(1)
+                }
+
+                Spacer()
+
+                // Clear button
+                if !appState.selectedItems.isEmpty {
+                    Button {
+                        appState.clearSelection()
+                    } label: {
+                        Text("Clear")
+                            .font(.custom("SF Mono", size: 11))
+                            .foregroundColor(.red.opacity(0.6))
+                    }
+                    .buttonStyle(.plain)
+                    .padding(.trailing, 8)
+                }
+
+                // Practice button
+                Button {
+                    appState.startPractice()
+                } label: {
+                    HStack(spacing: 4) {
+                        Image(systemName: "play.fill")
+                            .font(.system(size: 10))
+                        Text("Practice")
+                            .font(.custom("SF Mono", size: 12))
+                    }
+                    .foregroundColor(.white)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 6)
+                    .background(
+                        RoundedRectangle(cornerRadius: 6)
+                            .fill(Color.green.opacity(0.8))
+                    )
+                }
+                .buttonStyle(.plain)
+                .disabled(appState.selectedItems.isEmpty)
+                .keyboardShortcut("p", modifiers: .command)
+
+                // Save button
+                Button {
+                    Task {
+                        await appState.saveSession()
+                    }
+                } label: {
+                    HStack(spacing: 4) {
+                        if appState.isSavingSession {
+                            ProgressView()
+                                .scaleEffect(0.7)
+                                .tint(.white)
+                        } else {
+                            Image(systemName: "square.and.arrow.up")
+                                .font(.system(size: 11))
+                        }
+                        Text("Save")
+                            .font(.custom("SF Mono", size: 12))
+                    }
+                    .foregroundColor(.white)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 6)
+                    .background(
+                        RoundedRectangle(cornerRadius: 6)
+                            .fill(appState.hasUnsavedChanges ? Color.orange : Color.gray.opacity(0.3))
+                    )
+                }
+                .buttonStyle(.plain)
+                .disabled(appState.isSavingSession || !appState.hasUnsavedChanges)
+                .keyboardShortcut("s", modifiers: .command)
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 10)
         }
     }
 }
