@@ -128,6 +128,11 @@ GuitarPractice/
   - User-adjustable divider position
   - Minimum 20% width for either pane
   - Persist user's preferred split ratio
+- [ ] **Typography Improvements**: Increase text sizes for readability
+  - Footer text too small - increase by at least 2px (currently 10-11pt)
+  - Consider bumping main/regular text sizes throughout
+  - OK to increase footer height if needed
+  - Preview different sizes to find right balance
 
 *Note: This app is evolving to be the primary UI, with Notion serving as the backend for editing practice library items.*
 
