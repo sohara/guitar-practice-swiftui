@@ -130,10 +130,10 @@ GuitarPractice/
 - [ ] Leverages SwiftData for efficient date-range queries
 
 **Future Calendar Enhancements:**
-- [ ] Day cell stats: Show actual/planned time on each day (e.g., "45m" or "45/60m")
-- [ ] Day cell item count: Number of items practiced (e.g., "3 items")
-- [ ] Heat map intensity: Color gradient based on practice duration
-- [ ] Tooltip/hover: Show quick summary on hover before clicking
+- [x] Day cell stats: Show actual practice time on each day (e.g., "45m" or "1h")
+- [x] Day cell item count: Falls back to item count if no actual time yet
+- [x] Heat map intensity: Green gradient based on practice duration (0-60min scale)
+- [x] Tooltip/hover: Shows date, item count, and practiced/planned time on hover
 - [ ] Week view: More compact horizontal layout option
 - [ ] Collapsible calendar: Toggle to hide/show calendar section
 

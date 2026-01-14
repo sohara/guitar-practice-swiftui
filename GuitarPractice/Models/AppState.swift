@@ -596,6 +596,48 @@ class AppState: ObservableObject {
         }
     }
 
+    // MARK: - Calendar Day Summaries
+
+    /// Compute day summaries for sessions in a given month
+    func daySummaries(for month: Date) -> [Date: DaySummary] {
+        guard let cache = cacheService else { return [:] }
+
+        let calendar = Calendar.current
+        var summaries: [Date: DaySummary] = [:]
+
+        // Get sessions for this month
+        let monthSessions = sessions.filter { session in
+            calendar.isDate(session.date, equalTo: month, toGranularity: .month)
+        }
+
+        // Compute summary for each session
+        for session in monthSessions {
+            let startOfDay = calendar.startOfDay(for: session.date)
+            let logs = cache.loadLogs(forSession: session.id)
+
+            let itemCount = logs.count
+            let plannedMinutes = logs.reduce(0) { $0 + $1.plannedMinutes }
+            let actualMinutes = logs.reduce(0.0) { $0 + ($1.actualMinutes ?? 0) }
+
+            summaries[startOfDay] = DaySummary(
+                date: startOfDay,
+                itemCount: itemCount,
+                plannedMinutes: plannedMinutes,
+                actualMinutes: actualMinutes
+            )
+        }
+
+        return summaries
+    }
+
+    /// Get summary for a specific date (convenience method)
+    func daySummary(for date: Date) -> DaySummary? {
+        let calendar = Calendar.current
+        let startOfDay = calendar.startOfDay(for: date)
+        let summaries = daySummaries(for: date)
+        return summaries[startOfDay]
+    }
+
     // MARK: - Panel Focus
 
     func toggleFocusedPanel() {

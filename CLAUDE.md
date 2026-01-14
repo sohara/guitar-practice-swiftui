@@ -12,7 +12,7 @@ A native macOS app for managing guitar practice sessions, backed by Notion datab
 - Loading skeletons, Open in Notion (⌘O)
 - Timer alerts (sound + notification when time elapses)
 - Local cache with SwiftData (instant app launch)
-- Calendar view (embedded in right panel, view/edit modes)
+- Calendar view (embedded in right panel, view/edit modes, heat map, day stats)
 - Stats dashboard (streaks, top items, weekly trends, type breakdown)
 - Custom app icon (AI-generated guitar with green accents)
 - UI polish (flexible split view, larger footer text, hover labels)
@@ -39,14 +39,25 @@ open GuitarPractice.xcodeproj
 ```
 GuitarPractice/
 ├── GuitarPracticeApp.swift      # App entry, MenuBarExtra, AppDelegate
-├── ContentView.swift            # All views (1500+ lines)
+├── ContentView.swift            # Root view (~40 lines)
 ├── Models/
-│   ├── Types.swift              # Data models (LibraryItem, PracticeSession, etc.)
+│   ├── Types.swift              # Data models (LibraryItem, DaySummary, etc.)
 │   └── AppState.swift           # @MainActor state management
 ├── Services/
 │   ├── Config.swift             # Notion database IDs
 │   ├── KeychainService.swift    # Secure API key storage
-│   └── NotionClient.swift       # Async Notion API client
+│   ├── NotionClient.swift       # Async Notion API client
+│   ├── CacheService.swift       # SwiftData local cache
+│   └── StatsService.swift       # Practice analytics
+├── Views/
+│   ├── MainContentView.swift    # Split view layout
+│   ├── Header/                  # HeaderView, StatBadge
+│   ├── Library/                 # Sidebar, filter, list, row views
+│   ├── Session/                 # Calendar, session detail views
+│   ├── Practice/                # Timer view
+│   ├── Stats/                   # Stats dashboard
+│   ├── Settings/                # Settings, API key setup
+│   └── Common/                  # Footer, loading, skeletons
 ├── Assets.xcassets/
 └── Info.plist
 ```

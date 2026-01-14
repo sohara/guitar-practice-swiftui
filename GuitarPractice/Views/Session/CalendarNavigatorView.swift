@@ -6,6 +6,11 @@ struct CalendarNavigatorView: View {
     private let calendar = Calendar.current
     private let daysOfWeek = ["S", "M", "T", "W", "T", "F", "S"]
 
+    /// Cached day summaries for the displayed month
+    private var daySummaries: [Date: DaySummary] {
+        appState.daySummaries(for: appState.displayedMonth)
+    }
+
     var body: some View {
         VStack(spacing: 8) {
             // Month navigation
@@ -53,13 +58,14 @@ struct CalendarNavigatorView: View {
                 }
             }
 
-            // Calendar grid (compact)
-            LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 2), count: 7), spacing: 2) {
+            // Calendar grid
+            LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 6), count: 7), spacing: 6) {
                 ForEach(daysInMonth, id: \.self) { date in
                     if let date = date {
+                        let startOfDay = calendar.startOfDay(for: date)
                         CalendarNavigatorDayView(
                             date: date,
-                            hasSession: appState.sessionForDate(date) != nil,
+                            summary: daySummaries[startOfDay],
                             isToday: calendar.isDateInToday(date),
                             isSelected: calendar.isDate(date, inSameDayAs: appState.selectedDate)
                         ) {
@@ -69,7 +75,7 @@ struct CalendarNavigatorView: View {
                         }
                     } else {
                         Color.clear
-                            .frame(height: 28)
+                            .frame(height: 44)
                     }
                 }
             }
@@ -146,6 +152,9 @@ struct CalendarNavigatorView: View {
            calendar.isDate(mostRecent.date, inSameDayAs: checkDate) {
             streak = 1
             checkDate = calendar.date(byAdding: .day, value: -1, to: checkDate) ?? checkDate
+        } else {
+            // If not practiced today, start checking from yesterday
+            checkDate = calendar.date(byAdding: .day, value: -1, to: checkDate) ?? checkDate
         }
 
         // Count consecutive days
@@ -165,48 +174,70 @@ struct CalendarNavigatorView: View {
 
 struct CalendarNavigatorDayView: View {
     let date: Date
-    let hasSession: Bool
+    let summary: DaySummary?
     let isToday: Bool
     let isSelected: Bool
     let onTap: () -> Void
 
     private let calendar = Calendar.current
 
+    private var hasSession: Bool {
+        summary != nil
+    }
+
     var body: some View {
         Button(action: onTap) {
             ZStack {
-                // Background
-                RoundedRectangle(cornerRadius: 4)
+                // Background with heat map intensity
+                RoundedRectangle(cornerRadius: 6)
                     .fill(backgroundColor)
                     .overlay(
-                        RoundedRectangle(cornerRadius: 4)
-                            .stroke(borderColor, lineWidth: isToday ? 1.5 : 0)
+                        RoundedRectangle(cornerRadius: 6)
+                            .stroke(borderColor, lineWidth: isToday ? 2 : 0)
                     )
 
-                VStack(spacing: 1) {
+                VStack(spacing: 2) {
+                    // Day number
                     Text("\(calendar.component(.day, from: date))")
-                        .font(.custom("SF Mono", size: 11))
-                        .fontWeight(isToday ? .bold : .regular)
+                        .font(.custom("SF Mono", size: 13))
+                        .fontWeight(isToday ? .bold : .medium)
                         .foregroundColor(textColor)
 
-                    // Practice indicator dot
-                    if hasSession {
-                        Circle()
-                            .fill(Color.green)
-                            .frame(width: 4, height: 4)
+                    // Time label (e.g., "45m") or item count
+                    if let summary = summary {
+                        if let timeLabel = summary.timeLabel {
+                            Text(timeLabel)
+                                .font(.custom("SF Mono", size: 10))
+                                .foregroundColor(statColor)
+                        } else if summary.itemCount > 0 {
+                            // Show item count if no actual time yet
+                            Text("\(summary.itemCount)")
+                                .font(.custom("SF Mono", size: 10))
+                                .foregroundColor(.gray)
+                        }
                     }
                 }
+                .padding(.vertical, 4)
             }
-            .frame(height: 28)
+            .frame(height: 44)
         }
         .buttonStyle(.plain)
+        .help(tooltipText)
     }
+
+    // MARK: - Computed Properties
 
     private var backgroundColor: Color {
         if isSelected {
             return .cyan.opacity(0.3)
+        } else if let summary = summary, summary.actualMinutes > 0 {
+            // Heat map: intensity based on practice time (green gradient)
+            let intensity = summary.intensity
+            // Range from 0.1 (light) to 0.4 (dark) opacity
+            return .green.opacity(0.1 + (intensity * 0.3))
         } else if hasSession {
-            return .green.opacity(0.1)
+            // Has session but no actual time yet
+            return .green.opacity(0.05)
         }
         return .clear
     }
@@ -220,6 +251,51 @@ struct CalendarNavigatorDayView: View {
             return .white
         }
         return .gray.opacity(0.5)
+    }
+
+    private var statColor: Color {
+        if isSelected {
+            return .white.opacity(0.9)
+        }
+        // Brighter green for more practice time
+        if let summary = summary {
+            let intensity = summary.intensity
+            return Color(
+                red: 0.3 + (intensity * 0.2),
+                green: 0.8 + (intensity * 0.2),
+                blue: 0.3 + (intensity * 0.2)
+            )
+        }
+        return .green.opacity(0.8)
+    }
+
+    private var tooltipText: String {
+        guard let summary = summary else {
+            return dateFormatter.string(from: date)
+        }
+
+        var lines: [String] = [dateFormatter.string(from: date)]
+
+        if summary.itemCount > 0 {
+            let itemText = summary.itemCount == 1 ? "1 item" : "\(summary.itemCount) items"
+            lines.append(itemText)
+        }
+
+        if summary.actualMinutes > 0 {
+            let minutes = Int(summary.actualMinutes)
+            let planned = summary.plannedMinutes
+            lines.append("\(minutes)m practiced of \(planned)m planned")
+        } else if summary.plannedMinutes > 0 {
+            lines.append("\(summary.plannedMinutes)m planned")
+        }
+
+        return lines.joined(separator: "\n")
+    }
+
+    private var dateFormatter: DateFormatter {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "MMM d, yyyy"
+        return formatter
     }
 }
 

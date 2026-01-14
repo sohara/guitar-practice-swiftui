@@ -737,3 +737,46 @@ GuitarPractice/Views/
 - Each view struct moved to its own file
 - Related views grouped in subdirectories by feature
 - `formatMinutesAsTime()` helper moved to `Common/Helpers.swift`
+
+---
+
+## 2026-01-14: Calendar Enhancements
+
+### Features Implemented
+- **Day Cell Stats**: Calendar days now show actual practice time (e.g., "45m" or "1h")
+  - Falls back to item count if no actual time recorded yet
+  - Compact display fits within the day cell
+- **Heat Map Intensity**: Green gradient shows practice duration at a glance
+  - Intensity scales from 0-60 minutes for full saturation
+  - Light green (short practice) to dark green (long practice)
+  - Sessions with no actual time yet show very light green
+- **Hover Tooltips**: Native macOS tooltips show quick summary on hover
+  - Date, item count, and practiced/planned time
+  - Shows before clicking for quick scanning
+
+### New Types
+- `DaySummary` in `Types.swift` - Contains itemCount, plannedMinutes, actualMinutes
+  - `intensity` computed property for heat map (0.0 to 1.0)
+  - `timeLabel` computed property for compact display (e.g., "45m", "1h", "1h30")
+
+### AppState Changes
+- Added `daySummaries(for month: Date)` - Computes summaries for all sessions in a month
+- Added `daySummary(for date: Date)` - Convenience method for single date lookup
+
+### CalendarNavigatorView Changes
+- Day cells increased from 28pt to 36pt height to accommodate stats
+- `CalendarNavigatorDayView` now accepts optional `DaySummary` instead of `hasSession` bool
+- Background color now uses heat map intensity for practiced days
+- `.help()` modifier provides native tooltip on hover
+
+### Technical Notes
+- Day summaries computed on-demand from cached session logs
+- No additional API calls - leverages existing SwiftData cache
+- Heat map caps at 60 minutes for max intensity to avoid visual saturation
+
+### Follow-up Fixes
+- **Increased text sizes** - Day numbers 10pt→13pt, time labels 7pt→10pt
+- **Cell height** - Increased from 28pt to 44pt for better readability
+- **Cell spacing** - Increased from 2pt to 6pt for less cramped appearance
+- **Time format** - Changed from "1h5" to "1h 5m" for clarity
+- **Streak bug fix** - Now correctly counts streak from yesterday if no practice today

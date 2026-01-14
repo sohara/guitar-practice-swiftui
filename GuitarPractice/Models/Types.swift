@@ -100,6 +100,42 @@ struct NewPracticeLog {
     let order: Int
 }
 
+// MARK: - Calendar Day Summary
+
+struct DaySummary {
+    let date: Date
+    let itemCount: Int
+    let plannedMinutes: Int
+    let actualMinutes: Double
+
+    var hasData: Bool {
+        itemCount > 0
+    }
+
+    /// Intensity from 0.0 to 1.0 for heat map coloring (based on actual practice time)
+    /// Caps at 60 minutes for max intensity
+    var intensity: Double {
+        guard actualMinutes > 0 else { return 0 }
+        return min(1.0, actualMinutes / 60.0)
+    }
+
+    /// Compact display string for the day cell (e.g., "45m" or "1h 5m")
+    var timeLabel: String? {
+        guard actualMinutes > 0 else { return nil }
+        let minutes = Int(actualMinutes)
+        if minutes >= 60 {
+            let hours = minutes / 60
+            let remainingMinutes = minutes % 60
+            if remainingMinutes == 0 {
+                return "\(hours)h"
+            } else {
+                return "\(hours)h \(remainingMinutes)m"
+            }
+        }
+        return "\(minutes)m"
+    }
+}
+
 // MARK: - App State
 
 enum LoadingState<T> {
