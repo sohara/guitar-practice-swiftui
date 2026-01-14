@@ -4,7 +4,6 @@ struct PracticeView: View {
     @ObservedObject var appState: AppState
     @FocusState private var isFocused: Bool
     @FocusState private var isNotesFocused: Bool
-    @State private var isNotesExpanded: Bool = false
     @State private var notesText: String = ""
 
     var body: some View {
@@ -231,20 +230,15 @@ struct PracticeView: View {
                     Spacer()
                         .frame(height: 24)
 
-                    // Notes section
-                    PracticeNotesSection(
-                        isExpanded: $isNotesExpanded,
+                    // Notes card (current + history)
+                    NotesCard(
                         notesText: $notesText,
                         isNotesFocused: $isNotesFocused,
-                        hasExistingNotes: item.notes != nil && !item.notes!.isEmpty,
+                        previousNotes: appState.currentItemNotesHistory,
+                        isLoadingHistory: appState.isLoadingNotesHistory,
                         onSave: {
                             let trimmed = notesText.trimmingCharacters(in: .whitespacesAndNewlines)
                             appState.updateNotes(at: appState.practiceItemIndex, notes: trimmed.isEmpty ? nil : trimmed)
-                            isNotesExpanded = false
-                            isFocused = true
-                        },
-                        onCancel: {
-                            isNotesExpanded = false
                             isFocused = true
                         }
                     )
@@ -306,8 +300,7 @@ struct PracticeView: View {
             return .handled
         }
         .onChange(of: appState.practiceItemIndex) { _, _ in
-            // Reset notes state when switching items
-            isNotesExpanded = false
+            // Reset notes text when switching items
             if let item = appState.currentPracticeItem {
                 notesText = item.notes ?? ""
             }
@@ -354,117 +347,158 @@ struct PracticeKeyHint: View {
     }
 }
 
-struct PracticeNotesSection: View {
-    @Binding var isExpanded: Bool
+struct NotesCard: View {
     @Binding var notesText: String
     var isNotesFocused: FocusState<Bool>.Binding
-    let hasExistingNotes: Bool
+    let previousNotes: [HistoricalNote]
+    let isLoadingHistory: Bool
+    let onSave: () -> Void
+
+    @State private var isEditing: Bool = false
+    @State private var originalText: String = ""
+
+    private let dateFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "MMM d"
+        return formatter
+    }()
+
+    var body: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 1) {
+                // Current note (editable, yellow accent)
+                NoteRow(
+                    label: "TODAY",
+                    content: notesText.isEmpty ? "Click to add note..." : notesText,
+                    accentColor: .yellow,
+                    isPlaceholder: notesText.isEmpty,
+                    isEditing: isEditing,
+                    editText: $notesText,
+                    isNotesFocused: isNotesFocused,
+                    onTap: {
+                        originalText = notesText
+                        isEditing = true
+                        isNotesFocused.wrappedValue = true
+                    },
+                    onSave: {
+                        onSave()
+                        isEditing = false
+                    },
+                    onCancel: {
+                        notesText = originalText
+                        isEditing = false
+                    }
+                )
+
+                // Previous notes (read-only, gray accent)
+                ForEach(previousNotes) { note in
+                    NoteRow(
+                        label: dateFormatter.string(from: note.date).uppercased(),
+                        content: note.notes,
+                        accentColor: .gray,
+                        isPlaceholder: false,
+                        isEditing: false,
+                        editText: .constant(""),
+                        isNotesFocused: isNotesFocused,
+                        onTap: {},
+                        onSave: {},
+                        onCancel: {}
+                    )
+                }
+
+                // Loading indicator
+                if isLoadingHistory {
+                    HStack {
+                        Spacer()
+                        Text("Loading history...")
+                            .font(.custom("SF Mono", size: 11))
+                            .foregroundColor(.gray.opacity(0.4))
+                        Spacer()
+                    }
+                    .padding(.vertical, 12)
+                }
+            }
+        }
+        .frame(maxHeight: 180)
+        .background(
+            RoundedRectangle(cornerRadius: 8)
+                .fill(Color.white.opacity(0.03))
+        )
+        .clipShape(RoundedRectangle(cornerRadius: 8))
+        .frame(maxWidth: 380)
+    }
+}
+
+struct NoteRow: View {
+    let label: String
+    let content: String
+    let accentColor: Color
+    let isPlaceholder: Bool
+    let isEditing: Bool
+    @Binding var editText: String
+    var isNotesFocused: FocusState<Bool>.Binding
+    let onTap: () -> Void
     let onSave: () -> Void
     let onCancel: () -> Void
 
     var body: some View {
-        VStack(spacing: 12) {
-            if isExpanded {
-                // Expanded notes editor
-                VStack(spacing: 8) {
-                    TextField("Add a note (e.g., 'Got to 80bpm', 'Work on bridge')", text: $notesText)
-                        .font(.custom("SF Mono", size: 14))
+        HStack(spacing: 0) {
+            // Accent bar
+            Rectangle()
+                .fill(accentColor.opacity(0.6))
+                .frame(width: 3)
+
+            // Content
+            VStack(alignment: .leading, spacing: 4) {
+                HStack {
+                    Text(label)
+                        .font(.custom("SF Mono", size: 10))
+                        .fontWeight(.medium)
+                        .foregroundColor(accentColor.opacity(0.7))
+                        .tracking(0.5)
+
+                    Spacer()
+
+                    if isEditing {
+                        Button {
+                            onSave()
+                        } label: {
+                            Text("Save")
+                                .font(.custom("SF Mono", size: 11))
+                                .foregroundColor(accentColor)
+                        }
+                        .buttonStyle(.plain)
+                    }
+                }
+
+                if isEditing {
+                    TextField("Add a note...", text: $editText)
+                        .font(.custom("SF Mono", size: 13))
                         .textFieldStyle(.plain)
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 10)
-                        .background(
-                            RoundedRectangle(cornerRadius: 8)
-                                .fill(Color.white.opacity(0.05))
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: 8)
-                                        .stroke(Color.yellow.opacity(0.3), lineWidth: 1)
-                                )
-                        )
                         .focused(isNotesFocused)
                         .onSubmit {
                             onSave()
                         }
-
-                    HStack(spacing: 12) {
-                        Button(action: onSave) {
-                            HStack(spacing: 6) {
-                                Image(systemName: "checkmark")
-                                    .font(.system(size: 11))
-                                Text("Save Note")
-                                    .font(.custom("SF Mono", size: 12))
-                            }
-                            .foregroundColor(.yellow)
-                            .padding(.horizontal, 16)
-                            .padding(.vertical, 8)
-                            .background(
-                                RoundedRectangle(cornerRadius: 6)
-                                    .fill(Color.yellow.opacity(0.1))
-                            )
+                        .onKeyPress(.escape) {
+                            onCancel()
+                            return .handled
                         }
-                        .buttonStyle(.plain)
-
-                        Button(action: onCancel) {
-                            Text("Cancel")
-                                .font(.custom("SF Mono", size: 12))
-                                .foregroundColor(.gray)
-                                .padding(.horizontal, 16)
-                                .padding(.vertical, 8)
-                        }
-                        .buttonStyle(.plain)
-                    }
+                } else {
+                    Text(content)
+                        .font(.custom("SF Mono", size: 13))
+                        .foregroundColor(isPlaceholder ? .gray.opacity(0.4) : .white.opacity(accentColor == .yellow ? 0.9 : 0.6))
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .lineLimit(3)
                 }
-                .frame(maxWidth: 400)
-            } else {
-                // Collapsed state - show button to expand
-                Button {
-                    isExpanded = true
-                    isNotesFocused.wrappedValue = true
-                } label: {
-                    HStack(spacing: 6) {
-                        Image(systemName: hasExistingNotes ? "note.text" : "note.text.badge.plus")
-                            .font(.system(size: 12))
-                        Text(hasExistingNotes ? "Edit Note" : "Add Note")
-                            .font(.custom("SF Mono", size: 12))
-                    }
-                    .foregroundColor(hasExistingNotes ? .yellow : .gray.opacity(0.6))
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 8)
-                    .background(
-                        RoundedRectangle(cornerRadius: 6)
-                            .fill(hasExistingNotes ? Color.yellow.opacity(0.1) : Color.white.opacity(0.03))
-                    )
-                }
-                .buttonStyle(.plain)
-
-                // Show existing note preview if collapsed
-                if hasExistingNotes {
-                    HStack(spacing: 8) {
-                        Rectangle()
-                            .fill(Color.yellow.opacity(0.6))
-                            .frame(width: 3)
-
-                        VStack(alignment: .leading, spacing: 4) {
-                            Text("Note")
-                                .font(.custom("SF Mono", size: 10))
-                                .foregroundColor(.yellow.opacity(0.5))
-                                .textCase(.uppercase)
-                            Text(notesText)
-                                .font(.custom("SF Mono", size: 13))
-                                .foregroundColor(.white.opacity(0.8))
-                                .lineLimit(2)
-                                .multilineTextAlignment(.leading)
-                        }
-
-                        Spacer()
-                    }
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 10)
-                    .background(
-                        RoundedRectangle(cornerRadius: 6)
-                            .fill(Color.yellow.opacity(0.08))
-                    )
-                    .frame(maxWidth: 350)
-                }
+            }
+            .padding(.horizontal, 12)
+            .padding(.vertical, 10)
+        }
+        .background(accentColor.opacity(0.05))
+        .contentShape(Rectangle())
+        .onTapGesture {
+            if !isEditing && accentColor == .yellow {
+                onTap()
             }
         }
     }

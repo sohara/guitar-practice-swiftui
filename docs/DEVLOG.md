@@ -800,3 +800,49 @@ GuitarPractice/Views/
 - Filter applies before search text and type filters
 - Uses `Calendar.current.date(byAdding: .day, value: -7, to: Date())` for 7-day cutoff
 - Items with no `lastPracticed` date are excluded when filter is active
+
+---
+
+## 2026-01-14: Phase 9.3 - Notes History
+
+### Features Implemented
+- **Notes History in Timer View**: Shows previous practice notes for the current item while practicing
+- **Unified NotesCard Component**: Single card containing current + historical notes with consistent styling
+- **Visual Design**: Each note is a `NoteRow` with identical structure, differentiated by accent color:
+  - Current note: Yellow accent bar, "TODAY" label, editable on click
+  - Previous notes: Gray accent bar, date label (e.g., "JAN 12"), read-only
+- **Scrollable Container**: Max height of 180px with scroll for many notes
+- **Edit UX**:
+  - Click current note to edit inline
+  - Enter or "Save" button to save
+  - Escape to cancel and revert changes
+
+### New Files/Components
+- `NotesCard` - Container component for all notes
+- `NoteRow` - Reusable row component for individual notes
+- `HistoricalNote` struct in `Types.swift` - Represents a past note with date
+
+### NotionClient Changes
+- Added `fetchLogsForItem(itemId:)` - Queries Practice Logs filtered by Item relation
+
+### AppState Changes
+- Added `currentItemNotesHistory: [HistoricalNote]` - Cached history for current item
+- Added `isLoadingNotesHistory: Bool` - Loading state
+- Added `fetchNotesHistoryForCurrentItem()` - Fetches and filters notes
+- History fetched on practice start and when switching items
+- History cleared on practice end
+
+### Bug Fix
+- Notes weren't persisting to Notion - `saveCurrentItemToNotion()` was missing the `notes` parameter in the `updateLog()` call
+
+### Design Evolution
+Started with separate components (current note card + collapsible previous notes section), then unified into single `NotesCard` after feedback:
+1. **First iteration**: Separate `PracticeNotesSection` + `PreviousNotesSection` components
+2. **Second iteration**: Unified card with collapsible disclosure for history
+3. **Final iteration**: Fully unified with identical `NoteRow` styling, no collapsing, scrollable
+
+### Technical Notes
+- History excludes current session's log (filter by sessionId)
+- History only includes logs with non-empty notes
+- History sorted by date descending (most recent first)
+- Joins logs with sessions to get dates for display

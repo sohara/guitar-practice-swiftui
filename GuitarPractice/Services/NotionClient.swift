@@ -108,6 +108,35 @@ actor NotionClient {
         return logs
     }
 
+    // MARK: - Fetch Practice Logs for Item (for notes history)
+
+    func fetchLogsForItem(itemId: String) async throws -> [PracticeLog] {
+        var logs: [PracticeLog] = []
+        var cursor: String? = nil
+
+        repeat {
+            let (results, nextCursor) = try await queryDatabase(
+                databaseId: Config.Notion.Databases.practiceLogs,
+                cursor: cursor,
+                filter: [
+                    "property": "Item",
+                    "relation": ["contains": itemId]
+                ],
+                sorts: [["property": "Order", "direction": "descending"]]
+            )
+
+            for page in results {
+                if let log = parseLog(from: page) {
+                    logs.append(log)
+                }
+            }
+
+            cursor = nextCursor
+        } while cursor != nil
+
+        return logs
+    }
+
     // MARK: - Create Practice Session
 
     func createSession(_ session: NewPracticeSession) async throws -> PracticeSession {

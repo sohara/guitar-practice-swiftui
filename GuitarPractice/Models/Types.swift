@@ -105,6 +105,14 @@ struct NewPracticeLog {
     let notes: String?
 }
 
+// MARK: - Historical Note (for notes history in practice view)
+
+struct HistoricalNote: Identifiable {
+    let id: String  // Log ID
+    let date: Date
+    let notes: String
+}
+
 // MARK: - Calendar Day Summary
 
 struct DaySummary {

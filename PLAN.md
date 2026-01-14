@@ -300,28 +300,20 @@ Add notes field to Practice Logs for tracking progress over time.
 - **UI - Session List**: ✅ Yellow note icon indicator (read-only)
 - **UI - View Mode**: ✅ Notes displayed with yellow icon
 
-### 9.3 Notes History (Future)
+### 9.3 Notes History ✅
 Show historical notes for the current item in the timer view.
 
 - **Rationale**: When practicing, it's helpful to see what you noted last time
-- **Data requirement**: Fetch all PracticeLogs for current LibraryItem (new query)
-- **UI - Timer View**:
-  ```
-  ┌─────────────────────────────────────┐
-  │ NOTE                                │
-  │ "Got to 85bpm"                      │  ← Current session (editable)
-  └─────────────────────────────────────┘
-
-  ▾ Previous notes (3)                    ← Collapsible, collapsed by default
-    • Jan 12: "Working on the verse"
-    • Jan 10: "Got to 80bpm"
-    • Jan 8: "Started learning"
-  ```
-- **Visual hierarchy**: Current note prominent (yellow card), history secondary (gray, smaller)
+- **Data requirement**: ✅ Fetch all PracticeLogs for current LibraryItem via `fetchLogsForItem(itemId:)`
+- **UI - Timer View**: ✅ Unified `NotesCard` component with scrollable list
+- **Visual design**: ✅ Each note is a `NoteRow` with identical styling, differentiated by accent color:
+  - Current note: Yellow accent bar, yellow label ("TODAY"), editable
+  - Previous notes: Gray accent bar, gray label (date), read-only
 - **Implementation**:
-  1. Add `fetchLogsForItem(itemId:)` to NotionClient
-  2. Cache item history or fetch on-demand when entering timer view
-  3. Add collapsible "Previous notes" section below current note
+  1. ✅ Added `fetchLogsForItem(itemId:)` to NotionClient
+  2. ✅ Fetch on practice start and when switching items (state in AppState)
+  3. ✅ Unified `NotesCard` with max height (180px) and scrolling
+  4. ✅ Click to edit current note, Enter to save, Escape to cancel/revert
 
 ### 9.4 Other Ideas (Unprioritized)
 - **Jump to Today**: Press `T` to return to today's date in calendar

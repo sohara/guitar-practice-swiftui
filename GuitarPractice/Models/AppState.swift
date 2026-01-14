@@ -53,6 +53,10 @@ class AppState: ObservableObject {
     private var timerTask: Task<Void, Never>?
     private var hasTriggeredOvertimeAlert: Bool = false
 
+    // Notes history for current item (loaded on practice start/switch)
+    @Published var currentItemNotesHistory: [HistoricalNote] = []
+    @Published var isLoadingNotesHistory: Bool = false
+
     // MARK: - Search, Filter, Sort State
 
     @Published var searchText: String = ""
@@ -814,6 +818,60 @@ class AppState: ObservableObject {
         }
     }
 
+    // MARK: - Notes History
+
+    /// Fetch notes history for the current practice item
+    func fetchNotesHistoryForCurrentItem() async {
+        guard let item = currentPracticeItem,
+              let client = notionClient else {
+            currentItemNotesHistory = []
+            return
+        }
+
+        isLoadingNotesHistory = true
+        currentItemNotesHistory = []
+
+        do {
+            let logs = try await client.fetchLogsForItem(itemId: item.item.id)
+
+            // Build historical notes list:
+            // - Only include logs with non-empty notes
+            // - Exclude current session's log
+            // - Join with sessions to get dates
+            var notes: [HistoricalNote] = []
+            let currentSessionId = currentSession?.id
+
+            for log in logs {
+                // Skip if no notes
+                guard let logNotes = log.notes, !logNotes.isEmpty else { continue }
+
+                // Skip if this is the current session's log
+                if let currentId = currentSessionId, log.sessionId == currentId {
+                    continue
+                }
+
+                // Find session date
+                if let session = sessions.first(where: { $0.id == log.sessionId }) {
+                    notes.append(HistoricalNote(
+                        id: log.id,
+                        date: session.date,
+                        notes: logNotes
+                    ))
+                }
+            }
+
+            // Sort by date descending (most recent first)
+            notes.sort { $0.date > $1.date }
+
+            currentItemNotesHistory = notes
+        } catch {
+            print("Failed to fetch notes history: \(error)")
+            currentItemNotesHistory = []
+        }
+
+        isLoadingNotesHistory = false
+    }
+
     // MARK: - Practice Mode
 
     func startPractice() {
@@ -832,6 +890,11 @@ class AppState: ObservableObject {
             }
         } else {
             practiceElapsedSeconds = 0
+        }
+
+        // Fetch notes history for current item
+        Task {
+            await fetchNotesHistoryForCurrentItem()
         }
 
         resumeTimer()
@@ -954,7 +1017,8 @@ class AppState: ObservableObject {
                     logId: logId,
                     plannedMinutes: item.plannedMinutes,
                     actualMinutes: item.actualMinutes,
-                    order: index
+                    order: index,
+                    notes: item.notes
                 )
                 selectedItems[index].isDirty = false
             }
@@ -988,6 +1052,11 @@ class AppState: ObservableObject {
             practiceElapsedSeconds = 0
         }
 
+        // Fetch notes history for new item
+        Task {
+            await fetchNotesHistoryForCurrentItem()
+        }
+
         // Keep timer running
         if !isTimerRunning {
             resumeTimer()
@@ -999,5 +1068,6 @@ class AppState: ObservableObject {
         isPracticing = false
         practiceItemIndex = 0
         practiceElapsedSeconds = 0
+        currentItemNotesHistory = []
     }
 }
