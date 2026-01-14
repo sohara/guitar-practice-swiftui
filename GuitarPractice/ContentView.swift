@@ -1,7 +1,9 @@
 import SwiftUI
+import SwiftData
 
 struct ContentView: View {
     @ObservedObject var appState: AppState
+    @Environment(\.modelContext) private var modelContext
 
     var body: some View {
         ZStack {
@@ -35,6 +37,7 @@ struct ContentView: View {
 
 struct MainContentView: View {
     @ObservedObject var appState: AppState
+    @Environment(\.modelContext) private var modelContext
     @FocusState private var isSearchFocused: Bool
 
     var body: some View {
@@ -77,6 +80,7 @@ struct MainContentView: View {
                 .padding(.vertical, 12)
         }
         .task {
+            appState.setupCache(modelContext: modelContext)
             await appState.loadDataIfNeeded()
         }
         .focusable()

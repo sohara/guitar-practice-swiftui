@@ -383,3 +383,51 @@ After analyzing dependencies between Phase 7 features, settled on this order:
 
 ### Next Steps
 - Phase 7.2: SwiftData local cache (foundational)
+
+---
+
+## 2026-01-13: Phase 7.2 - SwiftData Local Cache
+
+### Features Implemented
+- **SwiftData Models**: Cached versions of all data types
+  - `CachedLibraryItem`, `CachedPracticeSession`, `CachedPracticeLog`
+  - `CacheMetadata` for tracking last update timestamps
+  - Use `@Attribute(.unique)` for ID-based upserts
+- **CacheService**: Manages all cache operations
+  - `loadLibraryItems()` / `saveLibraryItems()` - full library sync
+  - `loadSessions()` / `saveSessions()` - sessions list sync
+  - `loadLogs(forSession:)` / `saveLogs(_:forSession:)` - per-session logs
+  - Handles insert/update/delete to keep cache in sync with Notion
+- **Cache-First Loading Strategy**:
+  - On app launch, load from cache first (instant display)
+  - Then fetch from Notion in background
+  - Update cache when fresh data arrives
+  - If Notion fails but cache exists, keep showing cached data
+- **Silent Background Refresh**: No loading spinner if cached data is displayed
+
+### Architecture
+```
+ContentView
+  └─ .task { setupCache → loadDataIfNeeded }
+       └─ Load from cache (instant)
+       └─ Fetch from Notion (background)
+       └─ Save to cache (persist)
+```
+
+### Files Added
+- `GuitarPractice/Models/CachedModels.swift` - SwiftData `@Model` classes
+- `GuitarPractice/Services/CacheService.swift` - Cache operations
+
+### Files Modified
+- `GuitarPractice/GuitarPracticeApp.swift` - ModelContainer setup
+- `GuitarPractice/ContentView.swift` - Pass modelContext to AppState
+- `GuitarPractice/Models/AppState.swift` - Cache-first loading logic
+
+### Technical Notes
+- SwiftData stores data in `~/Library/Application Support/` automatically
+- Uses predicates for efficient session-specific log queries
+- Tags stored as JSON-encoded Data (SwiftData doesn't support [String] directly)
+- `@Environment(\.modelContext)` propagated through view hierarchy
+
+### Next Steps
+- Phase 7.3: Calendar View (leverages cache for date-range queries)

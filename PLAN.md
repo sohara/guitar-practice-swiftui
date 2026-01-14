@@ -111,13 +111,13 @@ GuitarPractice/
 - [ ] Consider a setting to toggle on/off (future)
 - [x] Uses `NSSound` for sound, `UserNotifications` for system alerts
 
-#### 7.2 Local Cache (SwiftData) - FOUNDATIONAL
-- [ ] Cache Notion data locally for performance
-- [ ] Instant app launch with cached data, background refresh
-- [ ] Fewer API calls to Notion
-- [ ] Sync strategy: cache-first, then refresh from Notion
-- [ ] SwiftData `@Model` classes mirroring existing types
-- [ ] Enables efficient `@Query` predicates for calendar/stats
+#### 7.2 Local Cache (SwiftData) ✅
+- [x] Cache Notion data locally for performance
+- [x] Instant app launch with cached data, background refresh
+- [x] Fewer API calls to Notion
+- [x] Sync strategy: cache-first, then refresh from Notion
+- [x] SwiftData `@Model` classes mirroring existing types
+- [x] Enables efficient `@Query` predicates for calendar/stats
 - [ ] Future: potential offline support (queue writes, sync when online)
 
 #### 7.3 Calendar View

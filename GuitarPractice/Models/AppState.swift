@@ -1,4 +1,5 @@
 import SwiftUI
+import SwiftData
 import AppKit
 import UserNotifications
 
@@ -151,6 +152,7 @@ class AppState: ObservableObject {
     // MARK: - Private
 
     private var notionClient: NotionClient?
+    private var cacheService: CacheService?
 
     // MARK: - Initialization
 
@@ -182,6 +184,13 @@ class AppState: ObservableObject {
         sessionsState = .idle
     }
 
+    // MARK: - Cache Setup
+
+    func setupCache(modelContext: ModelContext) {
+        guard cacheService == nil else { return }
+        cacheService = CacheService(modelContext: modelContext)
+    }
+
     // MARK: - Data Fetching
 
     func loadData() async {
@@ -197,14 +206,35 @@ class AppState: ObservableObject {
     }
 
     /// Load data only if not already loaded (for initial app launch)
+    /// Uses cache-first strategy: show cached data instantly, then refresh from Notion
     func loadDataIfNeeded() async {
         // Skip if we already have data loaded
         if case .loaded = libraryState, case .loaded = sessionsState {
             return
         }
+
+        // Try to load from cache first for instant display
+        if let cache = cacheService {
+            let cachedLibrary = cache.loadLibraryItems()
+            let cachedSessions = cache.loadSessions()
+
+            if !cachedLibrary.isEmpty {
+                libraryState = .loaded(cachedLibrary)
+            }
+            if !cachedSessions.isEmpty {
+                sessionsState = .loaded(cachedSessions)
+            }
+
+            // Auto-select today's session from cache
+            if currentSession == nil && !cachedSessions.isEmpty {
+                await selectTodaysSessionIfExists()
+            }
+        }
+
+        // Then refresh from Notion in background
         await loadData()
 
-        // Auto-select today's session if it exists and no session is selected
+        // Auto-select today's session if not already selected
         if currentSession == nil {
             await selectTodaysSessionIfExists()
         }
@@ -225,22 +255,52 @@ class AppState: ObservableObject {
     }
 
     private func fetchLibrary(client: NotionClient) async {
-        libraryState = .loading
+        // Only show loading if we don't have cached data
+        if case .loaded = libraryState {
+            // Already showing cached data, fetch silently
+        } else {
+            libraryState = .loading
+        }
+
         do {
             let items = try await client.fetchLibrary()
             libraryState = .loaded(items)
+
+            // Save to cache
+            cacheService?.saveLibraryItems(items)
         } catch {
-            libraryState = .error(error)
+            // Only set error if we don't have cached data to show
+            if case .loaded = libraryState {
+                // Keep showing cached data, log error
+                print("Failed to refresh library from Notion: \(error)")
+            } else {
+                libraryState = .error(error)
+            }
         }
     }
 
     private func fetchSessions(client: NotionClient) async {
-        sessionsState = .loading
+        // Only show loading if we don't have cached data
+        if case .loaded = sessionsState {
+            // Already showing cached data, fetch silently
+        } else {
+            sessionsState = .loading
+        }
+
         do {
             let sessions = try await client.fetchSessions()
             sessionsState = .loaded(sessions)
+
+            // Save to cache
+            cacheService?.saveSessions(sessions)
         } catch {
-            sessionsState = .error(error)
+            // Only set error if we don't have cached data to show
+            if case .loaded = sessionsState {
+                // Keep showing cached data, log error
+                print("Failed to refresh sessions from Notion: \(error)")
+            } else {
+                sessionsState = .error(error)
+            }
         }
     }
 
@@ -297,13 +357,35 @@ class AppState: ObservableObject {
             return
         }
 
-        guard let client = notionClient else { return }
-
         currentSession = session
-        isLoadingSession = true
         sessionError = nil
         selectedItems.removeAll()
         deletedLogIds.removeAll()
+
+        // Try to load from cache first for instant display
+        if let cache = cacheService {
+            let cachedLogs = cache.loadLogs(forSession: session.id)
+            if !cachedLogs.isEmpty {
+                var items: [SelectedItem] = []
+                for log in cachedLogs.sorted(by: { $0.order < $1.order }) {
+                    if let libraryItem = library.first(where: { $0.id == log.itemId }) {
+                        items.append(SelectedItem(from: log, item: libraryItem))
+                    }
+                }
+                selectedItems = items
+            }
+        }
+
+        // Show loading only if we don't have cached data
+        if selectedItems.isEmpty {
+            isLoadingSession = true
+        }
+
+        // Then fetch from Notion
+        guard let client = notionClient else {
+            isLoadingSession = false
+            return
+        }
 
         do {
             let logs = try await client.fetchLogs(forSession: session.id)
@@ -317,8 +399,16 @@ class AppState: ObservableObject {
             }
             selectedItems = items
             isLoadingSession = false
+
+            // Save to cache
+            cacheService?.saveLogs(logs, forSession: session.id)
         } catch {
-            sessionError = error
+            // Only set error if we don't have cached data
+            if selectedItems.isEmpty {
+                sessionError = error
+            } else {
+                print("Failed to refresh session logs from Notion: \(error)")
+            }
             isLoadingSession = false
         }
     }

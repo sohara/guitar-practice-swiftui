@@ -15,6 +15,8 @@
 		A01234560006 /* Config.swift in Sources */ = {isa = PBXBuildFile; fileRef = A01234560017 /* Config.swift */; };
 		A01234560007 /* KeychainService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A01234560018 /* KeychainService.swift */; };
 		A01234560008 /* NotionClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = A01234560019 /* NotionClient.swift */; };
+		A01234560009 /* CachedModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0123456001A /* CachedModels.swift */; };
+		A0123456000A /* CacheService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0123456001B /* CacheService.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -28,6 +30,8 @@
 		A01234560017 /* Config.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Config.swift; sourceTree = "<group>"; };
 		A01234560018 /* KeychainService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainService.swift; sourceTree = "<group>"; };
 		A01234560019 /* NotionClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotionClient.swift; sourceTree = "<group>"; };
+		A0123456001A /* CachedModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CachedModels.swift; sourceTree = "<group>"; };
+		A0123456001B /* CacheService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CacheService.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -75,6 +79,7 @@
 			children = (
 				A01234560015 /* Types.swift */,
 				A01234560016 /* AppState.swift */,
+				A0123456001A /* CachedModels.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -85,6 +90,7 @@
 				A01234560017 /* Config.swift */,
 				A01234560018 /* KeychainService.swift */,
 				A01234560019 /* NotionClient.swift */,
+				A0123456001B /* CacheService.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -165,6 +171,8 @@
 				A01234560006 /* Config.swift in Sources */,
 				A01234560007 /* KeychainService.swift in Sources */,
 				A01234560008 /* NotionClient.swift in Sources */,
+				A01234560009 /* CachedModels.swift in Sources */,
+				A0123456000A /* CacheService.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
