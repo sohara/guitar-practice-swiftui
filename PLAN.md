@@ -116,9 +116,13 @@ GuitarPractice/
 - [ ] **Local Cache**: Cache Notion data locally for performance
   - Instant app launch with cached data, background refresh
   - Fewer API calls to Notion
-  - Could use SwiftData, Core Data, or simple JSON file
   - Sync strategy: cache-first, then refresh; or periodic sync
   - Potential for offline support (queue writes, sync when online)
+  - **Recommended approach: SwiftData**
+    - Available on macOS 14+ (already our target)
+    - Simple Swift-native API with `@Model` macro
+    - Enables efficient queries for calendar/stats features
+    - Alternative: Simple JSON file to `~/Library/Application Support/` if we just need fast launch
 
 *Note: This app is evolving to be the primary UI, with Notion serving as the backend for editing practice library items.*
 
