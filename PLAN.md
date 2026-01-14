@@ -60,35 +60,35 @@ GuitarPractice/
 - [x] Reverse sort toggle
 - [x] Keyboard navigation (j/k or arrows)
 
-### Phase 3: Session Management
-- [ ] Session picker (sidebar or dropdown)
-- [ ] Create new session (auto-named by date)
-- [ ] Selected items pane showing:
+### Phase 3: Session Management ✅
+- [x] Session picker (sidebar or dropdown)
+- [x] Create new session (auto-named by date)
+- [x] Selected items pane showing:
   - Item name and planned time
   - Actual time (if practiced)
   - Completion status indicator
-- [ ] Add items from library (double-click or space)
-- [ ] Remove items from session
-- [ ] Adjust planned time (+/- buttons or direct input)
-- [ ] Reorder items (drag and drop)
-- [ ] Delta save (only sync changed items to Notion)
+- [x] Add items from library (double-click or space)
+- [x] Remove items from session
+- [x] Adjust planned time (+/- buttons or direct input)
+- [x] Reorder items (drag and drop)
+- [x] Delta save (only sync changed items to Notion)
 
-### Phase 4: Practice Timer
-- [ ] Full-window practice mode
-- [ ] Large timer display (MM:SS)
-- [ ] Current item name prominent
-- [ ] Start/pause/resume controls
-- [ ] Finish with confirmation dialog
-- [ ] Track actual time (stored as decimal minutes)
-- [ ] Resume from previous actual time if re-practicing
-- [ ] Keyboard shortcuts (space = pause, enter = finish)
+### Phase 4: Practice Timer ✅
+- [x] Full-window practice mode
+- [x] Large timer display (MM:SS)
+- [x] Current item name prominent
+- [x] Start/pause/resume controls
+- [x] Finish with confirmation dialog
+- [x] Track actual time (stored as decimal minutes)
+- [x] Resume from previous actual time if re-practicing
+- [x] Keyboard shortcuts (space = pause, enter = finish)
 
-### Phase 5: Menu Bar Integration
-- [ ] MenuBarExtra showing timer when practicing
-- [ ] Display current item name
-- [ ] Pause/resume/finish controls in dropdown
-- [ ] Timer continues when main window closed
-- [ ] Click to bring main window to front
+### Phase 5: Menu Bar Integration ✅
+- [x] MenuBarExtra showing timer when practicing
+- [x] Display current item name
+- [x] Pause/resume/finish controls in dropdown
+- [x] Timer continues when main window closed
+- [x] Click to bring main window to front
 
 ### Phase 6: Polish ✅
 - [x] Refresh data command (⌘R)
@@ -169,8 +169,8 @@ GuitarPractice/
 
 ### Phase 8: Code Organization
 
-#### 8.1 Refactor ContentView.swift
-ContentView.swift is 1500+ lines and should be split into separate files for maintainability.
+#### 8.1 Refactor ContentView.swift ✅
+ContentView.swift was 1500+ lines and has been split into separate files for maintainability.
 
 **Target structure:**
 ```
