@@ -585,3 +585,71 @@ Created custom app icon for the macOS app, replacing the default placeholder.
 ### Files Added
 - `GuitarPractice/Assets.xcassets/AppIcon.appiconset/` - All icon sizes
 - `fix_corners.swift` - Corner mask utility
+
+---
+
+## 2026-01-14: Phase 7.5 - Stats Dashboard
+
+### Features Implemented
+- **Stats Toggle Button**: Chart icon in header toggles between session view and stats dashboard
+- **Stats Dashboard View**: Scrollable panel with multiple stat sections
+  - Overview cards: Total time, sessions, items practiced, average session
+  - Streak cards: Current streak and longest streak
+  - Recent activity: Last 7 days bar chart
+  - Type breakdown: Time spent by item type (Song/Exercise/Course Lesson)
+  - Top items: By time or count (toggleable)
+  - Weekly trend: 8-week bar chart
+
+### New Files
+- `GuitarPractice/Services/StatsService.swift` - Computes all aggregated statistics
+- Stats views in ContentView.swift:
+  - `StatsDashboardView` - Main container
+  - `StatsOverviewSection` - Overview cards grid
+  - `StatCard` - Single stat display card
+  - `StreakCard` - Streak display with suffix
+  - `RecentActivitySection` - 7-day bar chart
+  - `RecentDayBar` - Single day bar
+  - `TypeBreakdownSection` - Item type distribution
+  - `TypeBreakdownRow` - Single type row with progress bar
+  - `TopItemsSection` - Most practiced items
+  - `TopItemRow` - Single item row
+  - `WeeklyTrendSection` - 8-week trend chart
+  - `WeeklyTrendBar` - Single week bar
+
+### CacheService Updates
+- Added `loadAllLogs()` - Fetches all practice logs for stats aggregation
+
+### AppState Updates
+- Added `isShowingStats: Bool` - Toggle for stats view
+- Added `practiceStats: PracticeStats?` - Computed stats data
+- Added `statsService: StatsService` - Service instance
+- Added `refreshStats()` - Computes stats from cached data
+- Added `toggleStatsView()` - Toggles and refreshes stats
+
+### Stats Computed
+- **Total practice time**: Sum of all actual minutes
+- **Total sessions**: Count of all sessions
+- **Items practiced**: Unique items with practice time
+- **Average session**: Mean time per session
+- **Current/longest streak**: Consecutive practice days
+- **This week/month/30 days**: Time in period
+- **Top items by time**: Sorted by total practice time
+- **Top items by count**: Sorted by practice count
+- **Minutes by type**: Grouped by Song/Exercise/Course Lesson
+- **Weekly trend**: 8 weeks of practice time
+- **Recent days**: 7 days with time and item count
+
+### Technical Notes
+- Stats computed on-demand when toggled (not on every data refresh)
+- Uses cached data from SwiftData for efficient aggregation
+- Streak calculation handles today/yesterday edge cases
+- Bar charts scale dynamically based on max values
+
+### UI Design
+- Cards use colored backgrounds with opacity (0.1 fill, 0.2 stroke)
+- Monospace "SF Mono" font throughout for consistency
+- Cyan highlights for current week/today
+- Toggle between time/count views for top items
+
+### Next Steps
+- Phase 7.6: UI Polish (flexible split view, typography)

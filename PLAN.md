@@ -143,12 +143,15 @@ GuitarPractice/
 - [x] Applied macOS Big Sur rounded corner mask via `fix_corners.swift`
 - [x] Generated all required sizes (16-1024px)
 
-#### 7.4 Stats Dashboard
-- [ ] Practice analytics with aggregated data
-- [ ] Most practiced items
-- [ ] Time trends over weeks/months
-- [ ] Goals and streaks
-- [ ] Leverages SwiftData for efficient aggregation queries
+#### 7.4 Stats Dashboard ✅
+- [x] Practice analytics with aggregated data
+- [x] Most practiced items (by time and count)
+- [x] Time trends over weeks/months (8-week chart)
+- [x] Current and longest streaks
+- [x] Leverages SwiftData for efficient aggregation queries
+- [x] Type breakdown (Song/Exercise/Course Lesson)
+- [x] Recent 7-day activity bar chart
+- [x] Toggle button in header to switch views
 
 #### 7.5 UI Polish
 - [ ] **Flexible Split View**: Improve two-pane layout
@@ -160,6 +163,9 @@ GuitarPractice/
   - Footer text too small - increase by at least 2px (currently 10-11pt)
   - Consider bumping main/regular text sizes throughout
   - OK to increase footer height if needed
+- [ ] **Hover Labels**: Add tooltip labels to icon-only buttons
+  - Stats toggle, Open in Notion, Settings, Refresh buttons
+  - Use `.help()` modifier for native macOS tooltips
 
 *Note: This app is evolving to be the primary UI, with Notion serving as the backend for editing practice library items.*
 

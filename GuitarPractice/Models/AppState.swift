@@ -36,6 +36,8 @@ class AppState: ObservableObject {
     @Published var needsAPIKey: Bool = false
     @Published var isSettingsPresented: Bool = false
     @Published var isCalendarPresented: Bool = false
+    @Published var isShowingStats: Bool = false
+    @Published var practiceStats: PracticeStats?
 
     // Calendar navigation state
     @Published var selectedDate: Date = Date()  // Date selected in calendar
@@ -166,6 +168,7 @@ class AppState: ObservableObject {
 
     private var notionClient: NotionClient?
     private var cacheService: CacheService?
+    private let statsService = StatsService()
 
     // MARK: - Initialization
 
@@ -309,6 +312,26 @@ class AppState: ObservableObject {
             } else {
                 sessionsState = .error(error)
             }
+        }
+    }
+
+    // MARK: - Statistics
+
+    func refreshStats() {
+        guard let cache = cacheService else { return }
+
+        let allLogs = cache.loadAllLogs()
+        practiceStats = statsService.computeStats(
+            sessions: sessions,
+            logs: allLogs,
+            library: library
+        )
+    }
+
+    func toggleStatsView() {
+        isShowingStats.toggle()
+        if isShowingStats && practiceStats == nil {
+            refreshStats()
         }
     }
 

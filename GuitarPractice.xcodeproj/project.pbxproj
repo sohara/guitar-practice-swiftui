@@ -17,6 +17,7 @@
 		A01234560008 /* NotionClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = A01234560019 /* NotionClient.swift */; };
 		A01234560009 /* CachedModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0123456001A /* CachedModels.swift */; };
 		A0123456000A /* CacheService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0123456001B /* CacheService.swift */; };
+		A0123456000B /* StatsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0123456001C /* StatsService.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -32,6 +33,7 @@
 		A01234560019 /* NotionClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotionClient.swift; sourceTree = "<group>"; };
 		A0123456001A /* CachedModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CachedModels.swift; sourceTree = "<group>"; };
 		A0123456001B /* CacheService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CacheService.swift; sourceTree = "<group>"; };
+		A0123456001C /* StatsService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatsService.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -91,6 +93,7 @@
 				A01234560018 /* KeychainService.swift */,
 				A01234560019 /* NotionClient.swift */,
 				A0123456001B /* CacheService.swift */,
+				A0123456001C /* StatsService.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -173,6 +176,7 @@
 				A01234560008 /* NotionClient.swift in Sources */,
 				A01234560009 /* CachedModels.swift in Sources */,
 				A0123456000A /* CacheService.swift in Sources */,
+				A0123456000B /* StatsService.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

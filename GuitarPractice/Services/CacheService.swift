@@ -125,6 +125,18 @@ final class CacheService {
         }
     }
 
+    /// Load all practice logs (for stats aggregation)
+    func loadAllLogs() -> [PracticeLog] {
+        let descriptor = FetchDescriptor<CachedPracticeLog>()
+        do {
+            let cached = try modelContext.fetch(descriptor)
+            return cached.map { $0.toPracticeLog() }
+        } catch {
+            print("Failed to load all cached logs: \(error)")
+            return []
+        }
+    }
+
     func saveLogs(_ logs: [PracticeLog], forSession sessionId: String) {
         // Get existing logs for this session
         let descriptor = FetchDescriptor<CachedPracticeLog>(
