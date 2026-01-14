@@ -146,6 +146,7 @@ GuitarPractice/
 
 **Branches with icon approaches:**
 - `icon/guitar-pick-orange` - White guitar pick on orange gradient (programmatic Swift generator)
+- `icon/ai-guitar-green` - Dark guitar with green neon accents (AI-generated, Google)
 
 #### 7.4 Stats Dashboard
 - [ ] Practice analytics with aggregated data
