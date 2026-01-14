@@ -431,3 +431,34 @@ ContentView
 
 ### Next Steps
 - Phase 7.3: Calendar View (leverages cache for date-range queries)
+
+---
+
+## 2026-01-13: Phase 7.3 - Calendar View (Initial)
+
+### Features Implemented
+- **Calendar Sheet**: Accessible via calendar icon in header
+  - Month grid with prev/next navigation
+  - Days with practice sessions highlighted in green
+  - Today's date outlined in cyan
+  - Currently selected session highlighted
+  - Click a day to load that session
+- **Stats Footer**: Shows at-a-glance metrics
+  - Sessions this month count
+  - Total time this month (estimated)
+  - Current practice streak (consecutive days)
+- **Streak Calculation**: Counts consecutive days with sessions
+
+### Files Modified
+- `GuitarPractice/Models/AppState.swift` - Added `isCalendarPresented` state
+- `GuitarPractice/ContentView.swift` - Added CalendarView, CalendarDayView, CalendarStatView
+
+### Future Improvements (from user feedback)
+- Convert calendar from popup sheet to main view/tab
+- Show session summary info (items practiced, total time) per day
+- Eventually make calendar the primary way to view practice history
+- Heat map intensity based on practice duration
+
+### Next Steps
+- Phase 7.4: Stats Dashboard
+- Phase 7.5: UI Polish (flexible split view, typography)

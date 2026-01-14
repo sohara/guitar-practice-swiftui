@@ -28,6 +28,7 @@ class AppState: ObservableObject {
 
     @Published var needsAPIKey: Bool = false
     @Published var isSettingsPresented: Bool = false
+    @Published var isCalendarPresented: Bool = false
 
     // MARK: - Practice State
 

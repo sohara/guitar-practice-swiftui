@@ -120,11 +120,13 @@ GuitarPractice/
 - [x] Enables efficient `@Query` predicates for calendar/stats
 - [ ] Future: potential offline support (queue writes, sync when online)
 
-#### 7.3 Calendar View
-- [ ] Visual calendar showing practice history
-- [ ] Heat map or day-by-day view of sessions
-- [ ] Click to view/load past sessions
-- [ ] See streaks, total time per day/week/month
+#### 7.3 Calendar View (In Progress)
+- [x] Visual calendar showing practice history (as popup sheet)
+- [x] Click to view/load past sessions
+- [x] See streaks, sessions this month
+- [ ] **TODO**: Convert from popup to main view/tab
+- [ ] **TODO**: Show session summary (items, duration) per day
+- [ ] Heat map intensity based on practice duration
 - [ ] Leverages SwiftData for efficient date-range queries
 
 #### 7.4 Stats Dashboard

@@ -30,6 +30,9 @@ struct ContentView: View {
         .sheet(isPresented: $appState.isSettingsPresented) {
             SettingsView(appState: appState)
         }
+        .sheet(isPresented: $appState.isCalendarPresented) {
+            CalendarView(appState: appState)
+        }
     }
 }
 
@@ -216,6 +219,17 @@ struct HeaderView: View {
 
             Spacer()
                 .frame(width: 20)
+
+            // Calendar button
+            Button {
+                appState.isCalendarPresented = true
+            } label: {
+                Image(systemName: "calendar")
+                    .font(.system(size: 16))
+                    .foregroundColor(.gray)
+            }
+            .buttonStyle(.plain)
+            .help("Practice History")
 
             // Open in Notion button
             Button {
@@ -1299,6 +1313,342 @@ struct APIKeySetupView: View {
             Task { await appState.loadData() }
         } catch {
             errorMessage = error.localizedDescription
+        }
+    }
+}
+
+// MARK: - Calendar View
+
+struct CalendarView: View {
+    @ObservedObject var appState: AppState
+    @Environment(\.dismiss) var dismiss
+    @State private var displayedMonth: Date = Date()
+
+    private let calendar = Calendar.current
+    private let daysOfWeek = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
+
+    var body: some View {
+        VStack(spacing: 0) {
+            // Header
+            HStack {
+                Text("Practice History")
+                    .font(.custom("SF Mono", size: 20))
+                    .fontWeight(.bold)
+                    .foregroundStyle(
+                        LinearGradient(
+                            colors: [.orange, .pink],
+                            startPoint: .leading,
+                            endPoint: .trailing
+                        )
+                    )
+
+                Spacer()
+
+                Button("Done") {
+                    dismiss()
+                }
+                .keyboardShortcut(.escape, modifiers: [])
+            }
+            .padding()
+
+            Divider()
+
+            // Month navigation
+            HStack {
+                Button {
+                    withAnimation {
+                        displayedMonth = calendar.date(byAdding: .month, value: -1, to: displayedMonth) ?? displayedMonth
+                    }
+                } label: {
+                    Image(systemName: "chevron.left")
+                        .font(.system(size: 16, weight: .semibold))
+                        .foregroundColor(.cyan)
+                }
+                .buttonStyle(.plain)
+
+                Spacer()
+
+                Text(monthYearString)
+                    .font(.custom("SF Mono", size: 16))
+                    .fontWeight(.semibold)
+                    .foregroundColor(.white)
+
+                Spacer()
+
+                Button {
+                    withAnimation {
+                        displayedMonth = calendar.date(byAdding: .month, value: 1, to: displayedMonth) ?? displayedMonth
+                    }
+                } label: {
+                    Image(systemName: "chevron.right")
+                        .font(.system(size: 16, weight: .semibold))
+                        .foregroundColor(.cyan)
+                }
+                .buttonStyle(.plain)
+            }
+            .padding(.horizontal)
+            .padding(.vertical, 12)
+
+            // Days of week header
+            HStack(spacing: 0) {
+                ForEach(daysOfWeek, id: \.self) { day in
+                    Text(day)
+                        .font(.custom("SF Mono", size: 11))
+                        .foregroundColor(.gray)
+                        .frame(maxWidth: .infinity)
+                }
+            }
+            .padding(.horizontal)
+            .padding(.bottom, 8)
+
+            // Calendar grid
+            LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 7), spacing: 8) {
+                ForEach(daysInMonth, id: \.self) { date in
+                    if let date = date {
+                        CalendarDayView(
+                            date: date,
+                            session: sessionForDate(date),
+                            isToday: calendar.isDateInToday(date),
+                            isSelected: isSelectedDate(date)
+                        ) {
+                            selectSession(for: date)
+                        }
+                    } else {
+                        Color.clear
+                            .frame(height: 44)
+                    }
+                }
+            }
+            .padding(.horizontal)
+
+            Divider()
+                .padding(.top, 16)
+
+            // Stats footer
+            HStack(spacing: 24) {
+                CalendarStatView(
+                    label: "This Month",
+                    value: "\(sessionsThisMonth)",
+                    icon: "calendar",
+                    color: .cyan
+                )
+                CalendarStatView(
+                    label: "Total Time",
+                    value: formatTotalTime(totalMinutesThisMonth),
+                    icon: "clock",
+                    color: .orange
+                )
+                CalendarStatView(
+                    label: "Current Streak",
+                    value: "\(currentStreak) days",
+                    icon: "flame",
+                    color: .pink
+                )
+            }
+            .padding()
+        }
+        .frame(width: 420, height: 520)
+        .background(Color(red: 0.08, green: 0.08, blue: 0.12))
+    }
+
+    // MARK: - Computed Properties
+
+    private var monthYearString: String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "MMMM yyyy"
+        return formatter.string(from: displayedMonth)
+    }
+
+    private var daysInMonth: [Date?] {
+        guard let monthInterval = calendar.dateInterval(of: .month, for: displayedMonth),
+              let monthFirstWeek = calendar.dateInterval(of: .weekOfMonth, for: monthInterval.start)
+        else { return [] }
+
+        var days: [Date?] = []
+        var currentDate = monthFirstWeek.start
+
+        // Generate 6 weeks worth of days (max needed for any month)
+        for _ in 0..<42 {
+            if calendar.isDate(currentDate, equalTo: displayedMonth, toGranularity: .month) {
+                days.append(currentDate)
+            } else if days.isEmpty || calendar.compare(currentDate, to: monthInterval.start, toGranularity: .month) == .orderedAscending {
+                days.append(nil) // Padding before month starts
+            } else {
+                days.append(nil) // Padding after month ends
+            }
+            currentDate = calendar.date(byAdding: .day, value: 1, to: currentDate) ?? currentDate
+        }
+
+        // Trim trailing empty rows
+        while days.count > 7 && days.suffix(7).allSatisfy({ $0 == nil }) {
+            days.removeLast(7)
+        }
+
+        return days
+    }
+
+    private var sessionsByDate: [Date: PracticeSession] {
+        var dict: [Date: PracticeSession] = [:]
+        for session in appState.sessions {
+            let startOfDay = calendar.startOfDay(for: session.date)
+            dict[startOfDay] = session
+        }
+        return dict
+    }
+
+    private var sessionsThisMonth: Int {
+        appState.sessions.filter { session in
+            calendar.isDate(session.date, equalTo: displayedMonth, toGranularity: .month)
+        }.count
+    }
+
+    private var totalMinutesThisMonth: Double {
+        // For now, just count sessions * estimated average
+        // In future, we could query actual practice logs
+        Double(sessionsThisMonth) * 30.0
+    }
+
+    private var currentStreak: Int {
+        let sortedSessions = appState.sessions.sorted { $0.date > $1.date }
+        guard !sortedSessions.isEmpty else { return 0 }
+
+        var streak = 0
+        var checkDate = calendar.startOfDay(for: Date())
+
+        // Check if practiced today
+        if let mostRecent = sortedSessions.first,
+           calendar.isDate(mostRecent.date, inSameDayAs: checkDate) {
+            streak = 1
+            checkDate = calendar.date(byAdding: .day, value: -1, to: checkDate) ?? checkDate
+        }
+
+        // Count consecutive days
+        for session in sortedSessions {
+            let sessionDay = calendar.startOfDay(for: session.date)
+            if calendar.isDate(sessionDay, inSameDayAs: checkDate) {
+                streak += 1
+                checkDate = calendar.date(byAdding: .day, value: -1, to: checkDate) ?? checkDate
+            } else if sessionDay < checkDate {
+                break // Gap in streak
+            }
+        }
+
+        return streak
+    }
+
+    // MARK: - Helper Methods
+
+    private func sessionForDate(_ date: Date) -> PracticeSession? {
+        let startOfDay = calendar.startOfDay(for: date)
+        return sessionsByDate[startOfDay]
+    }
+
+    private func isSelectedDate(_ date: Date) -> Bool {
+        guard let currentSession = appState.currentSession else { return false }
+        return calendar.isDate(date, inSameDayAs: currentSession.date)
+    }
+
+    private func selectSession(for date: Date) {
+        if let session = sessionForDate(date) {
+            Task {
+                await appState.selectSession(session)
+            }
+            dismiss()
+        }
+    }
+
+    private func formatTotalTime(_ minutes: Double) -> String {
+        let hours = Int(minutes) / 60
+        let mins = Int(minutes) % 60
+        if hours > 0 {
+            return "\(hours)h \(mins)m"
+        }
+        return "\(mins)m"
+    }
+}
+
+struct CalendarDayView: View {
+    let date: Date
+    let session: PracticeSession?
+    let isToday: Bool
+    let isSelected: Bool
+    let onTap: () -> Void
+
+    private let calendar = Calendar.current
+
+    var body: some View {
+        Button(action: onTap) {
+            ZStack {
+                // Background
+                RoundedRectangle(cornerRadius: 8)
+                    .fill(backgroundColor)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 8)
+                            .stroke(borderColor, lineWidth: isToday ? 2 : 0)
+                    )
+
+                VStack(spacing: 2) {
+                    Text("\(calendar.component(.day, from: date))")
+                        .font(.custom("SF Mono", size: 14))
+                        .fontWeight(isToday ? .bold : .regular)
+                        .foregroundColor(textColor)
+
+                    // Practice indicator
+                    if session != nil {
+                        Circle()
+                            .fill(Color.green)
+                            .frame(width: 6, height: 6)
+                    }
+                }
+            }
+            .frame(height: 44)
+        }
+        .buttonStyle(.plain)
+        .disabled(session == nil)
+    }
+
+    private var backgroundColor: Color {
+        if isSelected {
+            return .cyan.opacity(0.3)
+        } else if session != nil {
+            return .green.opacity(0.15)
+        }
+        return .clear
+    }
+
+    private var borderColor: Color {
+        isToday ? .cyan : .clear
+    }
+
+    private var textColor: Color {
+        if session != nil {
+            return .white
+        }
+        return .gray.opacity(0.5)
+    }
+}
+
+struct CalendarStatView: View {
+    let label: String
+    let value: String
+    let icon: String
+    let color: Color
+
+    var body: some View {
+        VStack(spacing: 4) {
+            HStack(spacing: 4) {
+                Image(systemName: icon)
+                    .font(.system(size: 12))
+                    .foregroundColor(color)
+                Text(value)
+                    .font(.custom("SF Mono", size: 16))
+                    .fontWeight(.semibold)
+                    .foregroundColor(.white)
+            }
+            Text(label)
+                .font(.custom("SF Mono", size: 10))
+                .foregroundColor(.gray)
+                .textCase(.uppercase)
         }
     }
 }
