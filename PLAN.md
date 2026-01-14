@@ -167,6 +167,50 @@ GuitarPractice/
   - Refresh button: "Refresh Data"
   - (Stats toggle and Open in Notion already had tooltips)
 
+### Phase 8: Code Organization
+
+#### 8.1 Refactor ContentView.swift
+ContentView.swift is 1500+ lines and should be split into separate files for maintainability.
+
+**Target structure:**
+```
+GuitarPractice/
+├── Views/
+│   ├── ContentView.swift           # Root only (~30 lines)
+│   ├── MainContentView.swift       # Split view layout + key handlers
+│   ├── Header/
+│   │   ├── HeaderView.swift
+│   │   └── StatBadge.swift
+│   ├── Library/
+│   │   ├── LibrarySidebarView.swift
+│   │   ├── FilterBarView.swift
+│   │   ├── LibraryListView.swift
+│   │   └── LibraryRowView.swift
+│   ├── Session/
+│   │   ├── SessionPanelView.swift
+│   │   ├── CalendarNavigatorView.swift
+│   │   ├── SessionDetailView.swift
+│   │   ├── SessionEditingModeView.swift
+│   │   └── SessionViewingModeView.swift
+│   ├── Practice/
+│   │   └── PracticeView.swift
+│   ├── Stats/
+│   │   └── StatsDashboardView.swift
+│   ├── Settings/
+│   │   ├── SettingsView.swift
+│   │   └── APIKeySetupView.swift
+│   └── Common/
+│       ├── FooterView.swift
+│       ├── LoadingView.swift
+│       ├── ErrorView.swift
+│       └── Skeletons.swift
+```
+
+**Notes:**
+- No code changes needed - just moving structs to new files
+- Swift doesn't require imports for types in the same module
+- Update Xcode project file to include new files
+
 *Note: This app is evolving to be the primary UI, with Notion serving as the backend for editing practice library items.*
 
 ## Data Models
