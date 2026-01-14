@@ -687,3 +687,53 @@ Created custom app icon for the macOS app, replacing the default placeholder.
 3. ✅ Calendar View (7.3)
 4. ✅ Stats Dashboard (7.4)
 5. ✅ UI Polish (7.5)
+
+---
+
+## 2026-01-14: Phase 8.1 - ContentView Refactoring
+
+### Code Organization
+Refactored `ContentView.swift` from **1500+ lines to 40 lines** by extracting views into separate files organized by feature area.
+
+### New Directory Structure
+```
+GuitarPractice/Views/
+├── MainContentView.swift      # Split view layout + keyboard handlers
+├── Header/
+│   ├── HeaderView.swift
+│   └── StatBadge.swift
+├── Library/
+│   ├── LibrarySidebarView.swift
+│   ├── FilterBarView.swift
+│   ├── LibraryListView.swift
+│   └── LibraryRowView.swift
+├── Session/
+│   ├── SessionPanelView.swift
+│   ├── CalendarNavigatorView.swift
+│   ├── SessionDetailView.swift
+│   ├── SessionViewingModeView.swift
+│   └── SessionEditingModeView.swift
+├── Practice/
+│   └── PracticeView.swift
+├── Stats/
+│   └── StatsDashboardView.swift
+├── Settings/
+│   ├── SettingsView.swift
+│   └── APIKeySetupView.swift
+└── Common/
+    ├── FooterView.swift
+    ├── LoadingView.swift
+    ├── ErrorView.swift
+    ├── Skeletons.swift
+    └── Helpers.swift
+```
+
+### Files Created
+- 21 new Swift files under `GuitarPractice/Views/`
+- Updated Xcode project file to include all new files
+
+### Technical Notes
+- No functional changes - pure code organization refactor
+- Each view struct moved to its own file
+- Related views grouped in subdirectories by feature
+- `formatMinutesAsTime()` helper moved to `Common/Helpers.swift`

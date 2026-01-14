@@ -18,6 +18,27 @@
 		A01234560009 /* CachedModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0123456001A /* CachedModels.swift */; };
 		A0123456000A /* CacheService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0123456001B /* CacheService.swift */; };
 		A0123456000B /* StatsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0123456001C /* StatsService.swift */; };
+		B01234560001 /* MainContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B01234560011 /* MainContentView.swift */; };
+		B01234560002 /* HeaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B01234560012 /* HeaderView.swift */; };
+		B01234560003 /* StatBadge.swift in Sources */ = {isa = PBXBuildFile; fileRef = B01234560013 /* StatBadge.swift */; };
+		B01234560004 /* LibrarySidebarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B01234560014 /* LibrarySidebarView.swift */; };
+		B01234560005 /* FilterBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B01234560015 /* FilterBarView.swift */; };
+		B01234560006 /* LibraryListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B01234560016 /* LibraryListView.swift */; };
+		B01234560007 /* LibraryRowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B01234560017 /* LibraryRowView.swift */; };
+		B01234560008 /* SessionPanelView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B01234560018 /* SessionPanelView.swift */; };
+		B01234560009 /* CalendarNavigatorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B01234560019 /* CalendarNavigatorView.swift */; };
+		B0123456000A /* SessionDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0123456001A /* SessionDetailView.swift */; };
+		B0123456000B /* SessionViewingModeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0123456001B /* SessionViewingModeView.swift */; };
+		B0123456000C /* SessionEditingModeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0123456001C /* SessionEditingModeView.swift */; };
+		B0123456000D /* PracticeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0123456001D /* PracticeView.swift */; };
+		B0123456000E /* StatsDashboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0123456001E /* StatsDashboardView.swift */; };
+		B0123456000F /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0123456001F /* SettingsView.swift */; };
+		B01234560010 /* APIKeySetupView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B01234560020 /* APIKeySetupView.swift */; };
+		B01234560021 /* FooterView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B01234560031 /* FooterView.swift */; };
+		B01234560022 /* LoadingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B01234560032 /* LoadingView.swift */; };
+		B01234560023 /* ErrorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B01234560033 /* ErrorView.swift */; };
+		B01234560024 /* Skeletons.swift in Sources */ = {isa = PBXBuildFile; fileRef = B01234560034 /* Skeletons.swift */; };
+		B01234560025 /* Helpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = B01234560035 /* Helpers.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -34,6 +55,27 @@
 		A0123456001A /* CachedModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CachedModels.swift; sourceTree = "<group>"; };
 		A0123456001B /* CacheService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CacheService.swift; sourceTree = "<group>"; };
 		A0123456001C /* StatsService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatsService.swift; sourceTree = "<group>"; };
+		B01234560011 /* MainContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainContentView.swift; sourceTree = "<group>"; };
+		B01234560012 /* HeaderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HeaderView.swift; sourceTree = "<group>"; };
+		B01234560013 /* StatBadge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatBadge.swift; sourceTree = "<group>"; };
+		B01234560014 /* LibrarySidebarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibrarySidebarView.swift; sourceTree = "<group>"; };
+		B01234560015 /* FilterBarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FilterBarView.swift; sourceTree = "<group>"; };
+		B01234560016 /* LibraryListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryListView.swift; sourceTree = "<group>"; };
+		B01234560017 /* LibraryRowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryRowView.swift; sourceTree = "<group>"; };
+		B01234560018 /* SessionPanelView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionPanelView.swift; sourceTree = "<group>"; };
+		B01234560019 /* CalendarNavigatorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarNavigatorView.swift; sourceTree = "<group>"; };
+		B0123456001A /* SessionDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionDetailView.swift; sourceTree = "<group>"; };
+		B0123456001B /* SessionViewingModeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionViewingModeView.swift; sourceTree = "<group>"; };
+		B0123456001C /* SessionEditingModeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionEditingModeView.swift; sourceTree = "<group>"; };
+		B0123456001D /* PracticeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PracticeView.swift; sourceTree = "<group>"; };
+		B0123456001E /* StatsDashboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatsDashboardView.swift; sourceTree = "<group>"; };
+		B0123456001F /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		B01234560020 /* APIKeySetupView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIKeySetupView.swift; sourceTree = "<group>"; };
+		B01234560031 /* FooterView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FooterView.swift; sourceTree = "<group>"; };
+		B01234560032 /* LoadingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoadingView.swift; sourceTree = "<group>"; };
+		B01234560033 /* ErrorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ErrorView.swift; sourceTree = "<group>"; };
+		B01234560034 /* Skeletons.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Skeletons.swift; sourceTree = "<group>"; };
+		B01234560035 /* Helpers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Helpers.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -60,6 +102,7 @@
 			children = (
 				A01234560011 /* GuitarPracticeApp.swift */,
 				A01234560012 /* ContentView.swift */,
+				B01234560040 /* Views */,
 				A01234560033 /* Models */,
 				A01234560034 /* Services */,
 				A01234560013 /* Assets.xcassets */,
@@ -96,6 +139,90 @@
 				A0123456001C /* StatsService.swift */,
 			);
 			path = Services;
+			sourceTree = "<group>";
+		};
+		B01234560040 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				B01234560011 /* MainContentView.swift */,
+				B01234560041 /* Header */,
+				B01234560042 /* Library */,
+				B01234560043 /* Session */,
+				B01234560044 /* Practice */,
+				B01234560045 /* Stats */,
+				B01234560046 /* Settings */,
+				B01234560047 /* Common */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		B01234560041 /* Header */ = {
+			isa = PBXGroup;
+			children = (
+				B01234560012 /* HeaderView.swift */,
+				B01234560013 /* StatBadge.swift */,
+			);
+			path = Header;
+			sourceTree = "<group>";
+		};
+		B01234560042 /* Library */ = {
+			isa = PBXGroup;
+			children = (
+				B01234560014 /* LibrarySidebarView.swift */,
+				B01234560015 /* FilterBarView.swift */,
+				B01234560016 /* LibraryListView.swift */,
+				B01234560017 /* LibraryRowView.swift */,
+			);
+			path = Library;
+			sourceTree = "<group>";
+		};
+		B01234560043 /* Session */ = {
+			isa = PBXGroup;
+			children = (
+				B01234560018 /* SessionPanelView.swift */,
+				B01234560019 /* CalendarNavigatorView.swift */,
+				B0123456001A /* SessionDetailView.swift */,
+				B0123456001B /* SessionViewingModeView.swift */,
+				B0123456001C /* SessionEditingModeView.swift */,
+			);
+			path = Session;
+			sourceTree = "<group>";
+		};
+		B01234560044 /* Practice */ = {
+			isa = PBXGroup;
+			children = (
+				B0123456001D /* PracticeView.swift */,
+			);
+			path = Practice;
+			sourceTree = "<group>";
+		};
+		B01234560045 /* Stats */ = {
+			isa = PBXGroup;
+			children = (
+				B0123456001E /* StatsDashboardView.swift */,
+			);
+			path = Stats;
+			sourceTree = "<group>";
+		};
+		B01234560046 /* Settings */ = {
+			isa = PBXGroup;
+			children = (
+				B0123456001F /* SettingsView.swift */,
+				B01234560020 /* APIKeySetupView.swift */,
+			);
+			path = Settings;
+			sourceTree = "<group>";
+		};
+		B01234560047 /* Common */ = {
+			isa = PBXGroup;
+			children = (
+				B01234560031 /* FooterView.swift */,
+				B01234560032 /* LoadingView.swift */,
+				B01234560033 /* ErrorView.swift */,
+				B01234560034 /* Skeletons.swift */,
+				B01234560035 /* Helpers.swift */,
+			);
+			path = Common;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -177,6 +304,27 @@
 				A01234560009 /* CachedModels.swift in Sources */,
 				A0123456000A /* CacheService.swift in Sources */,
 				A0123456000B /* StatsService.swift in Sources */,
+				B01234560001 /* MainContentView.swift in Sources */,
+				B01234560002 /* HeaderView.swift in Sources */,
+				B01234560003 /* StatBadge.swift in Sources */,
+				B01234560004 /* LibrarySidebarView.swift in Sources */,
+				B01234560005 /* FilterBarView.swift in Sources */,
+				B01234560006 /* LibraryListView.swift in Sources */,
+				B01234560007 /* LibraryRowView.swift in Sources */,
+				B01234560008 /* SessionPanelView.swift in Sources */,
+				B01234560009 /* CalendarNavigatorView.swift in Sources */,
+				B0123456000A /* SessionDetailView.swift in Sources */,
+				B0123456000B /* SessionViewingModeView.swift in Sources */,
+				B0123456000C /* SessionEditingModeView.swift in Sources */,
+				B0123456000D /* PracticeView.swift in Sources */,
+				B0123456000E /* StatsDashboardView.swift in Sources */,
+				B0123456000F /* SettingsView.swift in Sources */,
+				B01234560010 /* APIKeySetupView.swift in Sources */,
+				B01234560021 /* FooterView.swift in Sources */,
+				B01234560022 /* LoadingView.swift in Sources */,
+				B01234560023 /* ErrorView.swift in Sources */,
+				B01234560024 /* Skeletons.swift in Sources */,
+				B01234560025 /* Helpers.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
