@@ -11,13 +11,12 @@ A native macOS app for managing guitar practice sessions, backed by Notion datab
 - Auto-save to Notion, auto-select today's session
 - Loading skeletons, Open in Notion (⌘O)
 
-**Phase 7 Planned** - See `PLAN.md` for future enhancements:
-- Timer alerts (sound + notification)
-- Calendar view for practice history
-- Stats dashboard
-- Local cache with SwiftData
-- Flexible 50/50 split view
-- Typography improvements
+**Phase 7 In Progress** - Ordered implementation plan (see `PLAN.md`):
+1. ✅ Timer alerts (sound + notification)
+2. Local cache with SwiftData (foundational for 3-4) ⬅️ **NEXT**
+3. Calendar view for practice history
+4. Stats dashboard
+5. UI polish (flexible split view, typography)
 
 ## Quick Start
 

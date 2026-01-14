@@ -1,5 +1,6 @@
 import SwiftUI
 import AppKit
+import UserNotifications
 
 // MARK: - Sort Options
 
@@ -34,6 +35,7 @@ class AppState: ObservableObject {
     @Published var practiceElapsedSeconds: Double = 0
     @Published var isTimerRunning: Bool = false
     private var timerTask: Task<Void, Never>?
+    private var hasTriggeredOvertimeAlert: Bool = false
 
     // MARK: - Search, Filter, Sort State
 
@@ -557,10 +559,15 @@ class AppState: ObservableObject {
 
         isPracticing = true
         practiceItemIndex = 0
+        hasTriggeredOvertimeAlert = false
 
         // Resume from previous actual time if exists
         if let existingTime = selectedItems[practiceItemIndex].actualMinutes {
             practiceElapsedSeconds = existingTime * 60
+            // If resuming in overtime, don't re-trigger alert
+            if isPracticeOvertime {
+                hasTriggeredOvertimeAlert = true
+            }
         } else {
             practiceElapsedSeconds = 0
         }
@@ -583,8 +590,50 @@ class AppState: ObservableObject {
                 try? await Task.sleep(nanoseconds: 100_000_000) // 0.1 second
                 guard !Task.isCancelled else { break }
                 await MainActor.run {
-                    self?.practiceElapsedSeconds += 0.1
+                    guard let self = self else { return }
+
+                    let wasNotOvertime = !self.isPracticeOvertime
+                    self.practiceElapsedSeconds += 0.1
+                    let isNowOvertime = self.isPracticeOvertime
+
+                    // Trigger alert when crossing into overtime
+                    if wasNotOvertime && isNowOvertime && !self.hasTriggeredOvertimeAlert {
+                        self.hasTriggeredOvertimeAlert = true
+                        self.triggerOvertimeAlert()
+                    }
                 }
+            }
+        }
+    }
+
+    private func triggerOvertimeAlert() {
+        // Play system sound
+        NSSound.beep()
+
+        // Also play a more distinct sound if available
+        if let sound = NSSound(named: "Glass") {
+            sound.play()
+        }
+
+        // Show notification
+        let content = UNMutableNotificationContent()
+        content.title = "Practice Time Complete"
+        if let item = currentPracticeItem {
+            content.body = "\(item.item.name) - Time's up!"
+        } else {
+            content.body = "Your practice time has elapsed."
+        }
+        content.sound = .default
+
+        let request = UNNotificationRequest(
+            identifier: UUID().uuidString,
+            content: content,
+            trigger: nil  // Deliver immediately
+        )
+
+        UNUserNotificationCenter.current().add(request) { error in
+            if let error = error {
+                print("Failed to deliver notification: \(error)")
             }
         }
     }
@@ -664,10 +713,15 @@ class AppState: ObservableObject {
 
     private func moveToNextPracticeItem() {
         practiceItemIndex += 1
+        hasTriggeredOvertimeAlert = false
 
         // Resume from previous actual time if exists
         if let existingTime = selectedItems[practiceItemIndex].actualMinutes {
             practiceElapsedSeconds = existingTime * 60
+            // If resuming in overtime, don't re-trigger alert
+            if isPracticeOvertime {
+                hasTriggeredOvertimeAlert = true
+            }
         } else {
             practiceElapsedSeconds = 0
         }

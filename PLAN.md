@@ -101,28 +101,40 @@ GuitarPractice/
 - [x] Error states and retry UI
 - [x] Empty states for lists
 
-### Phase 7: Future Enhancements (Ideas)
-- [ ] **Timer Alert**: Sound chime + macOS notification when practice time elapses
-  - Especially useful when app is backgrounded / viewing menu bar only
-  - Consider a setting to toggle on/off
-- [ ] **Calendar View**: Visual calendar showing practice history
-  - Heat map or day-by-day view of sessions
-  - Click to view/load past sessions
-  - See streaks, total time per day/week/month
-- [ ] **Stats Dashboard**: Practice analytics
-  - Most practiced items
-  - Time trends over weeks/months
-  - Goals and streaks
-- [ ] **Local Cache**: Cache Notion data locally for performance
-  - Instant app launch with cached data, background refresh
-  - Fewer API calls to Notion
-  - Sync strategy: cache-first, then refresh; or periodic sync
-  - Potential for offline support (queue writes, sync when online)
-  - **Recommended approach: SwiftData**
-    - Available on macOS 14+ (already our target)
-    - Simple Swift-native API with `@Model` macro
-    - Enables efficient queries for calendar/stats features
-    - Alternative: Simple JSON file to `~/Library/Application Support/` if we just need fast launch
+### Phase 7: Enhancements (Ordered Implementation Plan)
+
+**Implementation order rationale**: Start with a quick win (Timer Alert), then build the foundational data cache (SwiftData) that enables efficient queries for Calendar and Stats features. Finish with UI polish.
+
+#### 7.1 Timer Alert ✅
+- [x] Sound chime + macOS notification when practice time elapses
+- [x] Especially useful when app is backgrounded / viewing menu bar only
+- [ ] Consider a setting to toggle on/off (future)
+- [x] Uses `NSSound` for sound, `UserNotifications` for system alerts
+
+#### 7.2 Local Cache (SwiftData) - FOUNDATIONAL
+- [ ] Cache Notion data locally for performance
+- [ ] Instant app launch with cached data, background refresh
+- [ ] Fewer API calls to Notion
+- [ ] Sync strategy: cache-first, then refresh from Notion
+- [ ] SwiftData `@Model` classes mirroring existing types
+- [ ] Enables efficient `@Query` predicates for calendar/stats
+- [ ] Future: potential offline support (queue writes, sync when online)
+
+#### 7.3 Calendar View
+- [ ] Visual calendar showing practice history
+- [ ] Heat map or day-by-day view of sessions
+- [ ] Click to view/load past sessions
+- [ ] See streaks, total time per day/week/month
+- [ ] Leverages SwiftData for efficient date-range queries
+
+#### 7.4 Stats Dashboard
+- [ ] Practice analytics with aggregated data
+- [ ] Most practiced items
+- [ ] Time trends over weeks/months
+- [ ] Goals and streaks
+- [ ] Leverages SwiftData for efficient aggregation queries
+
+#### 7.5 UI Polish
 - [ ] **Flexible Split View**: Improve two-pane layout
   - Default to 50/50 split instead of current fixed widths
   - User-adjustable divider position
@@ -132,7 +144,6 @@ GuitarPractice/
   - Footer text too small - increase by at least 2px (currently 10-11pt)
   - Consider bumping main/regular text sizes throughout
   - OK to increase footer height if needed
-  - Preview different sizes to find right balance
 
 *Note: This app is evolving to be the primary UI, with Notion serving as the backend for editing practice library items.*
 

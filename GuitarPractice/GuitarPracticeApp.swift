@@ -1,7 +1,15 @@
 import SwiftUI
+import UserNotifications
 
 class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationDidFinishLaunching(_ notification: Notification) {
+        // Request notification permissions for timer alerts
+        UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound]) { granted, error in
+            if let error = error {
+                print("Notification permission error: \(error)")
+            }
+        }
+
         // Bring window to front on launch
         DispatchQueue.main.async {
             NSApplication.shared.activate(ignoringOtherApps: true)

@@ -322,7 +322,7 @@ GuitarPractice/
 - `Calendar.startOfDay(for:)` for date comparison in session auto-select
 - Footer updated to show current keyboard hints including ^F/B and ⌘O
 
-### Project Complete
+### Phases 1-6 Complete
 All 6 phases implemented:
 1. ✅ Core Data Layer
 2. ✅ Library View
@@ -330,3 +330,56 @@ All 6 phases implemented:
 4. ✅ Practice Timer
 5. ✅ Menu Bar Integration
 6. ✅ Polish
+
+---
+
+## 2026-01-13: Phase 7 Planning
+
+### Implementation Order Decided
+After analyzing dependencies between Phase 7 features, settled on this order:
+
+1. **Timer Alert** (7.1) - Quick win, immediately useful, introduces AVFoundation + UserNotifications
+2. **SwiftData Cache** (7.2) - Foundational data layer enabling efficient local queries
+3. **Calendar View** (7.3) - Leverages cache for date-range queries
+4. **Stats Dashboard** (7.4) - Leverages cache for aggregation queries
+5. **UI Polish** (7.5) - Flexible split view + typography improvements
+
+### Rationale
+- SwiftData is foundational because Calendar and Stats need to query historical data
+- Without cache: each view would hit Notion API repeatedly
+- With cache: instant queries via SwiftData `@Query` predicates
+- Timer Alert first as warm-up - quick win that delivers immediate value
+
+### Next Steps
+- Implement Timer Alert (7.1): sound chime + macOS notification when practice time elapses
+
+---
+
+## 2026-01-13: Phase 7.1 - Timer Alert
+
+### Features Implemented
+- **Overtime Detection**: Detects when timer crosses from countdown to overtime
+  - `hasTriggeredOvertimeAlert` flag prevents repeated alerts
+  - Checks transition in timer loop: `wasNotOvertime && isNowOvertime`
+- **Sound Alert**: Plays system sounds when time elapses
+  - `NSSound.beep()` for immediate feedback
+  - `NSSound(named: "Glass")` for more distinct chime
+- **macOS Notification**: Shows notification banner
+  - Title: "Practice Time Complete"
+  - Body: "{item name} - Time's up!"
+  - Uses `UserNotifications` framework
+- **Permission Request**: Requests notification permission on app launch
+  - Added to `AppDelegate.applicationDidFinishLaunching`
+  - Requests `.alert` and `.sound` permissions
+
+### Technical Details
+- Alert only triggers once per item (reset on `startPractice()` and `moveToNextPracticeItem()`)
+- If resuming an item already in overtime, alert is pre-marked as triggered
+- Works when app is backgrounded / menu bar only view
+
+### Files Changed
+- `GuitarPractice/Models/AppState.swift` - Alert logic and trigger
+- `GuitarPractice/GuitarPracticeApp.swift` - Permission request
+
+### Next Steps
+- Phase 7.2: SwiftData local cache (foundational)
