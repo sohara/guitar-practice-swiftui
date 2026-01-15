@@ -900,3 +900,16 @@ Added `.contentShape(Rectangle())` to the button's content in `CalendarNavigator
 
 ### Lesson Learned
 When using complex view hierarchies inside SwiftUI buttons (ZStack, overlays, conditional styling), always consider adding `.contentShape()` to ensure reliable hit-testing.
+
+---
+
+## 2026-01-15: HSplitView Divider Position Fix
+
+### Issue
+Clicking the stats toggle button (chart icon) in the header caused the HSplitView divider to reset, making the right pane shrink unexpectedly.
+
+### Root Cause
+The `if/else` conditional in `MainContentView.swift` caused SwiftUI to recreate the right pane view when toggling between stats and session views, triggering HSplitView to reset its divider position.
+
+### Fix
+Replaced `if/else` with `ZStack` using opacity toggling. Both views remain in the hierarchy; visibility is controlled via `.opacity(0)` / `.opacity(1)`. This preserves the HSplitView structure identity and maintains user-adjusted divider positions.

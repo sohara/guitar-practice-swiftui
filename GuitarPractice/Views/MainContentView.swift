@@ -31,13 +31,15 @@ struct MainContentView: View {
                         .frame(minWidth: 300, idealWidth: 450)
 
                     // Right: Stats or Calendar + Session detail
-                    if appState.isShowingStats {
-                        StatsDashboardView(appState: appState)
-                            .frame(minWidth: 280, idealWidth: 450)
-                    } else {
+                    // Using ZStack with opacity to preserve HSplitView divider position
+                    ZStack {
                         SessionPanelView(appState: appState)
-                            .frame(minWidth: 280, idealWidth: 450)
+                            .opacity(appState.isShowingStats ? 0 : 1)
+
+                        StatsDashboardView(appState: appState)
+                            .opacity(appState.isShowingStats ? 1 : 0)
                     }
+                    .frame(minWidth: 280, idealWidth: 450)
                 }
             }
 
