@@ -315,7 +315,21 @@ Show historical notes for the current item in the timer view.
   3. ✅ Unified `NotesCard` with max height (180px) and scrolling
   4. ✅ Click to edit current note, Enter to save, Escape to cancel/revert
 
-### 9.4 Other Ideas (Unprioritized)
+### 9.4 Header Reorganization (Next Up)
+Move contextual stats from global header to their respective views.
+
+**Problem**: Header has stats that belong with specific panels:
+- "Library Items (45/129)" relates to left panel but lives in top-right
+- "Items in Session" relates to right panel but floats in header
+- "Practice Sessions" count is global but has natural home in calendar
+
+**Solution**:
+1. **Library Items count** → Move to FilterBarView or bottom of library list ("Showing 45 of 129")
+2. **Items in Session** → Remove from header (already shown in SessionDetailHeaderView)
+3. **Practice Sessions count** → Move to CalendarNavigatorView mini stats section
+4. **Header becomes**: App title (left) + global actions only (Stats toggle, Refresh, Settings)
+
+### 9.5 Other Ideas (Unprioritized)
 - **Jump to Today**: Press `T` to return to today's date in calendar
 - **Practice Goals**: Set daily target (e.g., 30 min) with progress indicator
 - **Session Templates**: Save/load sets of items for quick session creation

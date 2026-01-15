@@ -846,3 +846,25 @@ Started with separate components (current note card + collapsible previous notes
 - History only includes logs with non-empty notes
 - History sorted by date descending (most recent first)
 - Joins logs with sessions to get dates for display
+
+---
+
+## 2026-01-14: Planned - Header Reorganization (9.4)
+
+### Issue Identified
+Header contains contextual stats that logically belong with their respective views:
+- "Library Items (45/129)" - reflects left panel filter state but lives in header
+- "Items in Session" - pertains to session detail but floats in header
+- "Practice Sessions" - global count but has natural home in calendar
+
+### Planned Changes
+1. Move library count to FilterBarView or library list footer
+2. Remove "Items in Session" from header (redundant with SessionDetailHeaderView)
+3. Move "Practice Sessions" count to CalendarNavigatorView mini stats
+4. Simplify header to: title + global actions (Stats, Refresh, Settings)
+
+### Files to Modify
+- `HeaderView.swift` - Remove StatBadge components
+- `FilterBarView.swift` - Add library count display
+- `CalendarNavigatorView.swift` - Add sessions count to mini stats
+- `StatBadge.swift` - May be removed if no longer needed
