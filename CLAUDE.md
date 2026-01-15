@@ -41,6 +41,8 @@ open ~/Library/Developer/Xcode/DerivedData/GuitarPractice-*/Build/Products/Debug
 
 Always do this before reviewing changes and before committing.
 
+**IMPORTANT**: Never commit or push until the user has manually tested and confirmed the fix works. Always ask for confirmation after launching the app for testing.
+
 ## Documentation
 
 - `PLAN.md` - Development roadmap, architecture, Phase 7 ideas
