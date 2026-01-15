@@ -28,7 +28,8 @@ enum KeychainService {
         kSecClass as String: kSecClassGenericPassword,
         kSecAttrService as String: Config.Keychain.service,
         kSecAttrAccount as String: Config.Keychain.apiKeyAccount,
-        kSecUseDataProtectionKeychain as String: false
+        kSecUseDataProtectionKeychain as String: false,
+        kSecAttrAccessible as String: kSecAttrAccessibleWhenUnlocked
     ]
 
     static func saveAPIKey(_ apiKey: String) throws {

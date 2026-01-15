@@ -20,7 +20,6 @@
 		A0123456000B /* StatsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0123456001C /* StatsService.swift */; };
 		B01234560001 /* MainContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B01234560011 /* MainContentView.swift */; };
 		B01234560002 /* HeaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B01234560012 /* HeaderView.swift */; };
-		B01234560003 /* StatBadge.swift in Sources */ = {isa = PBXBuildFile; fileRef = B01234560013 /* StatBadge.swift */; };
 		B01234560004 /* LibrarySidebarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B01234560014 /* LibrarySidebarView.swift */; };
 		B01234560005 /* FilterBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B01234560015 /* FilterBarView.swift */; };
 		B01234560006 /* LibraryListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B01234560016 /* LibraryListView.swift */; };
@@ -57,7 +56,6 @@
 		A0123456001C /* StatsService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatsService.swift; sourceTree = "<group>"; };
 		B01234560011 /* MainContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainContentView.swift; sourceTree = "<group>"; };
 		B01234560012 /* HeaderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HeaderView.swift; sourceTree = "<group>"; };
-		B01234560013 /* StatBadge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatBadge.swift; sourceTree = "<group>"; };
 		B01234560014 /* LibrarySidebarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibrarySidebarView.swift; sourceTree = "<group>"; };
 		B01234560015 /* FilterBarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FilterBarView.swift; sourceTree = "<group>"; };
 		B01234560016 /* LibraryListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryListView.swift; sourceTree = "<group>"; };
@@ -160,7 +158,6 @@
 			isa = PBXGroup;
 			children = (
 				B01234560012 /* HeaderView.swift */,
-				B01234560013 /* StatBadge.swift */,
 			);
 			path = Header;
 			sourceTree = "<group>";
@@ -306,7 +303,6 @@
 				A0123456000B /* StatsService.swift in Sources */,
 				B01234560001 /* MainContentView.swift in Sources */,
 				B01234560002 /* HeaderView.swift in Sources */,
-				B01234560003 /* StatBadge.swift in Sources */,
 				B01234560004 /* LibrarySidebarView.swift in Sources */,
 				B01234560005 /* FilterBarView.swift in Sources */,
 				B01234560006 /* LibraryListView.swift in Sources */,

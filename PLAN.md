@@ -179,8 +179,7 @@ GuitarPractice/
 │   ├── ContentView.swift           # Root only (~30 lines)
 │   ├── MainContentView.swift       # Split view layout + key handlers
 │   ├── Header/
-│   │   ├── HeaderView.swift
-│   │   └── StatBadge.swift
+│   │   └── HeaderView.swift
 │   ├── Library/
 │   │   ├── LibrarySidebarView.swift
 │   │   ├── FilterBarView.swift
@@ -315,19 +314,15 @@ Show historical notes for the current item in the timer view.
   3. ✅ Unified `NotesCard` with max height (180px) and scrolling
   4. ✅ Click to edit current note, Enter to save, Escape to cancel/revert
 
-### 9.4 Header Reorganization (Next Up)
-Move contextual stats from global header to their respective views.
+### 9.4 ✅ Header Reorganization (Complete)
+Moved contextual stats from global header to their respective views.
 
-**Problem**: Header has stats that belong with specific panels:
-- "Library Items (45/129)" relates to left panel but lives in top-right
-- "Items in Session" relates to right panel but floats in header
-- "Practice Sessions" count is global but has natural home in calendar
-
-**Solution**:
-1. **Library Items count** → Move to FilterBarView or bottom of library list ("Showing 45 of 129")
-2. **Items in Session** → Remove from header (already shown in SessionDetailHeaderView)
-3. **Practice Sessions count** → Move to CalendarNavigatorView mini stats section
-4. **Header becomes**: App title (left) + global actions only (Stats toggle, Refresh, Settings)
+**Changes made**:
+1. **Library Items count** → Added to FilterBarView (shows "X/Y" when filtered, "N items" otherwise)
+2. **Items in Session** → Removed from header (already shown in SessionDetailHeaderView)
+3. **Practice Sessions count** → Added "total" stat to CalendarNavigatorView mini stats (alongside streak and "this month")
+4. **Header simplified**: App title (left) + global actions (Stats toggle, Open in Notion, Settings, Refresh)
+5. **StatBadge.swift deleted** → No longer needed
 
 ### 9.5 Other Ideas (Unprioritized)
 - **Jump to Today**: Press `T` to return to today's date in calendar

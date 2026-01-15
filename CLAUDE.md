@@ -64,7 +64,7 @@ GuitarPractice/
 │   └── StatsService.swift       # Practice analytics
 ├── Views/
 │   ├── MainContentView.swift    # Split view layout
-│   ├── Header/                  # HeaderView, StatBadge
+│   ├── Header/                  # HeaderView
 │   ├── Library/                 # Sidebar, filter, list, row views
 │   ├── Session/                 # Calendar, session detail views
 │   ├── Practice/                # Timer view

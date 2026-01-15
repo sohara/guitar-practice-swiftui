@@ -700,8 +700,7 @@ Refactored `ContentView.swift` from **1500+ lines to 40 lines** by extracting vi
 GuitarPractice/Views/
 ├── MainContentView.swift      # Split view layout + keyboard handlers
 ├── Header/
-│   ├── HeaderView.swift
-│   └── StatBadge.swift
+│   └── HeaderView.swift
 ├── Library/
 │   ├── LibrarySidebarView.swift
 │   ├── FilterBarView.swift
@@ -849,22 +848,31 @@ Started with separate components (current note card + collapsible previous notes
 
 ---
 
-## 2026-01-14: Planned - Header Reorganization (9.4)
+## 2026-01-14: Header Reorganization (9.4) ✅
 
-### Issue Identified
-Header contains contextual stats that logically belong with their respective views:
-- "Library Items (45/129)" - reflects left panel filter state but lives in header
-- "Items in Session" - pertains to session detail but floats in header
-- "Practice Sessions" - global count but has natural home in calendar
+Moved contextual stats from global header to their respective views for better information architecture.
 
-### Planned Changes
-1. Move library count to FilterBarView or library list footer
-2. Remove "Items in Session" from header (redundant with SessionDetailHeaderView)
-3. Move "Practice Sessions" count to CalendarNavigatorView mini stats
-4. Simplify header to: title + global actions (Stats, Refresh, Settings)
+### Changes Made
+1. **HeaderView.swift** - Removed StatBadge components (library items, sessions, items in session)
+2. **FilterBarView.swift** - Added library count at end of filter row (shows "X/Y" when filtered, "N items" otherwise)
+3. **CalendarNavigatorView.swift** - Added "total" sessions count to mini stats (alongside streak and "this month")
+4. **StatBadge.swift** - Deleted (no longer needed)
 
-### Files to Modify
-- `HeaderView.swift` - Remove StatBadge components
-- `FilterBarView.swift` - Add library count display
-- `CalendarNavigatorView.swift` - Add sessions count to mini stats
-- `StatBadge.swift` - May be removed if no longer needed
+### Header Now Contains
+- App title (left)
+- Stats toggle, Open in Notion, Settings, Refresh buttons (right)
+
+---
+
+## 2026-01-14: Keychain Password Prompt Fix
+
+### Issue
+App was prompting for system password on every restart to authorize keychain access.
+
+### Cause
+Keychain items are tied to the app's code signature. During development, each rebuild can have a slightly different signature, triggering re-authorization prompts.
+
+### Fix
+Added `kSecAttrAccessibleWhenUnlocked` to `KeychainService.swift` base query. This makes the keychain item less strict about code signature verification while still requiring the device to be unlocked.
+
+After updating, users need to re-enter their API key once to create a new keychain entry with the updated settings.

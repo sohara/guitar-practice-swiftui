@@ -136,6 +136,17 @@ struct FilterBarView: View {
                 .menuStyle(.borderlessButton)
 
                 Spacer()
+
+                // Library count
+                if appState.filteredLibrary.count != appState.library.count {
+                    Text("\(appState.filteredLibrary.count)/\(appState.library.count)")
+                        .font(.custom("SF Mono", size: 11))
+                        .foregroundColor(.gray.opacity(0.6))
+                } else {
+                    Text("\(appState.library.count) items")
+                        .font(.custom("SF Mono", size: 11))
+                        .foregroundColor(.gray.opacity(0.6))
+                }
             }
         }
     }

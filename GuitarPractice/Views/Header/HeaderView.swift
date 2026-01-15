@@ -26,32 +26,6 @@ struct HeaderView: View {
 
             Spacer()
 
-            // Stats
-            HStack(spacing: 20) {
-                StatBadge(
-                    icon: "music.note.list",
-                    value: "\(appState.filteredLibrary.count)",
-                    total: appState.library.count,
-                    color: .cyan
-                )
-                .help("Library Items")
-                StatBadge(
-                    icon: "clock",
-                    value: "\(appState.sessions.count)",
-                    color: .orange
-                )
-                .help("Practice Sessions")
-                StatBadge(
-                    icon: "checkmark.circle",
-                    value: "\(appState.selectedItems.count)",
-                    color: .green
-                )
-                .help("Items in Session")
-            }
-
-            Spacer()
-                .frame(width: 20)
-
             // Stats toggle button
             Button {
                 appState.toggleStatsView()
