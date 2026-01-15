@@ -161,91 +161,100 @@ struct SelectedItemRow: View {
     }
 
     var body: some View {
-        HStack(spacing: 10) {
-            // Completion indicator / drag handle
-            Image(systemName: isCompleted ? "checkmark.circle.fill" : "line.3.horizontal")
-                .font(.system(size: 12))
-                .foregroundColor(isCompleted ? .green : .gray.opacity(0.4))
-                .frame(width: 16)
+        VStack(alignment: .leading, spacing: 0) {
+            HStack(spacing: 10) {
+                // Completion indicator / drag handle
+                Image(systemName: isCompleted ? "checkmark.circle.fill" : "line.3.horizontal")
+                    .font(.system(size: 12))
+                    .foregroundColor(isCompleted ? .green : .gray.opacity(0.4))
+                    .frame(width: 16)
 
-            // Type icon
-            Image(systemName: selected.item.type?.icon ?? "questionmark")
-                .font(.system(size: 12))
-                .foregroundColor(typeColor(selected.item.type))
-                .frame(width: 16)
+                // Type icon
+                Image(systemName: selected.item.type?.icon ?? "questionmark")
+                    .font(.system(size: 12))
+                    .foregroundColor(typeColor(selected.item.type))
+                    .frame(width: 16)
 
-            // Name and artist
-            VStack(alignment: .leading, spacing: 1) {
-                Text(selected.item.name)
-                    .font(.custom("SF Mono", size: 12))
-                    .foregroundColor(.white)
-                    .lineLimit(1)
-
-                if let artist = selected.item.artist {
-                    Text(artist)
-                        .font(.custom("SF Mono", size: 9))
-                        .foregroundColor(.gray.opacity(0.5))
+                // Name and artist
+                VStack(alignment: .leading, spacing: 1) {
+                    Text(selected.item.name)
+                        .font(.custom("SF Mono", size: 12))
+                        .foregroundColor(.white)
                         .lineLimit(1)
+
+                    if let artist = selected.item.artist {
+                        Text(artist)
+                            .font(.custom("SF Mono", size: 9))
+                            .foregroundColor(.gray.opacity(0.5))
+                            .lineLimit(1)
+                    }
                 }
-            }
 
-            Spacer()
+                Spacer()
 
-            // Notes indicator (read-only, notes are edited in timer view)
-            if hasNotes {
-                Image(systemName: "note.text")
-                    .font(.system(size: 10))
-                    .foregroundColor(.yellow.opacity(0.7))
-                    .help("Has notes")
-            }
+                // Actual time (if practiced)
+                if let actual = selected.actualMinutes, actual > 0 {
+                    Text(formatMinutesAsTime(actual))
+                        .font(.custom("SF Mono", size: 10))
+                        .foregroundColor(.green.opacity(0.7))
+                }
 
-            // Actual time (if practiced)
-            if let actual = selected.actualMinutes, actual > 0 {
-                Text(formatMinutesAsTime(actual))
-                    .font(.custom("SF Mono", size: 10))
-                    .foregroundColor(.green.opacity(0.7))
-            }
+                // Time adjustment
+                HStack(spacing: 3) {
+                    Button {
+                        onAdjustTime(-1)
+                    } label: {
+                        Image(systemName: "minus")
+                            .font(.system(size: 9))
+                            .foregroundColor(.gray)
+                            .frame(width: 18, height: 18)
+                            .background(Color.white.opacity(0.05))
+                            .cornerRadius(3)
+                    }
+                    .buttonStyle(.plain)
 
-            // Time adjustment
-            HStack(spacing: 3) {
-                Button {
-                    onAdjustTime(-1)
-                } label: {
-                    Image(systemName: "minus")
+                    Text("\(selected.plannedMinutes)m")
+                        .font(.custom("SF Mono", size: 11))
+                        .foregroundColor(.orange)
+                        .frame(width: 28)
+
+                    Button {
+                        onAdjustTime(1)
+                    } label: {
+                        Image(systemName: "plus")
+                            .font(.system(size: 9))
+                            .foregroundColor(.gray)
+                            .frame(width: 18, height: 18)
+                            .background(Color.white.opacity(0.05))
+                            .cornerRadius(3)
+                    }
+                    .buttonStyle(.plain)
+                }
+
+                // Remove button
+                Button(action: onRemove) {
+                    Image(systemName: "xmark")
                         .font(.system(size: 9))
-                        .foregroundColor(.gray)
+                        .foregroundColor(.red.opacity(0.5))
                         .frame(width: 18, height: 18)
-                        .background(Color.white.opacity(0.05))
-                        .cornerRadius(3)
                 }
                 .buttonStyle(.plain)
+            }
 
-                Text("\(selected.plannedMinutes)m")
-                    .font(.custom("SF Mono", size: 11))
-                    .foregroundColor(.orange)
-                    .frame(width: 28)
-
-                Button {
-                    onAdjustTime(1)
-                } label: {
-                    Image(systemName: "plus")
+            // Display notes if present
+            if let notes = selected.notes, !notes.isEmpty {
+                HStack(spacing: 6) {
+                    Image(systemName: "note.text")
                         .font(.system(size: 9))
-                        .foregroundColor(.gray)
-                        .frame(width: 18, height: 18)
-                        .background(Color.white.opacity(0.05))
-                        .cornerRadius(3)
+                        .foregroundColor(.yellow.opacity(0.7))
+                    Text(notes)
+                        .font(.custom("SF Mono", size: 10))
+                        .foregroundColor(.gray.opacity(0.7))
+                        .lineLimit(2)
                 }
-                .buttonStyle(.plain)
+                .padding(.top, 4)
+                .padding(.leading, 42)  // Align with name
             }
-
-            // Remove button
-            Button(action: onRemove) {
-                Image(systemName: "xmark")
-                    .font(.system(size: 9))
-                    .foregroundColor(.red.opacity(0.5))
-                    .frame(width: 18, height: 18)
-            }
-            .buttonStyle(.plain)
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 6)

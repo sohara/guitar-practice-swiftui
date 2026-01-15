@@ -985,3 +985,13 @@ Clicking on list items (which are Buttons) transferred focus away from MainConte
 - Refocus main view on appear and when panel changes
 - Refocus when exiting search field
 - Added `clampFocusedItemIndex()` to keep focus valid when filters reduce list size
+
+---
+
+## 2026-01-15: Show Note Text in Today's Session (#8)
+
+### Issue
+Practice notes showed only an icon in today's session list but displayed full text in past sessions.
+
+### Fix
+Updated `SelectedItemRow` to display note text below the item (matching `SessionItemReadOnlyRow` style).
