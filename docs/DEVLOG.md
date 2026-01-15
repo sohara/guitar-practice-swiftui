@@ -926,3 +926,21 @@ The "silent refresh" pattern in `fetchLibrary()` and `fetchSessions()` skipped s
 
 ### Fix
 Added `isRefreshing` flag to AppState that distinguishes explicit user refresh from background silent refresh. When set, MainContentView shows loading skeletons and HeaderView shows spinning animation.
+
+---
+
+## 2026-01-15: Calendar Month Navigation Animation
+
+### Issue
+When navigating months in the calendar view, date numerals would "glide down" in an unwanted animation caused by implicit SwiftUI animations.
+
+### Root Cause
+The `withAnimation` blocks around month navigation triggered implicit animations on the entire calendar grid, causing individual date cells to animate independently.
+
+### Fix
+Replaced the broken implicit animation with intentional directional slide transitions:
+- Added `@State var navigatingForward` to track navigation direction
+- Added `.id(displayedMonth)` to calendar grid to trigger view identity changes
+- Added `.transition(.asymmetric(...))` with `.move(edge:)` for directional slides
+- Months now slide in from right (forward) or left (backward)
+- Also increased tap area on navigation buttons (32x32) for easier clicking

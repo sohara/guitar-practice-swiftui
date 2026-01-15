@@ -3,6 +3,9 @@ import SwiftUI
 struct CalendarNavigatorView: View {
     @ObservedObject var appState: AppState
 
+    /// Tracks navigation direction for slide animation
+    @State private var navigatingForward = true
+
     private let calendar = Calendar.current
     private let daysOfWeek = ["S", "M", "T", "W", "T", "F", "S"]
 
@@ -16,13 +19,16 @@ struct CalendarNavigatorView: View {
             // Month navigation
             HStack {
                 Button {
-                    withAnimation {
+                    navigatingForward = false
+                    withAnimation(.easeInOut(duration: 0.3)) {
                         appState.displayedMonth = calendar.date(byAdding: .month, value: -1, to: appState.displayedMonth) ?? appState.displayedMonth
                     }
                 } label: {
                     Image(systemName: "chevron.left")
                         .font(.system(size: 12, weight: .semibold))
                         .foregroundColor(.cyan)
+                        .frame(width: 32, height: 32)
+                        .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
 
@@ -36,13 +42,16 @@ struct CalendarNavigatorView: View {
                 Spacer()
 
                 Button {
-                    withAnimation {
+                    navigatingForward = true
+                    withAnimation(.easeInOut(duration: 0.3)) {
                         appState.displayedMonth = calendar.date(byAdding: .month, value: 1, to: appState.displayedMonth) ?? appState.displayedMonth
                     }
                 } label: {
                     Image(systemName: "chevron.right")
                         .font(.system(size: 12, weight: .semibold))
                         .foregroundColor(.cyan)
+                        .frame(width: 32, height: 32)
+                        .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
             }
@@ -79,6 +88,12 @@ struct CalendarNavigatorView: View {
                     }
                 }
             }
+            .id(appState.displayedMonth)
+            .transition(.asymmetric(
+                insertion: .move(edge: navigatingForward ? .trailing : .leading),
+                removal: .move(edge: navigatingForward ? .leading : .trailing)
+            ))
+            .clipped()
 
             // Mini stats row
             HStack(spacing: 16) {
