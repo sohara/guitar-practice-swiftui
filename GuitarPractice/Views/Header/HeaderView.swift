@@ -62,17 +62,18 @@ struct HeaderView: View {
             .help("Settings")
 
             // Refresh button
+            let isRefreshActive = appState.isLoading || appState.isRefreshing
             Button {
                 Task { await appState.refresh() }
             } label: {
-                Image(systemName: appState.isLoading ? "arrow.triangle.2.circlepath" : "arrow.clockwise")
+                Image(systemName: isRefreshActive ? "arrow.triangle.2.circlepath" : "arrow.clockwise")
                     .font(.system(size: 16))
                     .foregroundColor(.gray)
-                    .rotationEffect(.degrees(appState.isLoading ? 360 : 0))
-                    .animation(appState.isLoading ? .linear(duration: 1).repeatForever(autoreverses: false) : .default, value: appState.isLoading)
+                    .rotationEffect(.degrees(isRefreshActive ? 360 : 0))
+                    .animation(isRefreshActive ? .linear(duration: 1).repeatForever(autoreverses: false) : .default, value: isRefreshActive)
             }
             .buttonStyle(.plain)
-            .disabled(appState.isLoading)
+            .disabled(isRefreshActive)
             .keyboardShortcut("r", modifiers: .command)
             .help("Refresh Data")
         }

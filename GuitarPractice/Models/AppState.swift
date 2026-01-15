@@ -28,6 +28,7 @@ class AppState: ObservableObject {
     @Published var currentSession: PracticeSession? = nil
     @Published var isLoadingSession: Bool = false
     @Published var isSavingSession: Bool = false
+    @Published var isRefreshing: Bool = false
     @Published var sessionError: Error? = nil
 
     // Track items that were removed (need to delete from Notion)
@@ -276,7 +277,9 @@ class AppState: ObservableObject {
     }
 
     func refresh() async {
+        isRefreshing = true
         await loadData()
+        isRefreshing = false
     }
 
     private func fetchLibrary(client: NotionClient) async {

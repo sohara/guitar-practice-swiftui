@@ -913,3 +913,16 @@ The `if/else` conditional in `MainContentView.swift` caused SwiftUI to recreate 
 
 ### Fix
 Replaced `if/else` with `ZStack` using opacity toggling. Both views remain in the hierarchy; visibility is controlled via `.opacity(0)` / `.opacity(1)`. This preserves the HSplitView structure identity and maintains user-adjusted divider positions.
+
+---
+
+## 2026-01-15: Refresh Button Feedback
+
+### Issue
+The refresh button in the header didn't provide visual feedback - data was silently fetched in the background without showing loading skeletons.
+
+### Root Cause
+The "silent refresh" pattern in `fetchLibrary()` and `fetchSessions()` skipped setting `.loading` state when data already existed. The MainContentView condition `isLoading && library.isEmpty` meant skeletons only showed on cold start.
+
+### Fix
+Added `isRefreshing` flag to AppState that distinguishes explicit user refresh from background silent refresh. When set, MainContentView shows loading skeletons and HeaderView shows spinning animation.

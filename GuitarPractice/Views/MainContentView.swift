@@ -18,7 +18,7 @@ struct MainContentView: View {
                 .background(Color.white.opacity(0.1))
 
             // Main split view content
-            if appState.isLoading && appState.library.isEmpty {
+            if appState.isRefreshing || (appState.isLoading && appState.library.isEmpty) {
                 LoadingView()
             } else if let error = appState.libraryState.error {
                 ErrorView(error: error) {
