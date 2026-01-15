@@ -124,20 +124,7 @@ struct PracticeView: View {
                                 .monospacedDigit()
                         }
                     }
-
-                    // Timer status
-                    if !appState.isTimerRunning {
-                        Text("PAUSED")
-                            .font(.custom("SF Mono", size: 16))
-                            .fontWeight(.semibold)
-                            .foregroundColor(.yellow)
-                            .padding(.horizontal, 16)
-                            .padding(.vertical, 8)
-                            .background(
-                                RoundedRectangle(cornerRadius: 8)
-                                    .fill(Color.yellow.opacity(0.1))
-                            )
-                    }
+                    .opacity(appState.isTimerRunning ? 1 : 0.4)
 
                     Spacer()
                         .frame(height: 40)

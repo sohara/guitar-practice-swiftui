@@ -995,3 +995,15 @@ Practice notes showed only an icon in today's session list but displayed full te
 
 ### Fix
 Updated `SelectedItemRow` to display note text below the item (matching `SessionItemReadOnlyRow` style).
+
+---
+
+## 2026-01-15: Improved Pause Indicator in Timer View (#9)
+
+### Issue
+The "PAUSED" badge caused jarring layout shifts when toggling pause, and looked like a button but wasn't clickable.
+
+### Fix
+Removed the badge entirely. Now paused state is indicated by:
+- Dimmed timer display (0.4 opacity)
+- Resume button with play icon (already existed)
