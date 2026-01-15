@@ -957,3 +957,15 @@ Updated `startPractice()` in AppState to:
 1. Start from `focusedSelectedIndex` if an item is focused
 2. Otherwise, auto-select the first unplayed item (`actualMinutes == nil`)
 3. Fall back to index 0 if all items have been played
+
+---
+
+## 2026-01-15: Cmd+O in Practice View (#6)
+
+### Issue
+Cmd+O to open the current item in Notion only worked in the main view, not during practice.
+
+### Fix
+- Added `openCurrentPracticeItemInNotion()` method to AppState
+- Added button with Cmd+O shortcut to PracticeView header
+- Added "⌘O notion" hint to practice footer

@@ -785,6 +785,15 @@ class AppState: ObservableObject {
         }
     }
 
+    func openCurrentPracticeItemInNotion() {
+        guard let item = currentPracticeItem?.item else { return }
+
+        let cleanId = item.id.replacingOccurrences(of: "-", with: "")
+        if let url = URL(string: "notion://notion.so/\(cleanId)") {
+            NSWorkspace.shared.open(url)
+        }
+    }
+
     // MARK: - Selected Items Navigation
 
     func moveFocusedSelectedUp() {

@@ -32,6 +32,18 @@ struct PracticeView: View {
 
                 Spacer()
 
+                // Open in Notion button
+                Button {
+                    appState.openCurrentPracticeItemInNotion()
+                } label: {
+                    Image(systemName: "arrow.up.right.square")
+                        .font(.system(size: 14))
+                        .foregroundColor(.gray)
+                }
+                .buttonStyle(.plain)
+                .keyboardShortcut("o", modifiers: .command)
+                .help("Open in Notion")
+
                 // Progress indicator
                 Text(appState.practiceProgress)
                     .font(.custom("SF Mono", size: 14))
@@ -254,6 +266,7 @@ struct PracticeView: View {
                 PracticeKeyHint(key: "enter", action: "finish & exit")
                 PracticeKeyHint(key: "n", action: "save & next")
                 PracticeKeyHint(key: "s", action: "skip")
+                PracticeKeyHint(key: "⌘O", action: "notion")
                 PracticeKeyHint(key: "esc", action: "exit")
             }
             .padding(.horizontal, 24)
