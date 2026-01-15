@@ -876,3 +876,27 @@ Keychain items are tied to the app's code signature. During development, each re
 Added `kSecAttrAccessibleWhenUnlocked` to `KeychainService.swift` base query. This makes the keychain item less strict about code signature verification while still requiring the device to be unlocked.
 
 After updating, users need to re-enter their API key once to create a new keychain entry with the updated settings.
+
+---
+
+## 2026-01-15: Calendar Date Selection Fix
+
+### Issue
+Clicking on today's date in the calendar view would often fail to register. Users had to click on other dates first before being able to select today and see the "Ready to practice?" prompt.
+
+### Investigation
+Added diagnostic logging to trace the issue. Discovered that button taps were not being registered at all for today's date - no tap handler was firing. Taps on other dates worked fine.
+
+### Root Cause
+SwiftUI hit-testing issue. The `CalendarNavigatorDayView` button content includes a `ZStack` with `RoundedRectangle` background, overlay stroke, and text content. For dates with certain visual states (particularly `isToday: true` combined with `isSelected: true`), SwiftUI's automatic hit-testing was failing to detect taps.
+
+### Fix
+Added `.contentShape(Rectangle())` to the button's content in `CalendarNavigatorDayView`. This explicitly defines the tappable area as the full rectangular frame, ensuring consistent tap detection regardless of the internal view hierarchy or visual state.
+
+```swift
+.frame(height: 44)
+.contentShape(Rectangle())  // Added this line
+```
+
+### Lesson Learned
+When using complex view hierarchies inside SwiftUI buttons (ZStack, overlays, conditional styling), always consider adding `.contentShape()` to ensure reliable hit-testing.

@@ -221,6 +221,7 @@ struct CalendarNavigatorDayView: View {
                 .padding(.vertical, 4)
             }
             .frame(height: 44)
+            .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
         .help(tooltipText)
