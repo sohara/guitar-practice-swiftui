@@ -5,6 +5,7 @@ struct MainContentView: View {
     @ObservedObject var appState: AppState
     @Environment(\.modelContext) private var modelContext
     @FocusState private var isSearchFocused: Bool
+    @FocusState private var isMainFocused: Bool
 
     var body: some View {
         VStack(spacing: 0) {
@@ -57,6 +58,32 @@ struct MainContentView: View {
         }
         .focusable()
         .focusEffectDisabled()
+        .focused($isMainFocused)
+        .onAppear {
+            isMainFocused = true
+        }
+        .onChange(of: appState.focusedPanel) { _, _ in
+            // Refocus main view when panel changes (e.g., clicking on items)
+            if !isSearchFocused {
+                isMainFocused = true
+            }
+        }
+        .onChange(of: isSearchFocused) { _, focused in
+            // Refocus main view when exiting search
+            if !focused {
+                isMainFocused = true
+            }
+        }
+        .onChange(of: appState.searchText) { _, _ in
+            // Clamp focus index when filters change
+            appState.clampFocusedItemIndex()
+        }
+        .onChange(of: appState.typeFilter) { _, _ in
+            appState.clampFocusedItemIndex()
+        }
+        .onChange(of: appState.showRecentOnly) { _, _ in
+            appState.clampFocusedItemIndex()
+        }
         .onKeyPress(.upArrow) {
             appState.moveFocusUp()
             return .handled

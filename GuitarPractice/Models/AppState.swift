@@ -682,6 +682,13 @@ class AppState: ObservableObject {
         }
     }
 
+    func clampFocusedItemIndex() {
+        let count = filteredLibrary.count
+        if let index = focusedItemIndex, index >= count {
+            focusedItemIndex = count > 0 ? count - 1 : nil
+        }
+    }
+
     // MARK: - Keyboard Navigation
 
     func moveFocusUp() {

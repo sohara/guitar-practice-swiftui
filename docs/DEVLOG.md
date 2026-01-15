@@ -969,3 +969,19 @@ Cmd+O to open the current item in Notion only worked in the main view, not durin
 - Added `openCurrentPracticeItemInNotion()` method to AppState
 - Added button with Cmd+O shortcut to PracticeView header
 - Added "⌘O notion" hint to practice footer
+
+---
+
+## 2026-01-15: Keyboard Navigation Focus Fix (#7)
+
+### Issue
+Arrow key navigation in library/session lists sometimes stopped working after clicking on items or using filters.
+
+### Root Cause
+Clicking on list items (which are Buttons) transferred focus away from MainContentView, causing onKeyPress handlers to stop receiving events.
+
+### Fix
+- Added `@FocusState` to MainContentView to manage focus explicitly
+- Refocus main view on appear and when panel changes
+- Refocus when exiting search field
+- Added `clampFocusedItemIndex()` to keep focus valid when filters reduce list size
