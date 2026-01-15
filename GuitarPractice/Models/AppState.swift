@@ -881,7 +881,15 @@ class AppState: ObservableObject {
         guard !selectedItems.isEmpty else { return }
 
         isPracticing = true
-        practiceItemIndex = 0
+
+        // Start from focused item if one is selected
+        if let focused = focusedSelectedIndex {
+            practiceItemIndex = focused
+        } else {
+            // Otherwise, find the first item that hasn't been played yet
+            practiceItemIndex = selectedItems.firstIndex { $0.actualMinutes == nil } ?? 0
+        }
+
         hasTriggeredOvertimeAlert = false
 
         // Resume from previous actual time if exists

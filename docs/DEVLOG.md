@@ -944,3 +944,16 @@ Replaced the broken implicit animation with intentional directional slide transi
 - Added `.transition(.asymmetric(...))` with `.move(edge:)` for directional slides
 - Months now slide in from right (forward) or left (backward)
 - Also increased tap area on navigation buttons (32x32) for easier clicking
+
+---
+
+## 2026-01-15: Play Button Respects Focused Item (#5)
+
+### Issue
+Clicking "Play" or pressing Cmd+P always started practice from the first session item, ignoring the currently highlighted/focused item.
+
+### Fix
+Updated `startPractice()` in AppState to:
+1. Start from `focusedSelectedIndex` if an item is focused
+2. Otherwise, auto-select the first unplayed item (`actualMinutes == nil`)
+3. Fall back to index 0 if all items have been played
