@@ -1007,3 +1007,20 @@ The "PAUSED" badge caused jarring layout shifts when toggling pause, and looked 
 Removed the badge entirely. Now paused state is indicated by:
 - Dimmed timer display (0.4 opacity)
 - Resume button with play icon (already existed)
+
+---
+
+## 2026-01-15: Jump to Today (T key)
+
+### Feature
+Press "T" to quickly return to today's date in the calendar, useful when browsing historical sessions.
+
+### Implementation
+- Added `jumpToToday()` method to AppState that sets `displayedMonth` to current date and calls `selectDate(Date())`
+- Added "T" key handler in MainContentView (skipped when search field is focused)
+- Added "T today" hint to FooterView
+
+### Files Modified
+- `GuitarPractice/Models/AppState.swift` - Added `jumpToToday()` method
+- `GuitarPractice/Views/MainContentView.swift` - Added key handler
+- `GuitarPractice/Views/Common/FooterView.swift` - Added keyboard hint

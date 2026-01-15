@@ -574,6 +574,12 @@ class AppState: ObservableObject {
         sessionViewMode = .editing
     }
 
+    /// Jump to today's date in the calendar
+    func jumpToToday() async {
+        displayedMonth = Date()
+        await selectDate(Date())
+    }
+
     /// Get session for a specific date (if exists)
     func sessionForDate(_ date: Date) -> PracticeSession? {
         let calendar = Calendar.current

@@ -162,5 +162,14 @@ struct MainContentView: View {
             }
             return .ignored
         }
+        .onKeyPress(characters: CharacterSet(charactersIn: "tT")) { _ in
+            if !isSearchFocused {
+                Task {
+                    await appState.jumpToToday()
+                }
+                return .handled
+            }
+            return .ignored
+        }
     }
 }

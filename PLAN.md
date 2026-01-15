@@ -325,7 +325,7 @@ Moved contextual stats from global header to their respective views.
 5. **StatBadge.swift deleted** → No longer needed
 
 ### 9.5 Other Ideas (Unprioritized)
-- **Jump to Today**: Press `T` to return to today's date in calendar
+- **Jump to Today**: ✅ Press `T` to return to today's date in calendar
 - **Practice Goals**: Set daily target (e.g., 30 min) with progress indicator
 - **Session Templates**: Save/load sets of items for quick session creation
 - **Per-Item Progress Chart**: Visualize practice time trends for specific items

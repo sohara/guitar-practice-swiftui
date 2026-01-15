@@ -6,6 +6,7 @@ struct FooterView: View {
             KeyHint(key: "tab", action: "switch panel")
             KeyHint(key: "↑↓", action: "navigate")
             KeyHint(key: "^F/B", action: "page")
+            KeyHint(key: "T", action: "today")
             KeyHint(key: "enter", action: "add/remove")
             KeyHint(key: "+/-", action: "time")
             KeyHint(key: "⌫", action: "remove")
