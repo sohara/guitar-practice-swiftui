@@ -1127,3 +1127,29 @@ Changed `sessionsThisMonth` to only count sessions with `actualMinutes > 0`, usi
 
 ### Files Modified
 - `GuitarPractice/Views/Session/CalendarNavigatorView.swift` - Filter sessionsThisMonth by actual practice time
+
+---
+
+## 2026-01-16: Fix Dropdown Menu Issues (Issue #10)
+
+### Problem
+The MenuBarExtra dropdown menu had two UX issues:
+1. Weird extra vertical space between menu items
+2. Pause/Resume button was too far down the list when practicing
+
+### Root Cause
+1. Dividers had `.padding(.vertical, 8)` adding unnecessary spacing
+2. Menu showed item info and timer display above controls, pushing Pause/Resume far down
+
+### Solution
+Restructured `practicingMenu` in `GuitarPracticeApp.swift`:
+1. Removed padding from dividers
+2. Reordered menu items to prioritize controls:
+   - Pause/Resume (top, most accessible)
+   - Timer display
+   - Current item info
+   - Save & Next / Finish & Exit
+   - Show Window / Exit Practice
+
+### Files Modified
+- `GuitarPractice/GuitarPracticeApp.swift` - Reorganized `practicingMenu` view

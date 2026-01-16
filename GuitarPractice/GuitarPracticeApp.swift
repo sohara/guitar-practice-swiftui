@@ -124,22 +124,18 @@ struct MenuBarView: View {
 
     var practicingMenu: some View {
         VStack(alignment: .leading, spacing: 0) {
-            // Current item info
-            if let item = appState.currentPracticeItem {
-                Text(item.item.name)
-                    .font(.headline)
-                    .lineLimit(1)
+            // Pause/Resume at top for quick access
+            Button {
+                appState.toggleTimer()
+            } label: {
+                Label(
+                    appState.isTimerRunning ? "Pause" : "Resume",
+                    systemImage: appState.isTimerRunning ? "pause.fill" : "play.fill"
+                )
+            }
 
-                if let artist = item.item.artist {
-                    Text(artist)
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
-                }
-
-                Divider()
-                    .padding(.vertical, 8)
-
-                // Timer display
+            // Timer display
+            if let _ = appState.currentPracticeItem {
                 HStack {
                     if appState.isPracticeOvertime {
                         Text("Overtime: +\(appState.practiceElapsedFormatted)")
@@ -154,17 +150,19 @@ struct MenuBarView: View {
                 .font(.system(.body, design: .monospaced))
 
                 Divider()
-                    .padding(.vertical, 8)
-            }
 
-            // Controls
-            Button {
-                appState.toggleTimer()
-            } label: {
-                Label(
-                    appState.isTimerRunning ? "Pause" : "Resume",
-                    systemImage: appState.isTimerRunning ? "pause.fill" : "play.fill"
-                )
+                // Current item info
+                Text(appState.currentPracticeItem!.item.name)
+                    .font(.headline)
+                    .lineLimit(1)
+
+                if let artist = appState.currentPracticeItem!.item.artist {
+                    Text(artist)
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+                }
+
+                Divider()
             }
 
             if appState.practiceItemIndex < appState.selectedItems.count - 1 {
