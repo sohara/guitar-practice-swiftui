@@ -146,6 +146,41 @@ class AppState: ObservableObject {
         selectedItems.reduce(0.0) { $0 + ($1.actualMinutes ?? 0) }
     }
 
+    var currentSessionGoal: Int {
+        currentSession?.goalMinutes ?? Config.Defaults.dailyGoalMinutes
+    }
+
+    var goalProgress: Double {
+        guard currentSessionGoal > 0 else { return 0 }
+        return min(1.0, totalActualMinutes / Double(currentSessionGoal))
+    }
+
+    var isGoalMet: Bool {
+        totalActualMinutes >= Double(currentSessionGoal)
+    }
+
+    /// Percentage of sessions where actual time met the goal (0-100)
+    var goalAchievementRate: Int {
+        guard let cache = cacheService else { return 0 }
+
+        var metGoalCount = 0
+        var totalWithGoal = 0
+
+        for session in sessions {
+            guard let goal = session.goalMinutes, goal > 0 else { continue }
+            totalWithGoal += 1
+
+            let logs = cache.loadLogs(forSession: session.id)
+            let actualMinutes = logs.compactMap(\.actualMinutes).reduce(0, +)
+            if actualMinutes >= Double(goal) {
+                metGoalCount += 1
+            }
+        }
+
+        guard totalWithGoal > 0 else { return 0 }
+        return Int(Double(metGoalCount) / Double(totalWithGoal) * 100)
+    }
+
     var currentPracticeItem: SelectedItem? {
         guard isPracticing, practiceItemIndex < selectedItems.count else { return nil }
         return selectedItems[practiceItemIndex]
@@ -624,6 +659,36 @@ class AppState: ObservableObject {
         } catch {
             sessionError = error
             return nil
+        }
+    }
+
+    /// Update the goal for the current session
+    func updateSessionGoal(_ newGoal: Int) async {
+        guard let session = currentSession, let client = notionClient else { return }
+
+        do {
+            try await client.updateSessionGoal(sessionId: session.id, goalMinutes: newGoal)
+
+            // Update local state
+            let updatedSession = PracticeSession(
+                id: session.id,
+                name: session.name,
+                date: session.date,
+                goalMinutes: newGoal
+            )
+            currentSession = updatedSession
+
+            // Update in sessions list
+            if let index = sessions.firstIndex(where: { $0.id == session.id }) {
+                var updatedSessions = sessions
+                updatedSessions[index] = updatedSession
+                sessionsState = .loaded(updatedSessions)
+            }
+
+            // Update cache
+            cacheService?.saveSessions(sessions)
+        } catch {
+            sessionError = error
         }
     }
 

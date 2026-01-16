@@ -70,20 +70,23 @@ final class CachedPracticeSession {
     @Attribute(.unique) var id: String
     var name: String
     var date: Date
+    var goalMinutes: Int?
 
-    init(id: String, name: String, date: Date) {
+    init(id: String, name: String, date: Date, goalMinutes: Int?) {
         self.id = id
         self.name = name
         self.date = date
+        self.goalMinutes = goalMinutes
     }
 
     func toPracticeSession() -> PracticeSession {
-        PracticeSession(id: id, name: name, date: date)
+        PracticeSession(id: id, name: name, date: date, goalMinutes: goalMinutes)
     }
 
     func update(from session: PracticeSession) {
         name = session.name
         date = session.date
+        goalMinutes = session.goalMinutes
     }
 }
 

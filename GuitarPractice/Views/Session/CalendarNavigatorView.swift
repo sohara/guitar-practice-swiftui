@@ -98,8 +98,8 @@ struct CalendarNavigatorView: View {
             // Mini stats row
             HStack(spacing: 16) {
                 MiniStatView(icon: "flame", value: "\(currentStreak)", label: "streak", color: .orange)
+                MiniStatView(icon: "🎯", value: "\(appState.goalAchievementRate)%", label: "goals", color: .green, useEmoji: true)
                 MiniStatView(icon: "calendar", value: "\(sessionsThisMonth)", label: "this month", color: .cyan)
-                MiniStatView(icon: "clock", value: "\(appState.sessions.count)", label: "total", color: .purple)
             }
             .padding(.top, 4)
         }
@@ -321,12 +321,18 @@ struct MiniStatView: View {
     let value: String
     let label: String
     let color: Color
+    var useEmoji: Bool = false
 
     var body: some View {
         HStack(spacing: 4) {
-            Image(systemName: icon)
-                .font(.system(size: 10))
-                .foregroundColor(color)
+            if useEmoji {
+                Text(icon)
+                    .font(.system(size: 9))
+            } else {
+                Image(systemName: icon)
+                    .font(.system(size: 10))
+                    .foregroundColor(color)
+            }
             Text(value)
                 .font(.custom("SF Mono", size: 12))
                 .fontWeight(.semibold)

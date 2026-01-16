@@ -30,6 +30,11 @@ struct PracticeStats {
 
     // Recent activity (last 7 days)
     let recentDays: [(date: Date, minutes: Double, itemCount: Int)]
+
+    // Goal achievement
+    let goalsMetThisMonth: (met: Int, total: Int)
+    let goalsMetAllTime: (met: Int, total: Int)
+    let recentGoalProgress: [(date: Date, metGoal: Bool?, percentAchieved: Double)]
 }
 
 // MARK: - Stats Service
@@ -99,6 +104,14 @@ final class StatsService {
         // Recent days
         let recentDays = computeRecentDays(sessions: sessions, logs: logs)
 
+        // Goal achievement
+        let goalsThisMonth = computeGoalAchievement(
+            sessions: sessions.filter { calendar.isDate($0.date, equalTo: now, toGranularity: .month) },
+            logs: logs
+        )
+        let goalsAllTime = computeGoalAchievement(sessions: sessions, logs: logs)
+        let recentGoalProgress = computeRecentGoalProgress(sessions: sessions, logs: logs)
+
         return PracticeStats(
             totalPracticeMinutes: totalMinutes,
             totalSessions: sessions.count,
@@ -113,7 +126,10 @@ final class StatsService {
             topItemsByCount: topByCount,
             minutesByType: minutesByType,
             weeklyTrend: weeklyTrend,
-            recentDays: recentDays
+            recentDays: recentDays,
+            goalsMetThisMonth: goalsThisMonth,
+            goalsMetAllTime: goalsAllTime,
+            recentGoalProgress: recentGoalProgress
         )
     }
 
@@ -297,6 +313,58 @@ final class StatsService {
             let itemCount = dayLogs.filter { $0.actualMinutes != nil && $0.actualMinutes! > 0 }.count
 
             result.append((date: dayStart, minutes: minutes, itemCount: itemCount))
+        }
+
+        return result
+    }
+
+    private func computeGoalAchievement(
+        sessions: [PracticeSession],
+        logs: [PracticeLog]
+    ) -> (met: Int, total: Int) {
+        var met = 0
+        var total = 0
+
+        for session in sessions {
+            guard let goal = session.goalMinutes, goal > 0 else { continue }
+            total += 1
+
+            let sessionLogs = logs.filter { $0.sessionId == session.id }
+            let actualMinutes = sessionLogs.compactMap(\.actualMinutes).reduce(0, +)
+            if actualMinutes >= Double(goal) {
+                met += 1
+            }
+        }
+
+        return (met, total)
+    }
+
+    private func computeRecentGoalProgress(
+        sessions: [PracticeSession],
+        logs: [PracticeLog]
+    ) -> [(date: Date, metGoal: Bool?, percentAchieved: Double)] {
+        let now = Date()
+        var result: [(date: Date, metGoal: Bool?, percentAchieved: Double)] = []
+
+        for dayOffset in (0..<7).reversed() {
+            guard let date = calendar.date(byAdding: .day, value: -dayOffset, to: now) else { continue }
+            let dayStart = calendar.startOfDay(for: date)
+
+            // Find session for this day
+            let session = sessions.first {
+                calendar.isDate($0.date, inSameDayAs: dayStart)
+            }
+
+            if let session = session, let goal = session.goalMinutes, goal > 0 {
+                let sessionLogs = logs.filter { $0.sessionId == session.id }
+                let actualMinutes = sessionLogs.compactMap(\.actualMinutes).reduce(0, +)
+                let percent = min(1.0, actualMinutes / Double(goal))
+                let metGoal = actualMinutes >= Double(goal)
+                result.append((date: dayStart, metGoal: metGoal, percentAchieved: percent))
+            } else {
+                // No session or no goal for this day
+                result.append((date: dayStart, metGoal: nil, percentAchieved: 0))
+            }
         }
 
         return result

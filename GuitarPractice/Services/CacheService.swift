@@ -95,7 +95,8 @@ final class CacheService {
                 let cached = CachedPracticeSession(
                     id: session.id,
                     name: session.name,
-                    date: session.date
+                    date: session.date,
+                    goalMinutes: session.goalMinutes
                 )
                 modelContext.insert(cached)
             }

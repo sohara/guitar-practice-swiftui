@@ -10,6 +10,9 @@ struct StatsDashboardView: View {
                     // Overview cards
                     StatsOverviewSection(stats: stats)
 
+                    // Goal achievement
+                    GoalAchievementSection(stats: stats)
+
                     // Recent activity
                     RecentActivitySection(stats: stats)
 
@@ -192,6 +195,155 @@ struct StreakCard: View {
                         .stroke(color.opacity(0.2), lineWidth: 1)
                 )
         )
+    }
+}
+
+struct GoalAchievementSection: View {
+    let stats: PracticeStats
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("GOAL ACHIEVEMENT")
+                .font(.custom("SF Mono", size: 10))
+                .foregroundColor(.gray)
+                .tracking(2)
+
+            // This Month vs All Time
+            HStack(spacing: 16) {
+                GoalRateCard(
+                    title: "This Month",
+                    met: stats.goalsMetThisMonth.met,
+                    total: stats.goalsMetThisMonth.total,
+                    color: .green
+                )
+                GoalRateCard(
+                    title: "All Time",
+                    met: stats.goalsMetAllTime.met,
+                    total: stats.goalsMetAllTime.total,
+                    color: .cyan
+                )
+            }
+
+            // Recent 7 days goal progress
+            VStack(alignment: .leading, spacing: 8) {
+                Text("Recent Progress")
+                    .font(.custom("SF Mono", size: 10))
+                    .foregroundColor(.gray.opacity(0.7))
+
+                HStack(spacing: 8) {
+                    ForEach(stats.recentGoalProgress, id: \.date) { day in
+                        GoalDayIndicator(
+                            date: day.date,
+                            metGoal: day.metGoal,
+                            percentAchieved: day.percentAchieved
+                        )
+                    }
+                }
+            }
+            .padding(.top, 4)
+        }
+        .padding(12)
+        .background(
+            RoundedRectangle(cornerRadius: 8)
+                .fill(Color.white.opacity(0.03))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 8)
+                        .stroke(Color.white.opacity(0.06), lineWidth: 1)
+                )
+        )
+    }
+}
+
+struct GoalRateCard: View {
+    let title: String
+    let met: Int
+    let total: Int
+    let color: Color
+
+    private var percentage: Int {
+        guard total > 0 else { return 0 }
+        return Int(Double(met) / Double(total) * 100)
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text(title)
+                .font(.custom("SF Mono", size: 10))
+                .foregroundColor(.gray)
+
+            HStack(alignment: .lastTextBaseline, spacing: 4) {
+                Text("\(percentage)%")
+                    .font(.custom("SF Mono", size: 22))
+                    .fontWeight(.bold)
+                    .foregroundColor(color)
+
+                Text("\(met)/\(total)")
+                    .font(.custom("SF Mono", size: 11))
+                    .foregroundColor(.gray)
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(12)
+        .background(
+            RoundedRectangle(cornerRadius: 8)
+                .fill(color.opacity(0.1))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 8)
+                        .stroke(color.opacity(0.2), lineWidth: 1)
+                )
+        )
+    }
+}
+
+struct GoalDayIndicator: View {
+    let date: Date
+    let metGoal: Bool?
+    let percentAchieved: Double
+
+    private let calendar = Calendar.current
+    private let dayFormatter: DateFormatter = {
+        let f = DateFormatter()
+        f.dateFormat = "E"
+        return f
+    }()
+
+    var body: some View {
+        VStack(spacing: 4) {
+            // Status indicator
+            ZStack {
+                Circle()
+                    .fill(backgroundColor)
+                    .frame(width: 28, height: 28)
+
+                if let met = metGoal {
+                    Image(systemName: met ? "checkmark" : "circle")
+                        .font(.system(size: met ? 12 : 8, weight: .bold))
+                        .foregroundColor(met ? .green : .orange)
+                } else {
+                    Circle()
+                        .fill(Color.gray.opacity(0.3))
+                        .frame(width: 8, height: 8)
+                }
+            }
+
+            // Day label
+            Text(dayFormatter.string(from: date).prefix(1))
+                .font(.custom("SF Mono", size: 10))
+                .foregroundColor(calendar.isDateInToday(date) ? .cyan : .gray)
+        }
+        .frame(maxWidth: .infinity)
+    }
+
+    private var backgroundColor: Color {
+        guard let met = metGoal else {
+            return Color.gray.opacity(0.1)
+        }
+        if met {
+            return Color.green.opacity(0.2)
+        } else {
+            // Partial progress - show orange tint based on percentage
+            return Color.orange.opacity(0.1 + percentAchieved * 0.15)
+        }
     }
 }
 

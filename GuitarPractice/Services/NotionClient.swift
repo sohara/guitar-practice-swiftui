@@ -139,12 +139,13 @@ actor NotionClient {
 
     // MARK: - Create Practice Session
 
-    func createSession(_ session: NewPracticeSession) async throws -> PracticeSession {
+    func createSession(_ session: NewPracticeSession, goalMinutes: Int = Config.Defaults.dailyGoalMinutes) async throws -> PracticeSession {
         let body: [String: Any] = [
             "parent": ["database_id": Config.Notion.Databases.practiceSessions],
             "properties": [
                 "Session": ["title": [["text": ["content": session.name]]]],
-                "Date": ["date": ["start": session.date]]
+                "Date": ["date": ["start": session.date]],
+                "Goal (min)": ["number": goalMinutes]
             ],
             "template": [
                 "type": "template_id",
@@ -162,7 +163,19 @@ actor NotionClient {
         dateFormatter.dateFormat = "yyyy-MM-dd"
         let date = dateFormatter.date(from: session.date) ?? Date()
 
-        return PracticeSession(id: id, name: session.name, date: date)
+        return PracticeSession(id: id, name: session.name, date: date, goalMinutes: goalMinutes)
+    }
+
+    // MARK: - Update Session Goal
+
+    func updateSessionGoal(sessionId: String, goalMinutes: Int) async throws {
+        let body: [String: Any] = [
+            "properties": [
+                "Goal (min)": ["number": goalMinutes]
+            ]
+        ]
+
+        _ = try await patchRequest(endpoint: "/pages/\(sessionId)", body: body)
     }
 
     // MARK: - Create Practice Log
@@ -357,12 +370,13 @@ actor NotionClient {
 
         let name = getTitle(properties["Session"])
         let dateStr = getDate(properties["Date"]) ?? ""
+        let goal = getNumber(properties["Goal (min)"])
 
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyy-MM-dd"
         let date = formatter.date(from: dateStr) ?? Date()
 
-        return PracticeSession(id: id, name: name, date: date)
+        return PracticeSession(id: id, name: name, date: date, goalMinutes: goal != nil ? Int(goal!) : nil)
     }
 
     private func parseLog(from page: [String: Any]) -> PracticeLog? {

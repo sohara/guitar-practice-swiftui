@@ -1024,3 +1024,42 @@ Press "T" to quickly return to today's date in the calendar, useful when browsin
 - `GuitarPractice/Models/AppState.swift` - Added `jumpToToday()` method
 - `GuitarPractice/Views/MainContentView.swift` - Added key handler
 - `GuitarPractice/Views/Common/FooterView.swift` - Added keyboard hint
+
+---
+
+## 2026-01-15: Practice Goals
+
+### Feature
+Daily practice goals with progress tracking. Each session has a goal (default 60 min) that can be adjusted per-session. Progress is shown in the session header and tracked in stats.
+
+### Data Model
+- Added `Goal (min)` number property to Practice Sessions database in Notion
+- Added `goalMinutes: Int?` to `PracticeSession` and `CachedPracticeSession`
+- Default goal of 60 minutes set in `Config.Defaults.dailyGoalMinutes`
+
+### Session View (B3 Layout)
+- Redesigned header to show: date, items count (planned time), goal progress
+- Progress bar shows actual vs goal with 🎯 emoji indicator
+- Bar turns green when goal is met
+- +/- stepper buttons to adjust goal in 5-minute increments (in edit mode)
+- Changes sync immediately to Notion
+
+### Calendar Mini-Stats
+- Replaced "total sessions" with "% goals met" showing goal achievement rate
+
+### Stats Dashboard
+- New "Goal Achievement" section with:
+  - This Month and All Time goal rates (percentage + count)
+  - Recent 7-day progress indicators (✓ met, partial fill, · no session)
+
+### Files Modified
+- `GuitarPractice/Models/Types.swift` - Added goalMinutes to PracticeSession
+- `GuitarPractice/Models/CachedModels.swift` - Added goalMinutes to CachedPracticeSession
+- `GuitarPractice/Models/AppState.swift` - Goal computed properties, updateSessionGoal method, goalAchievementRate
+- `GuitarPractice/Services/Config.swift` - Added Defaults.dailyGoalMinutes
+- `GuitarPractice/Services/NotionClient.swift` - Read/write Goal property, updateSessionGoal
+- `GuitarPractice/Services/CacheService.swift` - Handle goalMinutes in session caching
+- `GuitarPractice/Services/StatsService.swift` - Goal achievement calculations
+- `GuitarPractice/Views/Session/SessionDetailView.swift` - New B3 header layout with GoalProgressView
+- `GuitarPractice/Views/Session/CalendarNavigatorView.swift` - Goal achievement mini-stat
+- `GuitarPractice/Views/Stats/StatsDashboardView.swift` - GoalAchievementSection

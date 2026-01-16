@@ -29,4 +29,8 @@ enum Config {
         static let service = "com.sohara.GuitarPractice"
         static let apiKeyAccount = "notion-api-key"
     }
+
+    enum Defaults {
+        static let dailyGoalMinutes = 60
+    }
 }

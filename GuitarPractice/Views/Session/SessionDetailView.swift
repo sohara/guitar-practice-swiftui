@@ -39,65 +39,161 @@ struct SessionDetailHeaderView: View {
     let dateFormatter: DateFormatter
 
     var body: some View {
-        HStack {
-            VStack(alignment: .leading, spacing: 2) {
+        VStack(alignment: .leading, spacing: 8) {
+            // Top row: Date + actions
+            HStack {
                 Text(dateFormatter.string(from: appState.selectedDate))
                     .font(.custom("SF Mono", size: 14))
                     .fontWeight(.medium)
                     .foregroundColor(.white)
 
-                if appState.currentSession != nil {
-                    HStack(spacing: 8) {
-                        Label("\(appState.selectedItems.count) items", systemImage: "list.bullet")
-                            .font(.custom("SF Mono", size: 11))
-                            .foregroundColor(.gray)
+                Spacer()
 
-                        if appState.totalActualMinutes > 0 {
-                            Label(formatMinutesAsTime(appState.totalActualMinutes), systemImage: "clock.fill")
+                // Unsaved indicator
+                if appState.hasUnsavedChanges {
+                    Circle()
+                        .fill(Color.orange)
+                        .frame(width: 8, height: 8)
+                }
+
+                // Mode indicator / switch button
+                if appState.currentSession != nil && appState.sessionViewMode == .viewing {
+                    Button {
+                        appState.switchToEditMode()
+                    } label: {
+                        HStack(spacing: 4) {
+                            Image(systemName: "pencil")
+                                .font(.system(size: 10))
+                            Text("Edit")
                                 .font(.custom("SF Mono", size: 11))
-                                .foregroundColor(.green.opacity(0.8))
-                        } else if appState.totalPlannedMinutes > 0 {
-                            Label("\(appState.totalPlannedMinutes)m planned", systemImage: "clock")
-                                .font(.custom("SF Mono", size: 11))
-                                .foregroundColor(.orange.opacity(0.8))
                         }
+                        .foregroundColor(.cyan)
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 5)
+                        .background(
+                            RoundedRectangle(cornerRadius: 5)
+                                .fill(Color.cyan.opacity(0.1))
+                        )
                     }
+                    .buttonStyle(.plain)
                 }
             }
 
-            Spacer()
+            if appState.currentSession != nil {
+                // Session info: items (planned)
+                HStack(spacing: 4) {
+                    Text("\(appState.selectedItems.count) items")
+                        .font(.custom("SF Mono", size: 11))
+                        .foregroundColor(.gray)
 
-            // Unsaved indicator
-            if appState.hasUnsavedChanges {
-                Circle()
-                    .fill(Color.orange)
-                    .frame(width: 8, height: 8)
-            }
-
-            // Mode indicator / switch button
-            if appState.currentSession != nil && appState.sessionViewMode == .viewing {
-                Button {
-                    appState.switchToEditMode()
-                } label: {
-                    HStack(spacing: 4) {
-                        Image(systemName: "pencil")
-                            .font(.system(size: 10))
-                        Text("Edit")
+                    if appState.totalPlannedMinutes > 0 {
+                        Text("(\(appState.totalPlannedMinutes)m planned)")
                             .font(.custom("SF Mono", size: 11))
+                            .foregroundColor(.gray.opacity(0.6))
                     }
-                    .foregroundColor(.cyan)
-                    .padding(.horizontal, 10)
-                    .padding(.vertical, 5)
-                    .background(
-                        RoundedRectangle(cornerRadius: 5)
-                            .fill(Color.cyan.opacity(0.1))
-                    )
                 }
-                .buttonStyle(.plain)
+
+                // Goal progress row
+                GoalProgressView(appState: appState)
             }
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 12)
+    }
+}
+
+struct GoalProgressView: View {
+    @ObservedObject var appState: AppState
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            HStack(spacing: 8) {
+                // Goal icon and progress text
+                Text("🎯")
+                    .font(.system(size: 10))
+
+                Text("\(Int(appState.totalActualMinutes))m")
+                    .font(.custom("SF Mono", size: 12))
+                    .fontWeight(.medium)
+                    .foregroundColor(appState.isGoalMet ? .green : .white)
+
+                Text("/")
+                    .font(.custom("SF Mono", size: 12))
+                    .foregroundColor(.gray)
+
+                // Goal value with stepper (only in editing mode)
+                if appState.sessionViewMode == .editing {
+                    HStack(spacing: 4) {
+                        Button {
+                            Task {
+                                let newGoal = max(5, appState.currentSessionGoal - 5)
+                                await appState.updateSessionGoal(newGoal)
+                            }
+                        } label: {
+                            Image(systemName: "minus")
+                                .font(.system(size: 9, weight: .bold))
+                                .foregroundColor(.gray)
+                                .frame(width: 18, height: 18)
+                                .background(Color.white.opacity(0.1))
+                                .cornerRadius(4)
+                        }
+                        .buttonStyle(.plain)
+
+                        Text("\(appState.currentSessionGoal)m")
+                            .font(.custom("SF Mono", size: 12))
+                            .fontWeight(.medium)
+                            .foregroundColor(.orange)
+                            .frame(minWidth: 30)
+
+                        Button {
+                            Task {
+                                let newGoal = appState.currentSessionGoal + 5
+                                await appState.updateSessionGoal(newGoal)
+                            }
+                        } label: {
+                            Image(systemName: "plus")
+                                .font(.system(size: 9, weight: .bold))
+                                .foregroundColor(.gray)
+                                .frame(width: 18, height: 18)
+                                .background(Color.white.opacity(0.1))
+                                .cornerRadius(4)
+                        }
+                        .buttonStyle(.plain)
+                    }
+
+                    Text("goal")
+                        .font(.custom("SF Mono", size: 11))
+                        .foregroundColor(.gray)
+                } else {
+                    Text("\(appState.currentSessionGoal)m goal")
+                        .font(.custom("SF Mono", size: 12))
+                        .foregroundColor(.orange)
+                }
+
+                Spacer()
+
+                // Percentage
+                Text("\(Int(appState.goalProgress * 100))%")
+                    .font(.custom("SF Mono", size: 11))
+                    .foregroundColor(appState.isGoalMet ? .green : .gray)
+            }
+
+            // Progress bar
+            GeometryReader { geometry in
+                ZStack(alignment: .leading) {
+                    // Background
+                    RoundedRectangle(cornerRadius: 3)
+                        .fill(Color.white.opacity(0.1))
+                        .frame(height: 6)
+
+                    // Progress
+                    RoundedRectangle(cornerRadius: 3)
+                        .fill(appState.isGoalMet ? Color.green : Color.orange)
+                        .frame(width: geometry.size.width * appState.goalProgress, height: 6)
+                }
+            }
+            .frame(height: 6)
+        }
     }
 }
 

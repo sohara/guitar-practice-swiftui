@@ -42,6 +42,7 @@ struct PracticeSession: Identifiable {
     let id: String
     let name: String
     let date: Date
+    let goalMinutes: Int?
 }
 
 // MARK: - Practice Log (junction table entry)
