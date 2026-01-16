@@ -151,9 +151,9 @@ struct CalendarNavigatorView: View {
     }
 
     private var sessionsThisMonth: Int {
-        appState.sessions.filter { session in
-            calendar.isDate(session.date, equalTo: appState.displayedMonth, toGranularity: .month)
-        }.count
+        // Only count sessions with actual practice time
+        let summaries = appState.daySummaries(for: appState.displayedMonth)
+        return summaries.values.filter { $0.actualMinutes > 0 }.count
     }
 
     private var currentStreak: Int {

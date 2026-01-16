@@ -1114,3 +1114,16 @@ Items in past sessions (viewing mode) couldn't be selected, so ⌘O didn't work 
 - `GuitarPractice/Views/Library/LibraryListView.swift` - Added context menu to library rows
 - `GuitarPractice/Views/Session/SessionEditingModeView.swift` - Added context menu to session rows
 - `GuitarPractice/Views/Session/SessionViewingModeView.swift` - Added context menu and focus support to read-only rows
+
+---
+
+## 2026-01-16: Fix Session Count to Only Count Actual Practice (Issue #15)
+
+### Problem
+The "X this month" session count was optimistic - it counted all sessions including empty ones and future sessions that hadn't been practiced yet.
+
+### Solution
+Changed `sessionsThisMonth` to only count sessions with `actualMinutes > 0`, using the existing `daySummaries(for:)` method.
+
+### Files Modified
+- `GuitarPractice/Views/Session/CalendarNavigatorView.swift` - Filter sessionsThisMonth by actual practice time
