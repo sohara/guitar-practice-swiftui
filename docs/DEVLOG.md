@@ -1218,3 +1218,20 @@ Moved the tap gesture from the entire row to just the name/artist text area. Thi
 
 ### Files Modified
 - `GuitarPractice/Views/Session/SessionEditingModeView.swift` - Moved `.contentShape(Rectangle()).onTapGesture` from row level to name/artist VStack only
+
+---
+
+## 2026-01-16: Fix Goal Percentage Scoped to Wrong Time Period (Issue #14)
+
+### Problem
+The goal percentage in the calendar view showed an unexpected value (e.g., 50%) that didn't match the visible month's data. Users expected the percentage to reflect the displayed month, but it was calculating across all sessions.
+
+### Root Cause
+The `goalAchievementRate` computed property in `AppState` iterated over all sessions without filtering by month, while the adjacent stats (`sessionsThisMonth`) were month-scoped. This created a confusing UX where stats appeared side-by-side but covered different time periods.
+
+### Solution
+Changed `goalAchievementRate` from a computed property to a method that takes a `month: Date` parameter, filtering sessions to that month before calculating. Updated `CalendarNavigatorView` to call the method with `appState.displayedMonth`.
+
+### Files Modified
+- `GuitarPractice/Models/AppState.swift` - Changed `goalAchievementRate` from computed property to `func goalAchievementRate(for month: Date) -> Int`
+- `GuitarPractice/Views/Session/CalendarNavigatorView.swift` - Call `goalAchievementRate(for: appState.displayedMonth)`

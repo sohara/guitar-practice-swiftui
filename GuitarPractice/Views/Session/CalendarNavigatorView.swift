@@ -98,7 +98,7 @@ struct CalendarNavigatorView: View {
             // Mini stats row
             HStack(spacing: 16) {
                 MiniStatView(icon: "flame", value: "\(currentStreak)", label: "streak", color: .orange)
-                MiniStatView(icon: "🎯", value: "\(appState.goalAchievementRate)%", label: "goals", color: .green, useEmoji: true)
+                MiniStatView(icon: "🎯", value: "\(appState.goalAchievementRate(for: appState.displayedMonth))%", label: "goals", color: .green, useEmoji: true)
                 MiniStatView(icon: "calendar", value: "\(sessionsThisMonth)", label: "this month", color: .cyan)
             }
             .padding(.top, 4)

@@ -159,14 +159,19 @@ class AppState: ObservableObject {
         totalActualMinutes >= Double(currentSessionGoal)
     }
 
-    /// Percentage of sessions where actual time met the goal (0-100)
-    var goalAchievementRate: Int {
+    /// Percentage of sessions where actual time met the goal for a specific month (0-100)
+    func goalAchievementRate(for month: Date) -> Int {
         guard let cache = cacheService else { return 0 }
+
+        let calendar = Calendar.current
+        let monthSessions = sessions.filter { session in
+            calendar.isDate(session.date, equalTo: month, toGranularity: .month)
+        }
 
         var metGoalCount = 0
         var totalWithGoal = 0
 
-        for session in sessions {
+        for session in monthSessions {
             guard let goal = session.goalMinutes, goal > 0 else { continue }
             totalWithGoal += 1
 
