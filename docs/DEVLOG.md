@@ -1259,3 +1259,16 @@ Created two entry points to practice mode with different behaviors:
 - `GuitarPractice/Models/AppState.swift` - Added `autoStartTimer` parameter to `startPractice()`
 - `GuitarPractice/Views/Session/SessionEditingModeView.swift` - Split ⌘P and ⇧⌘P shortcuts
 - `GuitarPractice/Views/Practice/PracticeView.swift` - Updated button label and keyboard hint
+
+---
+
+## 2026-01-16: Remove "Practice Library" Subheading from Header (Issue #17)
+
+### Problem
+The "Practice Library" subheading appeared in the global header, implying it was a global label. However, the UI is a split view with Library (left) and Sessions (right) panels, making the placement misleading about scope.
+
+### Solution
+Removed the "Practice Library" subheading entirely. The split-view layout and contextual UI elements (search, filters, type dropdown, item count, calendar) make the panel purposes self-explanatory without explicit labels.
+
+### Files Modified
+- `GuitarPractice/Views/Header/HeaderView.swift` - Removed "Practice Library" Text view and containing VStack

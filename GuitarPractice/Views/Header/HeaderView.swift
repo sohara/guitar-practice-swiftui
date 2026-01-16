@@ -5,24 +5,16 @@ struct HeaderView: View {
 
     var body: some View {
         HStack {
-            VStack(alignment: .leading, spacing: 4) {
-                Text("Guitar Practice")
-                    .font(.custom("SF Mono", size: 24))
-                    .fontWeight(.bold)
-                    .foregroundStyle(
-                        LinearGradient(
-                            colors: [.orange, .pink],
-                            startPoint: .leading,
-                            endPoint: .trailing
-                        )
+            Text("Guitar Practice")
+                .font(.custom("SF Mono", size: 24))
+                .fontWeight(.bold)
+                .foregroundStyle(
+                    LinearGradient(
+                        colors: [.orange, .pink],
+                        startPoint: .leading,
+                        endPoint: .trailing
                     )
-
-                Text("Practice Library")
-                    .font(.custom("SF Mono", size: 11))
-                    .foregroundColor(.gray)
-                    .tracking(2)
-                    .textCase(.uppercase)
-            }
+                )
 
             Spacer()
 
