@@ -1235,3 +1235,27 @@ Changed `goalAchievementRate` from a computed property to a method that takes a 
 ### Files Modified
 - `GuitarPractice/Models/AppState.swift` - Changed `goalAchievementRate` from computed property to `func goalAchievementRate(for month: Date) -> Int`
 - `GuitarPractice/Views/Session/CalendarNavigatorView.swift` - Call `goalAchievementRate(for: appState.displayedMonth)`
+
+---
+
+## 2026-01-16: Don't Auto-start Timer When Entering Practice Mode (Issue #18)
+
+### Problem
+Pressing ⌘P to enter practice mode automatically started the timer. Users wanted to be able to enter practice mode without starting the timer immediately (to view item details, previous notes, etc.) and manually start when ready.
+
+### Solution
+Created two entry points to practice mode with different behaviors:
+- **⌘P** - Enter practice mode with timer **paused** (new default)
+- **⇧⌘P** - Enter practice mode with timer **running** (previous behavior)
+
+### Implementation
+1. Modified `startPractice()` to accept an optional `autoStartTimer: Bool` parameter (default: `false`)
+2. Only call `resumeTimer()` when `autoStartTimer` is `true`
+3. Added hidden button for ⇧⌘P shortcut that passes `autoStartTimer: true`
+4. Updated pause/resume button to show "Start" when timer hasn't started yet (elapsed time is 0)
+5. Updated keyboard hint from "pause/resume" to "start/pause"
+
+### Files Modified
+- `GuitarPractice/Models/AppState.swift` - Added `autoStartTimer` parameter to `startPractice()`
+- `GuitarPractice/Views/Session/SessionEditingModeView.swift` - Split ⌘P and ⇧⌘P shortcuts
+- `GuitarPractice/Views/Practice/PracticeView.swift` - Updated button label and keyboard hint

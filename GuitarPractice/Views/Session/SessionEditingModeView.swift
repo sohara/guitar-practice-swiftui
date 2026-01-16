@@ -94,9 +94,9 @@ struct SessionEditingFooterView: View {
                     .padding(.trailing, 8)
                 }
 
-                // Practice button
+                // Practice button (⌘P - enter paused)
                 Button {
-                    appState.startPractice()
+                    appState.startPractice(autoStartTimer: false)
                 } label: {
                     HStack(spacing: 4) {
                         Image(systemName: "play.fill")
@@ -115,6 +115,15 @@ struct SessionEditingFooterView: View {
                 .buttonStyle(.plain)
                 .disabled(appState.selectedItems.isEmpty)
                 .keyboardShortcut("p", modifiers: .command)
+
+                // Hidden button for ⇧⌘P - enter with timer running
+                Button {
+                    appState.startPractice(autoStartTimer: true)
+                } label: {
+                    EmptyView()
+                }
+                .keyboardShortcut("p", modifiers: [.command, .shift])
+                .hidden()
 
                 // Save button
                 Button {

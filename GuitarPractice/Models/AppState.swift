@@ -976,7 +976,7 @@ class AppState: ObservableObject {
 
     // MARK: - Practice Mode
 
-    func startPractice() {
+    func startPractice(autoStartTimer: Bool = false) {
         guard !selectedItems.isEmpty else { return }
 
         isPracticing = true
@@ -1007,7 +1007,9 @@ class AppState: ObservableObject {
             await fetchNotesHistoryForCurrentItem()
         }
 
-        resumeTimer()
+        if autoStartTimer {
+            resumeTimer()
+        }
     }
 
     func pauseTimer() {

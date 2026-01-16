@@ -94,7 +94,8 @@ GuitarPractice/
 | +/- | Adjust planned time |
 | Ctrl-F/B | Page down/up in library |
 | ⌘O | Open focused item in Notion app |
-| ⌘P | Start practice |
+| ⌘P | Enter practice (paused) |
+| ⇧⌘P | Enter practice (timer running) |
 | ⌘S | Save session |
 | ⌘R | Refresh data |
 

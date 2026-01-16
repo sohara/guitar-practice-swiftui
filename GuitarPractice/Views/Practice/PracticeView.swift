@@ -131,14 +131,14 @@ struct PracticeView: View {
 
                     // Control buttons
                     HStack(spacing: 16) {
-                        // Pause/Resume button
+                        // Pause/Resume/Start button
                         Button {
                             appState.toggleTimer()
                         } label: {
                             HStack(spacing: 8) {
                                 Image(systemName: appState.isTimerRunning ? "pause.fill" : "play.fill")
                                     .font(.system(size: 16))
-                                Text(appState.isTimerRunning ? "Pause" : "Resume")
+                                Text(appState.isTimerRunning ? "Pause" : (appState.practiceElapsedSeconds == 0 ? "Start" : "Resume"))
                                     .font(.custom("SF Mono", size: 14))
                             }
                             .foregroundColor(.white)
@@ -249,7 +249,7 @@ struct PracticeView: View {
 
             // Footer with keyboard hints
             HStack(spacing: 16) {
-                PracticeKeyHint(key: "space", action: "pause/resume")
+                PracticeKeyHint(key: "space", action: "start/pause")
                 PracticeKeyHint(key: "enter", action: "finish & exit")
                 PracticeKeyHint(key: "n", action: "save & next")
                 PracticeKeyHint(key: "s", action: "skip")
