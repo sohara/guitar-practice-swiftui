@@ -1200,3 +1200,21 @@ Documented a potential future refactor in `PLAN.md`: creating a unified `DataPer
 - `GuitarPractice/Services/CacheService.swift` - Added `updateLog()` method
 - `GuitarPractice/Models/AppState.swift` - Call cache update after Notion save
 - `PLAN.md` - Added "Unified DataService" architecture notes for future consideration
+
+---
+
+## 2026-01-16: Fix Drag-and-Drop Sorting in Session Items List (Issue #13)
+
+### Problem
+Drag-and-drop reordering of items in the session list was broken. The issue was intermittent and state-dependent, making it difficult to diagnose via git bisect.
+
+### Root Cause
+The `SelectedItemRow` view had `.contentShape(Rectangle()).onTapGesture { onFocus() }` applied to the entire row. This tap gesture was conflicting with SwiftUI's List drag gesture recognition on macOS, causing drag-and-drop to fail intermittently.
+
+### Solution
+Moved the tap gesture from the entire row to just the name/artist text area. This allows:
+- **Drag-and-drop**: Works when dragging from the drag handle icon or row edges
+- **Click to focus**: Works when clicking on the item name/artist text
+
+### Files Modified
+- `GuitarPractice/Views/Session/SessionEditingModeView.swift` - Moved `.contentShape(Rectangle()).onTapGesture` from row level to name/artist VStack only

@@ -182,7 +182,7 @@ struct SelectedItemRow: View {
                     .foregroundColor(typeColor(selected.item.type))
                     .frame(width: 16)
 
-                // Name and artist
+                // Name and artist (tappable to focus)
                 VStack(alignment: .leading, spacing: 1) {
                     Text(selected.item.name)
                         .font(.custom("SF Mono", size: 12))
@@ -195,6 +195,10 @@ struct SelectedItemRow: View {
                             .foregroundColor(.gray.opacity(0.5))
                             .lineLimit(1)
                     }
+                }
+                .contentShape(Rectangle())
+                .onTapGesture {
+                    onFocus()
                 }
 
                 Spacer()
@@ -275,10 +279,6 @@ struct SelectedItemRow: View {
                     .stroke(Color.cyan.opacity(0.5), lineWidth: 1)
                 : nil
         )
-        .contentShape(Rectangle())
-        .onTapGesture {
-            onFocus()
-        }
     }
 
     private func typeColor(_ type: ItemType?) -> Color {
