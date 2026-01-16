@@ -8,7 +8,7 @@ DERIVED_DATA = ~/Library/Developer/Xcode/DerivedData/GuitarPractice-*/Build/Prod
 
 # Debug build
 build:
-	xcodebuild -scheme $(SCHEME) -configuration Debug build
+	xcodebuild -scheme $(SCHEME) -configuration Debug -destination 'platform=macOS,arch=arm64' build
 
 # Debug build and run
 run: build
@@ -17,7 +17,7 @@ run: build
 
 # Release build
 release:
-	xcodebuild -scheme $(SCHEME) -configuration Release build
+	xcodebuild -scheme $(SCHEME) -configuration Release -destination 'platform=macOS,arch=arm64' build
 
 # Release build and install to /Applications
 install: release
