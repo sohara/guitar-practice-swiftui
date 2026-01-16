@@ -1174,3 +1174,29 @@ Replaced `TextField` with `TextEditor` which supports multi-line text with wrapp
 
 ### Files Modified
 - `GuitarPractice/Views/Practice/PracticeView.swift` - NoteRow struct, replaced TextField with TextEditor
+
+---
+
+## 2026-01-16: Fix Calendar View Time Not Updating After Practice (Issue #12)
+
+### Problem
+After practicing an item, the calendar view's "time played" summary didn't update until the user switched to another date and came back.
+
+### Root Cause
+In `AppState.saveCurrentItemToNotion()`, after successfully updating a practice log in Notion, the local SwiftData cache was never updated. The calendar's `daySummaries(for:)` function reads from `cacheService.loadLogs()`, which returned stale data.
+
+This is an architectural inconsistency: most write operations update Notion but not the cache, except for `updateSessionGoal()` which already did both.
+
+### Solution
+Added cache update after successful Notion save, following the existing pattern used by `updateSessionGoal()`:
+
+1. Added `updateLog()` method to `CacheService` for single-log updates
+2. Called `cacheService?.updateLog()` in `saveCurrentItemToNotion()` after the Notion update succeeds
+
+### Architecture Note
+Documented a potential future refactor in `PLAN.md`: creating a unified `DataPersistenceService` that wraps both `NotionClient` and `CacheService` to guarantee cache stays in sync with Notion writes. For now, the minimal fix is pragmatic and follows existing patterns.
+
+### Files Modified
+- `GuitarPractice/Services/CacheService.swift` - Added `updateLog()` method
+- `GuitarPractice/Models/AppState.swift` - Call cache update after Notion save
+- `PLAN.md` - Added "Unified DataService" architecture notes for future consideration

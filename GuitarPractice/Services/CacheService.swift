@@ -175,6 +175,21 @@ final class CacheService {
         saveContext()
     }
 
+    /// Update a single practice log in the cache (for real-time updates during practice)
+    func updateLog(logId: String, plannedMinutes: Int, actualMinutes: Double?, order: Int, notes: String?) {
+        let descriptor = FetchDescriptor<CachedPracticeLog>(
+            predicate: #Predicate { $0.id == logId }
+        )
+
+        if let cached = try? modelContext.fetch(descriptor).first {
+            cached.plannedMinutes = plannedMinutes
+            cached.actualMinutes = actualMinutes
+            cached.order = order
+            cached.notes = notes
+            saveContext()
+        }
+    }
+
     // MARK: - Metadata
 
     func lastUpdated(for key: String) -> Date? {

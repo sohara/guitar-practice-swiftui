@@ -330,6 +330,54 @@ Moved contextual stats from global header to their respective views.
 - **Session Templates**: Save/load sets of items for quick session creation
 - **Per-Item Progress Chart**: Visualize practice time trends for specific items
 
+## Architecture Notes
+
+### Unified DataService (Future Consideration)
+
+**Current State**: The app uses separate `NotionClient` and `CacheService` with AppState manually coordinating between them. Most write operations update Notion but not the cache, except for a few operations like `updateSessionGoal()` that do both.
+
+**Observation**: This inconsistency led to issue #12 (calendar view not updating after practice). The minimal fix added `CacheService.updateLog()` and called it after saving to Notion in `saveCurrentItemToNotion()`.
+
+**Potential Refactor**: Create a unified `DataPersistenceService` that wraps both services:
+
+```swift
+@MainActor
+final class DataPersistenceService {
+    private let notionClient: NotionClient
+    private let cacheService: CacheService
+
+    // All writes go through here - both Notion and cache updated atomically
+    func updateLog(logId: String, plannedMinutes: Int, actualMinutes: Double?, order: Int, notes: String?) async throws {
+        // 1. Update Notion (source of truth)
+        try await notionClient.updateLog(logId: logId, plannedMinutes: plannedMinutes, actualMinutes: actualMinutes, order: order, notes: notes)
+
+        // 2. Update local cache (guaranteed to happen if Notion succeeds)
+        cacheService.updateLog(logId: logId, plannedMinutes: plannedMinutes, actualMinutes: actualMinutes, order: order, notes: notes)
+    }
+
+    // Similar patterns for createLog, deleteLog, saveSessions, etc.
+}
+```
+
+**Tradeoffs**:
+
+| Pro | Con |
+|-----|-----|
+| Single point of coordination | More abstraction/indirection |
+| Guarantees cache stays in sync | Migration effort for existing code |
+| Clearer API for AppState | May need to handle partial failures |
+| Easier to add features like retry/rollback | Another layer to debug |
+
+**Assessment**: Worth considering if the inconsistency keeps causing bugs. For now, the minimal fix (updating cache after specific writes) is pragmatic and follows the pattern already used by `updateSessionGoal()`. A full refactor would be warranted if:
+- Multiple additional cache sync bugs arise
+- Offline support is added (would need transaction queue anyway)
+- The codebase grows significantly larger
+
+**Related Files**:
+- `Services/NotionClient.swift` - Notion API operations
+- `Services/CacheService.swift` - SwiftData local cache
+- `Models/AppState.swift` - Currently coordinates both manually
+
 ## References
 
 - [SwiftUI Handoff Doc](../guitar-tui/docs/SWIFTUI_HANDOFF.md)

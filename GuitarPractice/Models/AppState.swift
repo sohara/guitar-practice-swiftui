@@ -1126,6 +1126,15 @@ class AppState: ObservableObject {
                     notes: item.notes
                 )
                 selectedItems[index].isDirty = false
+
+                // Update local cache so calendar view reflects changes immediately
+                cacheService?.updateLog(
+                    logId: logId,
+                    plannedMinutes: item.plannedMinutes,
+                    actualMinutes: item.actualMinutes,
+                    order: index,
+                    notes: item.notes
+                )
             }
             // If no logId, the item hasn't been saved to session yet
             // User will need to save the session first
