@@ -20,26 +20,33 @@ A native macOS app for managing guitar practice sessions, backed by Notion datab
 ## Quick Start
 
 ```bash
-# Build and run from command line
-xcodebuild -scheme GuitarPractice -configuration Debug build
-open ~/Library/Developer/Xcode/DerivedData/GuitarPractice-*/Build/Products/Debug/GuitarPractice.app
+# Build and run (development)
+make run
+
+# Install release build to /Applications (for daily use)
+make install
 
 # Or open in Xcode
 open GuitarPractice.xcodeproj
 ```
 
-## Development Iteration Workflow
+## Makefile Commands
 
-After making changes, you must kill the running app and relaunch to see updates:
+| Command | What it does |
+|---------|--------------|
+| `make build` | Debug build only |
+| `make run` | Debug build + kill existing + launch |
+| `make release` | Release build only |
+| `make install` | Release build + install to /Applications + launch |
+| `make clean` | Clean build artifacts |
 
-```bash
-# Build, kill running app, and relaunch
-xcodebuild -scheme GuitarPractice -configuration Debug build
-pkill -x GuitarPractice
-open ~/Library/Developer/Xcode/DerivedData/GuitarPractice-*/Build/Products/Debug/GuitarPractice.app
-```
+## Development Workflow
 
-Always do this before reviewing changes and before committing.
+- **Development**: Use `make run` for quick iteration on debug builds
+- **Daily use**: Use `make install` to update the /Applications release version
+- Release builds in /Applications have stable code signatures, avoiding keychain prompts
+
+Always run `make run` before reviewing changes and before committing.
 
 **IMPORTANT**: Never commit or push until the user has manually tested and confirmed the fix works. Always ask for confirmation after launching the app for testing.
 

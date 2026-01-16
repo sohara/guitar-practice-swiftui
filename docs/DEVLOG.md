@@ -1063,3 +1063,31 @@ Daily practice goals with progress tracking. Each session has a goal (default 60
 - `GuitarPractice/Views/Session/SessionDetailView.swift` - New B3 header layout with GoalProgressView
 - `GuitarPractice/Views/Session/CalendarNavigatorView.swift` - Goal achievement mini-stat
 - `GuitarPractice/Views/Stats/StatsDashboardView.swift` - GoalAchievementSection
+
+---
+
+## 2026-01-15: Makefile for Build & Install
+
+### Issue
+Development builds from DerivedData caused keychain prompts on every reboot because the ad-hoc code signature changes between builds and the path isn't a trusted app location.
+
+### Solution
+Added a Makefile to streamline the development workflow and enable easy installation of release builds to /Applications.
+
+### New Commands
+
+| Command | What it does |
+|---------|--------------|
+| `make build` | Debug build |
+| `make run` | Debug build + kill existing + launch |
+| `make release` | Release build only |
+| `make install` | Release build + install to /Applications + launch |
+| `make clean` | Clean build artifacts |
+
+### Recommended Workflow
+- **Development**: Use `make run` for quick iteration
+- **Daily use**: Use `make install` to update /Applications version
+- Release builds in /Applications have stable signatures, eliminating keychain prompts
+
+### Files Added
+- `Makefile` - Build and install automation
