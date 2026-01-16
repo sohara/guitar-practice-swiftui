@@ -472,12 +472,17 @@ struct NoteRow: View {
                 }
 
                 if isEditing {
-                    TextField("Add a note...", text: $editText)
+                    TextEditor(text: $editText)
                         .font(.custom("SF Mono", size: 13))
-                        .textFieldStyle(.plain)
+                        .scrollContentBackground(.hidden)
                         .focused(isNotesFocused)
-                        .onSubmit {
-                            onSave()
+                        .frame(minHeight: 40, maxHeight: 100)
+                        .onKeyPress(.return, phases: .down) { keyPress in
+                            if keyPress.modifiers.contains(.shift) {
+                                onSave()
+                                return .handled
+                            }
+                            return .ignored
                         }
                         .onKeyPress(.escape) {
                             onCancel()
