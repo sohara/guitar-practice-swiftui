@@ -1091,3 +1091,26 @@ Added a Makefile to streamline the development workflow and enable easy installa
 
 ### Files Added
 - `Makefile` - Build and install automation
+
+---
+
+## 2026-01-16: Open in Notion UX Improvement (Issue #16)
+
+### Problem
+The "Open in Notion" button was in the header alongside global actions (Stats, Settings, Refresh), but it actually operates on a specific focused item. This was confusing UX because there was no indication of what would be opened.
+
+### Solution
+1. Removed the "Open in Notion" button from the header
+2. Added right-click context menus with "Open in Notion" option to all item rows
+3. Preserved the ⌘O keyboard shortcut via a hidden button
+
+### Additional Fix
+Items in past sessions (viewing mode) couldn't be selected, so ⌘O didn't work for them. Added focus support to read-only session items so they can be clicked to select, then opened with ⌘O.
+
+### Files Modified
+- `GuitarPractice/Models/AppState.swift` - Added `openItemInNotion(id:)` method
+- `GuitarPractice/Views/Header/HeaderView.swift` - Removed Open in Notion button
+- `GuitarPractice/Views/MainContentView.swift` - Added hidden button for ⌘O shortcut
+- `GuitarPractice/Views/Library/LibraryListView.swift` - Added context menu to library rows
+- `GuitarPractice/Views/Session/SessionEditingModeView.swift` - Added context menu to session rows
+- `GuitarPractice/Views/Session/SessionViewingModeView.swift` - Added context menu and focus support to read-only rows

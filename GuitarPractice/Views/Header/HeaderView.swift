@@ -37,18 +37,6 @@ struct HeaderView: View {
             .buttonStyle(.plain)
             .help(appState.isShowingStats ? "Hide Stats" : "Show Stats")
 
-            // Open in Notion button
-            Button {
-                appState.openFocusedItemInNotion()
-            } label: {
-                Image(systemName: "arrow.up.right.square")
-                    .font(.system(size: 16))
-                    .foregroundColor(.gray)
-            }
-            .buttonStyle(.plain)
-            .keyboardShortcut("o", modifiers: .command)
-            .help("Open in Notion")
-
             // Settings button
             Button {
                 appState.isSettingsPresented = true

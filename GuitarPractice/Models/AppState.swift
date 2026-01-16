@@ -872,6 +872,13 @@ class AppState: ObservableObject {
         }
     }
 
+    func openItemInNotion(id: String) {
+        let cleanId = id.replacingOccurrences(of: "-", with: "")
+        if let url = URL(string: "notion://notion.so/\(cleanId)") {
+            NSWorkspace.shared.open(url)
+        }
+    }
+
     // MARK: - Selected Items Navigation
 
     func moveFocusedSelectedUp() {

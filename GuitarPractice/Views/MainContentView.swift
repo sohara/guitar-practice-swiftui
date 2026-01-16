@@ -52,6 +52,16 @@ struct MainContentView: View {
                 .padding(.horizontal, 24)
                 .padding(.vertical, 12)
         }
+        .background {
+            // Hidden button for ⌘O keyboard shortcut
+            Button {
+                appState.openFocusedItemInNotion()
+            } label: {
+                EmptyView()
+            }
+            .keyboardShortcut("o", modifiers: .command)
+            .opacity(0)
+        }
         .task {
             appState.setupCache(modelContext: modelContext)
             await appState.loadDataIfNeeded()

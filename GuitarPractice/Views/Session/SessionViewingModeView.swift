@@ -20,8 +20,22 @@ struct SessionViewingModeView: View {
                 // Read-only list of practiced items
                 ScrollView {
                     LazyVStack(spacing: 2) {
-                        ForEach(appState.selectedItems) { selected in
-                            SessionItemReadOnlyRow(selected: selected)
+                        ForEach(Array(appState.selectedItems.enumerated()), id: \.element.id) { index, selected in
+                            SessionItemReadOnlyRow(
+                                selected: selected,
+                                isFocused: appState.focusedPanel == .selectedItems && appState.focusedSelectedIndex == index,
+                                onFocus: {
+                                    appState.focusedPanel = .selectedItems
+                                    appState.focusedSelectedIndex = index
+                                }
+                            )
+                            .contextMenu {
+                                Button {
+                                    appState.openItemInNotion(id: selected.item.id)
+                                } label: {
+                                    Label("Open in Notion", systemImage: "arrow.up.right.square")
+                                }
+                            }
                         }
                     }
                     .padding(.vertical, 8)
@@ -68,14 +82,20 @@ struct SessionViewingModeView: View {
 
 struct SessionItemReadOnlyRow: View {
     let selected: SelectedItem
+    let isFocused: Bool
+    let onFocus: () -> Void
+
+    var isCompleted: Bool {
+        selected.actualMinutes != nil && selected.actualMinutes! > 0
+    }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             HStack(spacing: 10) {
                 // Completion indicator
-                Image(systemName: selected.actualMinutes != nil && selected.actualMinutes! > 0 ? "checkmark.circle.fill" : "circle")
+                Image(systemName: isCompleted ? "checkmark.circle.fill" : "circle")
                     .font(.system(size: 12))
-                    .foregroundColor(selected.actualMinutes != nil && selected.actualMinutes! > 0 ? .green : .gray.opacity(0.4))
+                    .foregroundColor(isCompleted ? .green : .gray.opacity(0.4))
                     .frame(width: 16)
 
                 // Type icon
@@ -132,10 +152,19 @@ struct SessionItemReadOnlyRow: View {
         .padding(.horizontal, 16)
         .padding(.vertical, 8)
         .background(
-            selected.actualMinutes != nil && selected.actualMinutes! > 0
-                ? Color.green.opacity(0.05)
-                : Color.clear
+            RoundedRectangle(cornerRadius: 4)
+                .fill(isFocused ? Color.cyan.opacity(0.15) : (isCompleted ? Color.green.opacity(0.05) : Color.clear))
         )
+        .overlay(
+            isFocused ?
+                RoundedRectangle(cornerRadius: 4)
+                    .stroke(Color.cyan.opacity(0.5), lineWidth: 1)
+                : nil
+        )
+        .contentShape(Rectangle())
+        .onTapGesture {
+            onFocus()
+        }
     }
 
     private func typeColor(_ type: ItemType?) -> Color {

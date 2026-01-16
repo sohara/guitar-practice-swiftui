@@ -20,6 +20,13 @@ struct LibraryListView: View {
                                 appState.toggleSelection(item)
                             }
                         )
+                        .contextMenu {
+                            Button {
+                                appState.openItemInNotion(id: item.id)
+                            } label: {
+                                Label("Open in Notion", systemImage: "arrow.up.right.square")
+                            }
+                        }
                         .id(item.id)
                     }
                 }

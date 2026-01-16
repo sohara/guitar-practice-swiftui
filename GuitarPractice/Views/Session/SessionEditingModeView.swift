@@ -37,6 +37,13 @@ struct SessionEditingModeView: View {
                                 appState.updatePlannedTime(at: index, minutes: selected.plannedMinutes + delta)
                             }
                         )
+                        .contextMenu {
+                            Button {
+                                appState.openItemInNotion(id: selected.item.id)
+                            } label: {
+                                Label("Open in Notion", systemImage: "arrow.up.right.square")
+                            }
+                        }
                         .listRowBackground(Color.clear)
                         .listRowSeparator(.hidden)
                         .listRowInsets(EdgeInsets(top: 2, leading: 0, bottom: 2, trailing: 0))
