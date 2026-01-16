@@ -1153,3 +1153,24 @@ Restructured `practicingMenu` in `GuitarPracticeApp.swift`:
 
 ### Files Modified
 - `GuitarPractice/GuitarPracticeApp.swift` - Reorganized `practicingMenu` view
+
+---
+
+## 2026-01-16: Fix Notes Not Wrapping in Edit Mode (Issue #11)
+
+### Problem
+When entering notes in the practice UI, text didn't wrap - it trailed off horizontally instead of wrapping and expanding vertically.
+
+### Root Cause
+The notes input used `TextField` which is single-line only in SwiftUI.
+
+### Solution
+Replaced `TextField` with `TextEditor` which supports multi-line text with wrapping:
+1. Changed input from `TextField` to `TextEditor`
+2. Added `.scrollContentBackground(.hidden)` to remove default background
+3. Added `.frame(minHeight: 40, maxHeight: 100)` to constrain height while allowing growth
+4. Added Shift+Enter to save (since Enter now creates newlines)
+5. Escape still cancels editing
+
+### Files Modified
+- `GuitarPractice/Views/Practice/PracticeView.swift` - NoteRow struct, replaced TextField with TextEditor
