@@ -330,6 +330,18 @@ Moved contextual stats from global header to their respective views.
 - **Session Templates**: Save/load sets of items for quick session creation
 - **Per-Item Progress Chart**: Visualize practice time trends for specific items
 
+### 9.6 In-App Content Viewer (GitHub Issue #19)
+Display Notion page content (sheet music, tabs, audio backing tracks) directly in the practice view.
+
+**Detailed plan:** See [docs/CONTENT_VIEWER_PLAN.md](docs/CONTENT_VIEWER_PLAN.md)
+
+**Summary:**
+- Fetch Notion blocks via API, render as HTML in WKWebView
+- No third-party dependencies (pure Swift + WebKit)
+- Supports images, audio with player controls, headings, lists, toggle blocks
+- Content panel visible by default in practice mode, toggleable with ⌘I
+- Handles S3 signed URL expiration by fetching fresh on practice start
+
 ## Architecture Notes
 
 ### Unified DataService (Future Consideration)
