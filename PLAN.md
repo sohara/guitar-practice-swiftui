@@ -327,10 +327,36 @@ Moved contextual stats from global header to their respective views.
 ### 9.5 Other Ideas (Unprioritized)
 - **Jump to Today**: ✅ Press `T` to return to today's date in calendar
 - **Practice Goals**: ✅ Daily goal per session (default 60 min), progress bar in header, goal achievement stats
-- **Session Templates**: Save/load sets of items for quick session creation
+- **Session Templates**: Save/load sets of items for quick session creation (see Copy Session below - probably a better approach)
+- **Copy Session to Today**: Duplicate a past session as today's session for quick setup
 - **Per-Item Progress Chart**: Visualize practice time trends for specific items
 
-### 9.6 In-App Content Viewer (GitHub Issue #19)
+### 9.6 Copy Session to Today
+
+Copy an existing session's items to today's session, providing a quick way to recreate a similar practice routine without abstract template management.
+
+**Rationale**: More practical than session templates because:
+- No separate template CRUD UI needed
+- Concrete action: "copy last Tuesday's session" vs abstract "load Template X"
+- Source data already exists (past sessions visible in calendar)
+- Zero new data to maintain
+
+**User Flow**:
+1. Browse calendar to find a past session to copy
+2. Trigger "Copy to Today" via context menu or action button
+3. App creates today's session (or uses existing empty one)
+4. App creates new `PracticeLog` entries copying `itemId`, `plannedMinutes`, `order`
+5. New logs have null `actualMinutes` and empty `notes` (fresh start)
+6. User can edit the copied session before practicing
+
+**Implementation**:
+- `AppState.copySessionToToday(fromSessionId:)` method
+- Fetch logs for source session via existing `NotionClient.fetchLogs(forSession:)`
+- Create/select today's session via existing `createSession()` or `selectDate()`
+- Create new logs via existing `NotionClient.createLog()` for each source item
+- UI trigger: context menu on calendar dates or "Copy to Today" button in read-only session view
+
+### 9.7 In-App Content Viewer (GitHub Issue #19)
 Display Notion page content (sheet music, tabs, audio backing tracks) directly in the practice view.
 
 **Detailed plan:** See [docs/CONTENT_VIEWER_PLAN.md](docs/CONTENT_VIEWER_PLAN.md)
