@@ -136,18 +136,14 @@ struct MenuBarView: View {
 
             // Timer display
             if let _ = appState.currentPracticeItem {
-                HStack {
-                    if appState.isPracticeOvertime {
-                        Text("Overtime: +\(appState.practiceElapsedFormatted)")
-                            .foregroundColor(.orange)
-                    } else {
-                        Text("Remaining: \(appState.practiceRemainingFormatted)")
-                    }
-                    Spacer()
-                    Text("(\(appState.practiceProgress))")
-                        .foregroundColor(.secondary)
+                if appState.isPracticeOvertime {
+                    Text("Overtime: +\(appState.practiceElapsedFormatted)  (\(appState.practiceProgress))")
+                        .foregroundColor(.orange)
+                        .font(.system(.body, design: .monospaced))
+                } else {
+                    Text("Remaining: \(appState.practiceRemainingFormatted)  (\(appState.practiceProgress))")
+                        .font(.system(.body, design: .monospaced))
                 }
-                .font(.system(.body, design: .monospaced))
 
                 Divider()
 

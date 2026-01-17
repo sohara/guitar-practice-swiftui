@@ -1272,3 +1272,19 @@ Removed the "Practice Library" subheading entirely. The split-view layout and co
 
 ### Files Modified
 - `GuitarPractice/Views/Header/HeaderView.swift` - Removed "Practice Library" Text view and containing VStack
+
+---
+
+## 2026-01-16: Fix Empty Space in Menubar Menu (Issue #20)
+
+### Problem
+An unexplained empty vertical space appeared in the menubar menu between "Remaining: X:XX" and "(N of M)" when in practice mode.
+
+### Root Cause
+The timer display used an `HStack` with `Spacer()` to show the remaining time and progress count side by side. In a `.menu` style `MenuBarExtra`, `HStack` and `Spacer` don't work as expected - menu items are inherently stacked vertically, so the `Spacer()` created an empty vertical row instead of horizontal spacing.
+
+### Solution
+Combined the timer and progress text into a single `Text` view, removing the `HStack` and `Spacer`. Now displays as "Remaining: 3:03  (3 of 5)" on one line.
+
+### Files Modified
+- `GuitarPractice/GuitarPracticeApp.swift` - Replaced HStack with combined Text view in `practicingMenu`
