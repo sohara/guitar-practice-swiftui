@@ -1288,3 +1288,25 @@ Combined the timer and progress text into a single `Text` view, removing the `HS
 
 ### Files Modified
 - `GuitarPractice/GuitarPracticeApp.swift` - Replaced HStack with combined Text view in `practicingMenu`
+
+---
+
+## 2026-01-16: Show Overtime Value in Menubar (Issue #21)
+
+### Problem
+When the planned practice time elapsed, the menubar timer showed "0:00" even though practice was still ongoing in overtime mode. Users wanted a visual indication of overtime, similar to the main practice view.
+
+### Solution
+When in overtime, the menubar now shows:
+- **Orange icon** using `.symbolRenderingMode(.palette)` and `.foregroundStyle(.orange)`
+- **"+" prefix** with the overtime amount (e.g., "+1:30" means 1 minute 30 seconds past planned time)
+
+Also updated the dropdown menu to show the overtime amount instead of total elapsed time, and removed inconsistent monospaced font styling.
+
+### Technical Notes
+- macOS menu bar labels don't support colored text (template rendering mode), but SF Symbols can be colored using `.symbolRenderingMode(.palette)`
+- Added `practiceOvertimeFormatted` computed property to AppState that calculates elapsed - planned time
+
+### Files Modified
+- `GuitarPractice/GuitarPracticeApp.swift` - Updated menubar label and dropdown menu for overtime display
+- `GuitarPractice/Models/AppState.swift` - Added `practiceOvertimeFormatted` computed property

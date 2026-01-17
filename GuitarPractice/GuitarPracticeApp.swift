@@ -73,11 +73,21 @@ struct GuitarPracticeApp: App {
             MenuBarView(appState: appState)
         } label: {
             if appState.isPracticing {
-                // Show timer countdown when practicing
-                HStack(spacing: 4) {
-                    Image(systemName: "guitars.fill")
-                    Text(appState.practiceRemainingFormatted)
-                        .monospacedDigit()
+                // Show timer countdown when practicing, orange icon during overtime
+                if appState.isPracticeOvertime {
+                    HStack(spacing: 4) {
+                        Image(systemName: "guitars.fill")
+                        Text("+\(appState.practiceOvertimeFormatted)")
+                            .monospacedDigit()
+                    }
+                    .symbolRenderingMode(.palette)
+                    .foregroundStyle(.orange)
+                } else {
+                    HStack(spacing: 4) {
+                        Image(systemName: "guitars.fill")
+                        Text(appState.practiceRemainingFormatted)
+                            .monospacedDigit()
+                    }
                 }
             } else {
                 Image(systemName: "guitars")
@@ -137,12 +147,10 @@ struct MenuBarView: View {
             // Timer display
             if let _ = appState.currentPracticeItem {
                 if appState.isPracticeOvertime {
-                    Text("Overtime: +\(appState.practiceElapsedFormatted)  (\(appState.practiceProgress))")
+                    Text("Overtime: +\(appState.practiceOvertimeFormatted)  (\(appState.practiceProgress))")
                         .foregroundColor(.orange)
-                        .font(.system(.body, design: .monospaced))
                 } else {
                     Text("Remaining: \(appState.practiceRemainingFormatted)  (\(appState.practiceProgress))")
-                        .font(.system(.body, design: .monospaced))
                 }
 
                 Divider()

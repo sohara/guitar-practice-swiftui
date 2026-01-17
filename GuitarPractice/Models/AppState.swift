@@ -219,6 +219,15 @@ class AppState: ObservableObject {
         practiceRemainingSeconds <= 0
     }
 
+    var practiceOvertimeFormatted: String {
+        guard let item = currentPracticeItem else { return "0:00" }
+        let plannedSeconds = Double(item.plannedMinutes * 60)
+        let overtimeSeconds = max(0, practiceElapsedSeconds - plannedSeconds)
+        let minutes = Int(overtimeSeconds) / 60
+        let seconds = Int(overtimeSeconds) % 60
+        return String(format: "%d:%02d", minutes, seconds)
+    }
+
     // MARK: - Private
 
     private var notionClient: NotionClient?
