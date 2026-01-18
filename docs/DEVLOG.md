@@ -1337,3 +1337,24 @@ If today already has items, copied items are appended to the end (non-destructiv
 - Creates/gets today's session via existing `createNewSession()` or `sessionForDate()`
 - Creates new logs with order offset to append after existing items
 - Shows loading spinner while copying, disabled button during operation
+
+---
+
+## 2026-01-18: Fix Last 7 Days Chart Not Showing Current Day (Issue #24)
+
+### Problem
+The "Last 7 Days" chart in the Stats view always showed 0 minutes for the current day, even after completing practice. The data only appeared correctly the following day. Additionally, the chart lacked visual feedback for practice times (no labels or hover).
+
+### Root Cause
+`refreshStats()` used `self.sessions` from `AppState`, which comes from `sessionsState.value` loaded at app startup. If a session was created today (or the cache had newer data), the sessions list wouldn't include it, causing `computeRecentDays()` to find no matching session for today.
+
+Additionally, stats only refreshed when `practiceStats == nil`, so returning to the stats view after practicing didn't trigger an update.
+
+### Solution
+1. **Load sessions from cache**: Changed `refreshStats()` to call `cache.loadSessions()` instead of using `self.sessions`, ensuring the latest cached data is always used
+2. **Always refresh on appear**: Removed the `practiceStats == nil` check so stats refresh every time the view appears
+3. **UI consistency**: Added minutes labels above bars (matching Weekly Trend chart style) and made today's bar cyan instead of green (matching current week highlighting)
+
+### Files Modified
+- `GuitarPractice/Models/AppState.swift` - `refreshStats()` now loads sessions from cache
+- `GuitarPractice/Views/Stats/StatsDashboardView.swift` - Always refresh on appear, added minutes labels, cyan bar for today

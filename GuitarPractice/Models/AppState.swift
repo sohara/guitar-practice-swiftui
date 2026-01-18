@@ -386,9 +386,12 @@ class AppState: ObservableObject {
     func refreshStats() {
         guard let cache = cacheService else { return }
 
+        // Load sessions from cache to ensure we have the latest data
+        // (including today's session which may not be in self.sessions yet)
+        let cachedSessions = cache.loadSessions()
         let allLogs = cache.loadAllLogs()
         practiceStats = statsService.computeStats(
-            sessions: sessions,
+            sessions: cachedSessions,
             logs: allLogs,
             library: library
         )

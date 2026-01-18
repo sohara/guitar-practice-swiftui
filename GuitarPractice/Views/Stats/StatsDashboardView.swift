@@ -41,9 +41,8 @@ struct StatsDashboardView: View {
         }
         .background(Color(red: 0.07, green: 0.07, blue: 0.10))
         .onAppear {
-            if appState.practiceStats == nil {
-                appState.refreshStats()
-            }
+            // Always refresh stats when view appears to show latest data
+            appState.refreshStats()
         }
     }
 }
@@ -367,7 +366,7 @@ struct RecentActivitySection: View {
                     )
                 }
             }
-            .frame(height: 80)
+            .frame(height: 90)
             .padding(.vertical, 8)
         }
         .padding(12)
@@ -397,11 +396,18 @@ struct RecentDayBar: View {
 
     var body: some View {
         VStack(spacing: 4) {
+            // Minutes label (consistent with WeeklyTrendBar)
+            if minutes > 0 {
+                Text(formatMinutes(minutes))
+                    .font(.custom("SF Mono", size: 8))
+                    .foregroundColor(.gray)
+            }
+
             // Bar
             VStack {
                 Spacer()
                 RoundedRectangle(cornerRadius: 3)
-                    .fill(minutes > 0 ? Color.green : Color.gray.opacity(0.2))
+                    .fill(barColor)
                     .frame(height: barHeight)
             }
             .frame(height: 50)
@@ -409,14 +415,32 @@ struct RecentDayBar: View {
             // Day label
             Text(dayFormatter.string(from: date).prefix(1))
                 .font(.custom("SF Mono", size: 10))
-                .foregroundColor(calendar.isDateInToday(date) ? .cyan : .gray)
+                .foregroundColor(isToday ? .cyan : .gray)
         }
         .frame(maxWidth: .infinity)
+    }
+
+    private var isToday: Bool {
+        calendar.isDateInToday(date)
+    }
+
+    private var barColor: Color {
+        guard minutes > 0 else { return Color.gray.opacity(0.2) }
+        return isToday ? .cyan : .green
     }
 
     private var barHeight: CGFloat {
         guard maxMinutes > 0, minutes > 0 else { return 4 }
         return max(4, CGFloat(minutes / maxMinutes) * 50)
+    }
+
+    private func formatMinutes(_ minutes: Double) -> String {
+        let hours = Int(minutes) / 60
+        let mins = Int(minutes) % 60
+        if hours > 0 {
+            return "\(hours)h \(mins)m"
+        }
+        return "\(mins)m"
     }
 }
 
