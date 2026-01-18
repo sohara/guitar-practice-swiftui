@@ -139,7 +139,7 @@ struct MenuBarView: View {
                 appState.toggleTimer()
             } label: {
                 Label(
-                    appState.isTimerRunning ? "Pause" : "Resume",
+                    appState.isTimerRunning ? "Pause" : (appState.practiceElapsedSeconds == 0 ? "Start" : "Resume"),
                     systemImage: appState.isTimerRunning ? "pause.fill" : "play.fill"
                 )
             }

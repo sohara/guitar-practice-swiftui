@@ -1358,3 +1358,27 @@ Additionally, stats only refreshed when `practiceStats == nil`, so returning to 
 ### Files Modified
 - `GuitarPractice/Models/AppState.swift` - `refreshStats()` now loads sessions from cache
 - `GuitarPractice/Views/Stats/StatsDashboardView.swift` - Always refresh on appear, added minutes labels, cyan bar for today
+
+---
+
+## 2026-01-18: Fix Menubar "Start" vs "Resume" Label (Issue #23)
+
+### Problem
+When entering practice mode, the menubar button always showed "Resume" even when the timer had never been started. The main practice view correctly showed "Start" for unstarted timers.
+
+### Root Cause
+The practice view used conditional logic to check `practiceElapsedSeconds == 0`:
+```swift
+Text(appState.isTimerRunning ? "Pause" : (appState.practiceElapsedSeconds == 0 ? "Start" : "Resume"))
+```
+
+But the menubar only checked `isTimerRunning`:
+```swift
+appState.isTimerRunning ? "Pause" : "Resume"
+```
+
+### Solution
+Applied the same conditional logic to the menubar button label, showing "Start" when elapsed time is 0 and "Resume" when paused after starting.
+
+### Files Modified
+- `GuitarPractice/GuitarPracticeApp.swift` - Updated menubar button label in `practicingMenu`
