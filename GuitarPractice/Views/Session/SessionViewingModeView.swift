@@ -42,7 +42,7 @@ struct SessionViewingModeView: View {
                 }
             }
 
-            // Footer with "Edit" option
+            // Footer with "Copy to Today" and "Edit" options
             VStack(spacing: 0) {
                 Divider()
                     .background(Color.white.opacity(0.1))
@@ -53,6 +53,38 @@ struct SessionViewingModeView: View {
                         .foregroundColor(.gray.opacity(0.5))
 
                     Spacer()
+
+                    // Copy to Today button (only if session has items)
+                    if !appState.selectedItems.isEmpty, let session = appState.currentSession {
+                        Button {
+                            Task {
+                                await appState.copySessionToToday(fromSessionId: session.id)
+                            }
+                        } label: {
+                            HStack(spacing: 4) {
+                                if appState.isCopyingSession {
+                                    ProgressView()
+                                        .scaleEffect(0.6)
+                                        .frame(width: 10, height: 10)
+                                } else {
+                                    Image(systemName: "doc.on.doc")
+                                        .font(.system(size: 10))
+                                }
+                                Text("Copy to Today")
+                                    .font(.custom("SF Mono", size: 12))
+                            }
+                            .foregroundColor(.orange)
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 6)
+                            .background(
+                                RoundedRectangle(cornerRadius: 6)
+                                    .fill(Color.orange.opacity(0.1))
+                            )
+                        }
+                        .buttonStyle(.plain)
+                        .disabled(appState.isCopyingSession)
+                        .help("Copy items to today's session")
+                    }
 
                     Button {
                         appState.switchToEditMode()

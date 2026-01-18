@@ -748,6 +748,68 @@ class AppState: ObservableObject {
         return summaries[startOfDay]
     }
 
+    // MARK: - Copy Session
+
+    @Published var isCopyingSession: Bool = false
+
+    /// Copy items from a session to today's session (appending if today already has items)
+    func copySessionToToday(fromSessionId: String) async {
+        guard let client = notionClient else { return }
+
+        isCopyingSession = true
+        sessionError = nil
+
+        do {
+            // 1. Fetch logs from source session
+            let sourceLogs = try await client.fetchLogs(forSession: fromSessionId)
+
+            guard !sourceLogs.isEmpty else {
+                isCopyingSession = false
+                return
+            }
+
+            // 2. Create or get today's session
+            let today = Date()
+            var todaySession = sessionForDate(today)
+            if todaySession == nil {
+                todaySession = await createNewSession()
+            }
+            guard let targetSession = todaySession else {
+                isCopyingSession = false
+                return
+            }
+
+            // 3. Get current count of items in today's session (for order offset)
+            let existingLogs = try await client.fetchLogs(forSession: targetSession.id)
+            let orderOffset = existingLogs.count
+
+            // 4. Create new logs for each source item (appending to existing items)
+            for (index, sourceLog) in sourceLogs.enumerated() {
+                // Get the item name from library
+                let itemName = library.first(where: { $0.id == sourceLog.itemId })?.name ?? "Item"
+
+                let newLog = NewPracticeLog(
+                    name: itemName,
+                    itemId: sourceLog.itemId,
+                    sessionId: targetSession.id,
+                    plannedMinutes: sourceLog.plannedMinutes,
+                    order: orderOffset + index,
+                    notes: nil  // Fresh start - don't copy notes
+                )
+                _ = try await client.createLog(newLog)
+            }
+
+            // 5. Switch to today and reload
+            displayedMonth = today
+            await selectDate(today)
+
+            isCopyingSession = false
+        } catch {
+            sessionError = error
+            isCopyingSession = false
+        }
+    }
+
     // MARK: - Panel Focus
 
     func toggleFocusedPanel() {

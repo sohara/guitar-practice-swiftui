@@ -1310,3 +1310,30 @@ Also updated the dropdown menu to show the overtime amount instead of total elap
 ### Files Modified
 - `GuitarPractice/GuitarPracticeApp.swift` - Updated menubar label and dropdown menu for overtime display
 - `GuitarPractice/Models/AppState.swift` - Added `practiceOvertimeFormatted` computed property
+
+---
+
+## 2026-01-18: Copy Session to Today (Feature 9.6)
+
+### Feature
+Added "Copy to Today" button that duplicates a past session's items to today's session, providing a quick way to recreate similar practice routines.
+
+### User Flow
+1. Browse calendar and select a past session with items
+2. Click "Copy to Today" button in the read-only session footer
+3. App creates today's session if it doesn't exist
+4. Copies all items with their planned times (actual times and notes cleared)
+5. Switches to today's date in edit mode
+
+### Implementation
+- **AppState.swift**: Added `copySessionToToday(fromSessionId:)` method and `isCopyingSession` loading state
+- **SessionViewingModeView.swift**: Added orange "Copy to Today" button next to existing "Edit Session" button
+
+### Design Decision
+If today already has items, copied items are appended to the end (non-destructive). User can manually remove unwanted items.
+
+### Technical Notes
+- Fetches source session logs via `NotionClient.fetchLogs(forSession:)`
+- Creates/gets today's session via existing `createNewSession()` or `sessionForDate()`
+- Creates new logs with order offset to append after existing items
+- Shows loading spinner while copying, disabled button during operation

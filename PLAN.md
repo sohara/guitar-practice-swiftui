@@ -328,10 +328,10 @@ Moved contextual stats from global header to their respective views.
 - **Jump to Today**: ✅ Press `T` to return to today's date in calendar
 - **Practice Goals**: ✅ Daily goal per session (default 60 min), progress bar in header, goal achievement stats
 - **Session Templates**: Save/load sets of items for quick session creation (see Copy Session below - probably a better approach)
-- **Copy Session to Today**: Duplicate a past session as today's session for quick setup
+- **Copy Session to Today**: ✅ Duplicate a past session as today's session for quick setup
 - **Per-Item Progress Chart**: Visualize practice time trends for specific items
 
-### 9.6 Copy Session to Today
+### 9.6 Copy Session to Today ✅
 
 Copy an existing session's items to today's session, providing a quick way to recreate a similar practice routine without abstract template management.
 
