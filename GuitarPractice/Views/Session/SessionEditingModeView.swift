@@ -230,9 +230,10 @@ struct SelectedItemRow: View {
                         Image(systemName: "minus")
                             .font(.system(size: 9))
                             .foregroundColor(.gray)
-                            .frame(width: 18, height: 18)
+                            .frame(width: 24, height: 24)
                             .background(Color.white.opacity(0.05))
                             .cornerRadius(3)
+                            .contentShape(Rectangle())
                     }
                     .buttonStyle(.plain)
 
@@ -247,9 +248,10 @@ struct SelectedItemRow: View {
                         Image(systemName: "plus")
                             .font(.system(size: 9))
                             .foregroundColor(.gray)
-                            .frame(width: 18, height: 18)
+                            .frame(width: 24, height: 24)
                             .background(Color.white.opacity(0.05))
                             .cornerRadius(3)
+                            .contentShape(Rectangle())
                     }
                     .buttonStyle(.plain)
                 }
@@ -259,7 +261,10 @@ struct SelectedItemRow: View {
                     Image(systemName: "xmark")
                         .font(.system(size: 9))
                         .foregroundColor(.red.opacity(0.5))
-                        .frame(width: 18, height: 18)
+                        .frame(width: 24, height: 24)
+                        .background(Color.white.opacity(0.05))
+                        .cornerRadius(3)
+                        .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
             }
@@ -291,6 +296,10 @@ struct SelectedItemRow: View {
                     .stroke(Color.cyan.opacity(0.5), lineWidth: 1)
                 : nil
         )
+        .contentShape(Rectangle())
+        .onTapGesture {
+            onFocus()
+        }
     }
 
     private func typeColor(_ type: ItemType?) -> Color {

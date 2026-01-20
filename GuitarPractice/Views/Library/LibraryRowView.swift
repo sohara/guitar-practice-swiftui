@@ -70,6 +70,7 @@ struct LibraryItemRow: View {
                         .padding(.horizontal, 4)
                     : nil
             )
+            .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
         .onTapGesture(count: 2) {

@@ -1402,3 +1402,28 @@ The `ProgressView()` spinner had a different intrinsic size than the icon it rep
 - `GuitarPractice/Views/Session/SessionEditingModeView.swift` - Fixed save button spinner layout
 - `GuitarPractice/Views/Session/SessionViewingModeView.swift` - Fixed "Copy to Today" button spinner layout
 - `CLAUDE.md` - Added note about checking exit codes, not just "BUILD SUCCEEDED" text
+
+---
+
+## 2026-01-20: Fix Click/Hitbox Issues (Issue #26)
+
+### Problem
+Users had to click directly on text or icons rather than anywhere in the row/button area. This affected library rows, session item rows, time adjustment buttons (+/-), goal adjustment buttons, and remove (X) buttons.
+
+### Root Cause
+SwiftUI's `.buttonStyle(.plain)` removes the default button hit area expansion. Without `.contentShape(Rectangle())`, only the visible content (text/icons) registers clicks, not the surrounding padding or background.
+
+### Solution
+1. **Library rows**: Added `.contentShape(Rectangle())` after the background/overlay modifiers to make the entire row clickable
+2. **Session item rows**: Added `.contentShape(Rectangle())` and `.onTapGesture` to the entire row, not just the name/artist area
+3. **Time adjustment buttons (+/-)**: Increased frame from 18x18 to 24x24 and added `.contentShape(Rectangle())`
+4. **Goal adjustment buttons (+/-)**: Same treatment - 24x24 frame with `.contentShape(Rectangle())`
+5. **Remove button (X)**: Increased to 24x24, added background for visual consistency, and added `.contentShape(Rectangle())`
+
+### Files Modified
+- `GuitarPractice/Views/Library/LibraryRowView.swift` - Added `.contentShape(Rectangle())` to row
+- `GuitarPractice/Views/Session/SessionEditingModeView.swift` - Fixed row tap area and all buttons
+- `GuitarPractice/Views/Session/SessionDetailView.swift` - Fixed goal +/- buttons
+
+### Also Fixed
+Updated `Makefile` to add launch verification - now shows "✓ App launched successfully" or fails with clear error message if app doesn't start. This prevents silent failures where build succeeds but app fails to launch.

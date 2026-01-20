@@ -133,9 +133,10 @@ struct GoalProgressView: View {
                             Image(systemName: "minus")
                                 .font(.system(size: 9, weight: .bold))
                                 .foregroundColor(.gray)
-                                .frame(width: 18, height: 18)
+                                .frame(width: 24, height: 24)
                                 .background(Color.white.opacity(0.1))
                                 .cornerRadius(4)
+                                .contentShape(Rectangle())
                         }
                         .buttonStyle(.plain)
 
@@ -154,9 +155,10 @@ struct GoalProgressView: View {
                             Image(systemName: "plus")
                                 .font(.system(size: 9, weight: .bold))
                                 .foregroundColor(.gray)
-                                .frame(width: 18, height: 18)
+                                .frame(width: 24, height: 24)
                                 .background(Color.white.opacity(0.1))
                                 .cornerRadius(4)
+                                .contentShape(Rectangle())
                         }
                         .buttonStyle(.plain)
                     }
