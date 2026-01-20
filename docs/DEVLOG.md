@@ -1382,3 +1382,23 @@ Applied the same conditional logic to the menubar button label, showing "Start" 
 
 ### Files Modified
 - `GuitarPractice/GuitarPracticeApp.swift` - Updated menubar button label in `practicingMenu`
+
+---
+
+## 2026-01-20: Fix Save Button Height Growth During Saving (Issue #25)
+
+### Problem
+The session save button increased in vertical height when showing the spinner during save, causing a layout shift in the footer. The "Copy to Today" button had a similar issue with cramped spinner spacing.
+
+### Root Cause
+The `ProgressView()` spinner had a different intrinsic size than the icon it replaced. Even with `.frame()` constraints, the spinner's layout differed from the icon, and there was insufficient spacing between the spinner and button text.
+
+### Solution
+1. **Fixed-size container**: Wrapped both icon and spinner in a `Group` with a fixed `.frame(width: 12, height: 12)` to ensure consistent dimensions regardless of which element is shown
+2. **Increased spacing**: Changed `HStack(spacing: 4)` to `HStack(spacing: 8)` to provide better visual separation between icon/spinner and text
+3. **Consistent scale**: Used `.scaleEffect(0.6)` for the spinner to fit within the fixed frame
+
+### Files Modified
+- `GuitarPractice/Views/Session/SessionEditingModeView.swift` - Fixed save button spinner layout
+- `GuitarPractice/Views/Session/SessionViewingModeView.swift` - Fixed "Copy to Today" button spinner layout
+- `CLAUDE.md` - Added note about checking exit codes, not just "BUILD SUCCEEDED" text

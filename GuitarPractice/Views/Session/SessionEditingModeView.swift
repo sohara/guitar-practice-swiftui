@@ -131,15 +131,18 @@ struct SessionEditingFooterView: View {
                         await appState.saveSession()
                     }
                 } label: {
-                    HStack(spacing: 4) {
-                        if appState.isSavingSession {
-                            ProgressView()
-                                .scaleEffect(0.7)
-                                .tint(.white)
-                        } else {
-                            Image(systemName: "square.and.arrow.up")
-                                .font(.system(size: 11))
+                    HStack(spacing: 8) {
+                        Group {
+                            if appState.isSavingSession {
+                                ProgressView()
+                                    .scaleEffect(0.6)
+                                    .tint(.white)
+                            } else {
+                                Image(systemName: "square.and.arrow.up")
+                                    .font(.system(size: 11))
+                            }
                         }
+                        .frame(width: 12, height: 12)
                         Text("Save")
                             .font(.custom("SF Mono", size: 12))
                     }

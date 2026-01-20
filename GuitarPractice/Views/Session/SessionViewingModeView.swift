@@ -61,15 +61,17 @@ struct SessionViewingModeView: View {
                                 await appState.copySessionToToday(fromSessionId: session.id)
                             }
                         } label: {
-                            HStack(spacing: 4) {
-                                if appState.isCopyingSession {
-                                    ProgressView()
-                                        .scaleEffect(0.6)
-                                        .frame(width: 10, height: 10)
-                                } else {
-                                    Image(systemName: "doc.on.doc")
-                                        .font(.system(size: 10))
+                            HStack(spacing: 8) {
+                                Group {
+                                    if appState.isCopyingSession {
+                                        ProgressView()
+                                            .scaleEffect(0.6)
+                                    } else {
+                                        Image(systemName: "doc.on.doc")
+                                            .font(.system(size: 10))
+                                    }
                                 }
+                                .frame(width: 12, height: 12)
                                 Text("Copy to Today")
                                     .font(.custom("SF Mono", size: 12))
                             }

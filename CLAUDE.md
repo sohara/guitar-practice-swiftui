@@ -48,6 +48,8 @@ open GuitarPractice.xcodeproj
 
 Always run `make run` before reviewing changes and before committing.
 
+**IMPORTANT**: Always check the exit code of `make run`, not just the output text. A non-zero exit code means the build failed, even if "BUILD SUCCEEDED" appears in the output (the failure may occur in subsequent steps like launching the app).
+
 **IMPORTANT**: Never commit or push until the user has manually tested and confirmed the fix works. Always ask for confirmation after launching the app for testing.
 
 ## Documentation
