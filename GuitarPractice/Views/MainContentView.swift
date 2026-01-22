@@ -181,5 +181,13 @@ struct MainContentView: View {
             }
             return .ignored
         }
+        .onKeyPress(.escape) {
+            if isSearchFocused {
+                isSearchFocused = false
+            } else {
+                appState.clearFocus()
+            }
+            return .handled
+        }
     }
 }

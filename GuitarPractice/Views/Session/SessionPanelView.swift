@@ -18,5 +18,13 @@ struct SessionPanelView: View {
             SessionDetailView(appState: appState)
         }
         .background(Color(red: 0.07, green: 0.07, blue: 0.10))
+        .contentShape(Rectangle())
+        .simultaneousGesture(
+            TapGesture().onEnded {
+                // Clear session item focus when tapping anywhere in panel
+                // Child handlers (buttons, rows) will set their own focus after this
+                appState.focusedSelectedIndex = nil
+            }
+        )
     }
 }

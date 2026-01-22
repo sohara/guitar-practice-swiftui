@@ -1427,3 +1427,55 @@ SwiftUI's `.buttonStyle(.plain)` removes the default button hit area expansion. 
 
 ### Also Fixed
 Updated `Makefile` to add launch verification - now shows "✓ App launched successfully" or fails with clear error message if app doesn't start. This prevents silent failures where build succeeds but app fails to launch.
+
+---
+
+## 2026-01-21: Fix Drag-and-Drop Regression (Issue #26 follow-up)
+
+### Problem
+After the fix for Issue #26 (click/hitbox issues), drag-and-drop reordering of session items stopped working. This was a regression of the same problem fixed in Issue #13.
+
+### Root Cause
+The Issue #26 fix added `.contentShape(Rectangle()).onTapGesture { onFocus() }` to the entire row to improve click targets. However, this tap gesture on the entire row conflicts with SwiftUI's List drag gesture recognition, preventing drag-and-drop from working.
+
+### Solution
+Restructured `SelectedItemRow` to scope the tap gesture more precisely:
+1. Wrapped the name/artist VStack + Spacer in an HStack
+2. Applied `.contentShape(Rectangle()).onTapGesture` only to this middle section
+3. Removed the row-level tap gesture
+4. Left the drag handle icon (left side) outside the tap gesture area
+
+This allows:
+- **Drag-and-drop**: Works when dragging from the drag handle icon or row edges
+- **Click to focus**: Works when clicking on item name, artist, or empty space between text and buttons
+- **Buttons**: +/-, remove buttons remain separately functional
+
+### Files Modified
+- `GuitarPractice/Views/Session/SessionEditingModeView.swift` - Restructured row tap gesture scope
+
+---
+
+## 2026-01-21: Item Deselection UX Improvements
+
+### Feature
+Added multiple ways to deselect/clear focus on list items, improving the UX for users who want to dismiss the highlight without selecting another item.
+
+### Implementation
+1. **Escape key**: Pressing Escape clears focus on the currently focused panel (library or session items). If the search field is focused, Escape dismisses that first.
+2. **Click on header/calendar**: Tapping the session header area or calendar navigator clears session item focus via `simultaneousGesture` and `onTapGesture`.
+3. **Panel switching**: Clicking on the other panel naturally moves focus away.
+
+### SwiftUI Limitation
+Attempted to make clicking empty space within the List clear focus, but SwiftUI's List consumes all tap events internally and doesn't propagate them to parent gesture handlers. Multiple approaches were tried:
+- `.contentShape(Rectangle()).onTapGesture` on parent views
+- `.simultaneousGesture(TapGesture())` on parent views
+- Native List `selection` binding with `onChange` handler
+- Spacer rows at the end of the list
+
+None worked reliably for the List's empty space. This is a known SwiftUI limitation.
+
+### Files Modified
+- `GuitarPractice/Models/AppState.swift` - Added `clearFocus()` method
+- `GuitarPractice/Views/MainContentView.swift` - Added Escape key handler
+- `GuitarPractice/Views/Session/SessionPanelView.swift` - Added `simultaneousGesture` for tap-to-clear
+- `GuitarPractice/Views/Session/SessionDetailView.swift` - Added `onTapGesture` to header area

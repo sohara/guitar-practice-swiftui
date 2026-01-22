@@ -994,6 +994,16 @@ class AppState: ObservableObject {
         }
     }
 
+    func clearFocus() {
+        // Clear focus for the currently focused panel
+        switch focusedPanel {
+        case .library:
+            focusedItemIndex = nil
+        case .selectedItems:
+            focusedSelectedIndex = nil
+        }
+    }
+
     // MARK: - Notes History
 
     /// Fetch notes history for the current practice item

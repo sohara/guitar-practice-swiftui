@@ -99,6 +99,11 @@ struct SessionDetailHeaderView: View {
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 12)
+        .contentShape(Rectangle())
+        .onTapGesture {
+            // Clear session item focus when tapping header area
+            appState.focusedSelectedIndex = nil
+        }
     }
 }
 
