@@ -182,7 +182,7 @@ struct SelectedItemRow: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             HStack(spacing: 10) {
-                // Completion indicator / drag handle
+                // Completion indicator / drag handle - NOT tappable, reserved for drag gesture
                 Image(systemName: isCompleted ? "checkmark.circle.fill" : "line.3.horizontal")
                     .font(.system(size: 12))
                     .foregroundColor(isCompleted ? .green : .gray.opacity(0.4))
@@ -194,26 +194,27 @@ struct SelectedItemRow: View {
                     .foregroundColor(typeColor(selected.item.type))
                     .frame(width: 16)
 
-                // Name and artist (tappable to focus)
-                VStack(alignment: .leading, spacing: 1) {
-                    Text(selected.item.name)
-                        .font(.custom("SF Mono", size: 12))
-                        .foregroundColor(.white)
-                        .lineLimit(1)
-
-                    if let artist = selected.item.artist {
-                        Text(artist)
-                            .font(.custom("SF Mono", size: 9))
-                            .foregroundColor(.gray.opacity(0.5))
+                // Name and artist + spacer (tappable to focus, but NOT the drag handle)
+                HStack(spacing: 0) {
+                    VStack(alignment: .leading, spacing: 1) {
+                        Text(selected.item.name)
+                            .font(.custom("SF Mono", size: 12))
+                            .foregroundColor(.white)
                             .lineLimit(1)
+
+                        if let artist = selected.item.artist {
+                            Text(artist)
+                                .font(.custom("SF Mono", size: 9))
+                                .foregroundColor(.gray.opacity(0.5))
+                                .lineLimit(1)
+                        }
                     }
+                    Spacer(minLength: 10)
                 }
                 .contentShape(Rectangle())
                 .onTapGesture {
                     onFocus()
                 }
-
-                Spacer()
 
                 // Actual time (if practiced)
                 if let actual = selected.actualMinutes, actual > 0 {
@@ -296,10 +297,6 @@ struct SelectedItemRow: View {
                     .stroke(Color.cyan.opacity(0.5), lineWidth: 1)
                 : nil
         )
-        .contentShape(Rectangle())
-        .onTapGesture {
-            onFocus()
-        }
     }
 
     private func typeColor(_ type: ItemType?) -> Color {
