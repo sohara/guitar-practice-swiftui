@@ -4,6 +4,53 @@ Running log of development sessions, decisions, and progress.
 
 ---
 
+## 2026-01-28: Performance Optimization
+
+### Problem
+UI interactions were noticeably laggy — typing in the search field had ~500ms delay per keystroke, and general navigation felt sluggish. Root cause: a monolithic `AppState` ObservableObject with 35+ `@Published` properties observed by 12+ views, causing every state change to re-render the entire view hierarchy.
+
+### Investigation
+Added XCTest target (`GuitarPracticeTests/`) with performance benchmarks to measure before/after. Tests cover `filteredLibrary` throughput, timer cascade `objectWillChange` emission counts, cache efficiency, and correctness. All runnable via `make test` (CLI, no Xcode GUI needed).
+
+### Fixes Applied
+
+**1. Timer state isolation** — Extracted `practiceElapsedSeconds` and `isTimerRunning` into a separate `PracticeTimerState` ObservableObject. Only `PracticeView` and `MenuBarExtra` observe it. Result: AppState `objectWillChange` emissions during practice dropped from 21/2s to 0.
+
+**2. filteredLibrary memoization** — Added cache with key built from `(library.count, searchText, typeFilter, showRecentOnly, sortOption, sortAscending)`. Repeated calls with same inputs return cached result. Result: 100 calls went from 232ms to 2ms.
+
+**3. Search debounce** — Changed search `TextField` to bind to local `@State` with 150ms debounce before writing to `appState.searchText`. Keystrokes now render instantly without triggering AppState re-renders.
+
+**4. daySummaries memoization** — Cached calendar day summaries by month key, invalidated on session fetch/save/log update. Prevents repeated SwiftData loads on every view re-render.
+
+**Attempted and reverted: conditional rendering** — Tried replacing ZStack+opacity toggle (Stats/Session panels) with `if/else` to avoid keeping both view hierarchies alive. Reverted because it broke HSplitView divider position (a previously fixed bug).
+
+### Results
+
+| Metric | Before | After |
+|--------|--------|-------|
+| AppState objectWillChange during practice (2s) | 21 | 0 |
+| filteredLibrary 100 calls | 232ms | 2ms |
+| Cache hit ratio | 1.3x | 586x |
+| Search keystroke responsiveness | ~500ms lag | Near-instant |
+
+### Files Created
+- `GuitarPractice/Models/PracticeTimerState.swift` — Isolated timer ObservableObject
+- `GuitarPracticeTests/PerformanceTests.swift` — Performance benchmark tests
+- `GuitarPracticeTests/TestHelpers.swift` — Mock data generators
+- `GuitarPractice.xcodeproj/xcshareddata/xcschemes/GuitarPractice.xcscheme` — Shared scheme with test target
+- `.github/workflows/test.yml` — CI workflow for GitHub Actions
+
+### Files Modified
+- `GuitarPractice/Models/AppState.swift` — Timer extraction, filteredLibrary cache, daySummaries cache
+- `GuitarPractice/Views/Practice/PracticeView.swift` — Observe timerState
+- `GuitarPractice/Views/Library/FilterBarView.swift` — Search debounce
+- `GuitarPractice/GuitarPracticeApp.swift` — MenuBarLabel/MenuBarView observe timerState
+- `GuitarPractice/ContentView.swift` — Pass timerState to PracticeView
+- `GuitarPractice.xcodeproj/project.pbxproj` — Test target, PracticeTimerState
+- `Makefile` — Added `make test`
+
+---
+
 ## 2026-01-13: Project Setup
 
 ### Initial App Shell

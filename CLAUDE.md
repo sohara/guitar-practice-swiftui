@@ -38,6 +38,7 @@ open GuitarPractice.xcodeproj
 | `make run` | Debug build + kill existing + launch |
 | `make release` | Release build only |
 | `make install` | Release build + install to /Applications + launch |
+| `make test` | Run XCTest performance benchmarks |
 | `make clean` | Clean build artifacts |
 
 ## Development Workflow
@@ -66,7 +67,8 @@ GuitarPractice/
 ├── ContentView.swift            # Root view (~40 lines)
 ├── Models/
 │   ├── Types.swift              # Data models (LibraryItem, DaySummary, etc.)
-│   └── AppState.swift           # @MainActor state management
+│   ├── AppState.swift           # @MainActor state management
+│   └── PracticeTimerState.swift # Isolated timer ObservableObject
 ├── Services/
 │   ├── Config.swift             # Notion database IDs
 │   ├── KeychainService.swift    # Secure API key storage
@@ -113,10 +115,24 @@ Shares databases with the TUI app (`../guitar-tui/`):
 
 **Note**: REST API uses database IDs (above), not data source IDs. See TUI docs for details.
 
+## Testing
+
+Performance benchmark tests in `GuitarPracticeTests/`:
+- `testFilteredLibraryPerformance` — measures filter/sort throughput (500 items, 100 calls)
+- `testTimerCascadeRenderCount` — verifies timer ticks don't trigger AppState objectWillChange
+- `testFilteredLibraryCacheEfficiency` — verifies cache hit is >5x faster than cold compute
+- `testUnrelatedChangeTriggersRerender` — tracks cross-concern state coupling
+- `testFilteredLibraryCorrectness` — validates filter/sort logic
+
+Run with `make test`. CI runs on every push via GitHub Actions (macOS runner).
+
 ## Technical Notes
 
 - Requires macOS 14.0+ (for SwiftUI features, potential SwiftData)
 - API key stored in Keychain (legacy file-based to avoid debug prompts)
 - `@MainActor` AppState shared between WindowGroup and MenuBarExtra
+- `PracticeTimerState` is a separate ObservableObject to avoid timer ticks re-rendering the entire UI
+- `filteredLibrary` is memoized with cache key invalidation; `daySummaries` is cached by month
+- Search text field uses local `@State` with 150ms debounce to keep typing responsive
 - Uses `notion://` protocol to open items in Notion app (not browser)
 - `loadDataIfNeeded()` prevents unnecessary reloads after practice
