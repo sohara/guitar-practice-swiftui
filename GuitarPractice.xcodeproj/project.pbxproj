@@ -18,6 +18,7 @@
 		A01234560009 /* CachedModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0123456001A /* CachedModels.swift */; };
 		A0123456000A /* CacheService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0123456001B /* CacheService.swift */; };
 		A0123456000B /* StatsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0123456001C /* StatsService.swift */; };
+		A0123456000C /* PracticeTimerState.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0123456001D /* PracticeTimerState.swift */; };
 		B01234560001 /* MainContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B01234560011 /* MainContentView.swift */; };
 		B01234560002 /* HeaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B01234560012 /* HeaderView.swift */; };
 		B01234560004 /* LibrarySidebarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B01234560014 /* LibrarySidebarView.swift */; };
@@ -38,7 +39,19 @@
 		B01234560023 /* ErrorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B01234560033 /* ErrorView.swift */; };
 		B01234560024 /* Skeletons.swift in Sources */ = {isa = PBXBuildFile; fileRef = B01234560034 /* Skeletons.swift */; };
 		B01234560025 /* Helpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = B01234560035 /* Helpers.swift */; };
+		C01234560001 /* PerformanceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C01234560011 /* PerformanceTests.swift */; };
+		C01234560002 /* TestHelpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = C01234560012 /* TestHelpers.swift */; };
 /* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		C01234560020 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = A01234560000 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = A01234560040;
+			remoteInfo = GuitarPractice;
+		};
+/* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
 		A01234560010 /* GuitarPractice.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = GuitarPractice.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -54,6 +67,7 @@
 		A0123456001A /* CachedModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CachedModels.swift; sourceTree = "<group>"; };
 		A0123456001B /* CacheService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CacheService.swift; sourceTree = "<group>"; };
 		A0123456001C /* StatsService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatsService.swift; sourceTree = "<group>"; };
+		A0123456001D /* PracticeTimerState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PracticeTimerState.swift; sourceTree = "<group>"; };
 		B01234560011 /* MainContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainContentView.swift; sourceTree = "<group>"; };
 		B01234560012 /* HeaderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HeaderView.swift; sourceTree = "<group>"; };
 		B01234560014 /* LibrarySidebarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibrarySidebarView.swift; sourceTree = "<group>"; };
@@ -74,10 +88,20 @@
 		B01234560033 /* ErrorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ErrorView.swift; sourceTree = "<group>"; };
 		B01234560034 /* Skeletons.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Skeletons.swift; sourceTree = "<group>"; };
 		B01234560035 /* Helpers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Helpers.swift; sourceTree = "<group>"; };
+		C01234560010 /* GuitarPracticeTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = GuitarPracticeTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		C01234560011 /* PerformanceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PerformanceTests.swift; sourceTree = "<group>"; };
+		C01234560012 /* TestHelpers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestHelpers.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		A01234560020 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		C01234560030 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -91,6 +115,7 @@
 			isa = PBXGroup;
 			children = (
 				A01234560031 /* GuitarPractice */,
+				C01234560040 /* GuitarPracticeTests */,
 				A01234560032 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -113,6 +138,7 @@
 			isa = PBXGroup;
 			children = (
 				A01234560010 /* GuitarPractice.app */,
+				C01234560010 /* GuitarPracticeTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -122,6 +148,7 @@
 			children = (
 				A01234560015 /* Types.swift */,
 				A01234560016 /* AppState.swift */,
+				A0123456001D /* PracticeTimerState.swift */,
 				A0123456001A /* CachedModels.swift */,
 			);
 			path = Models;
@@ -222,6 +249,15 @@
 			path = Common;
 			sourceTree = "<group>";
 		};
+		C01234560040 /* GuitarPracticeTests */ = {
+			isa = PBXGroup;
+			children = (
+				C01234560011 /* PerformanceTests.swift */,
+				C01234560012 /* TestHelpers.swift */,
+			);
+			path = GuitarPracticeTests;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -242,6 +278,23 @@
 			productReference = A01234560010 /* GuitarPractice.app */;
 			productType = "com.apple.product-type.application";
 		};
+		C01234560050 /* GuitarPracticeTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = C01234560060 /* Build configuration list for PBXNativeTarget "GuitarPracticeTests" */;
+			buildPhases = (
+				C01234560031 /* Sources */,
+				C01234560030 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				C01234560021 /* PBXTargetDependency */,
+			);
+			name = GuitarPracticeTests;
+			productName = GuitarPracticeTests;
+			productReference = C01234560010 /* GuitarPracticeTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -254,6 +307,10 @@
 				TargetAttributes = {
 					A01234560040 = {
 						CreatedOnToolsVersion = 15.0;
+					};
+					C01234560050 = {
+						CreatedOnToolsVersion = 15.0;
+						TestTargetID = A01234560040;
 					};
 				};
 			};
@@ -271,6 +328,7 @@
 			projectRoot = "";
 			targets = (
 				A01234560040 /* GuitarPractice */,
+				C01234560050 /* GuitarPracticeTests */,
 			);
 		};
 /* End PBXProject section */
@@ -301,6 +359,7 @@
 				A01234560009 /* CachedModels.swift in Sources */,
 				A0123456000A /* CacheService.swift in Sources */,
 				A0123456000B /* StatsService.swift in Sources */,
+				A0123456000C /* PracticeTimerState.swift in Sources */,
 				B01234560001 /* MainContentView.swift in Sources */,
 				B01234560002 /* HeaderView.swift in Sources */,
 				B01234560004 /* LibrarySidebarView.swift in Sources */,
@@ -324,7 +383,24 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		C01234560031 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				C01234560001 /* PerformanceTests.swift in Sources */,
+				C01234560002 /* TestHelpers.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		C01234560021 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = A01234560040 /* GuitarPractice */;
+			targetProxy = C01234560020 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		A01234560060 /* Debug */ = {
@@ -451,11 +527,12 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = "";
-				CODE_SIGN_STYLE = Automatic;
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Manual;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "";
-				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_HARDENED_RUNTIME = NO;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = GuitarPractice/Info.plist;
@@ -501,6 +578,40 @@
 			};
 			name = Release;
 		};
+		C01234560062 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Manual;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.sohara.GuitarPracticeTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/GuitarPractice.app/Contents/MacOS/GuitarPractice";
+			};
+			name = Debug;
+		};
+		C01234560063 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Manual;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.sohara.GuitarPracticeTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/GuitarPractice.app/Contents/MacOS/GuitarPractice";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -518,6 +629,15 @@
 			buildConfigurations = (
 				A01234560060 /* Debug */,
 				A01234560061 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		C01234560060 /* Build configuration list for PBXNativeTarget "GuitarPracticeTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				C01234560062 /* Debug */,
+				C01234560063 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

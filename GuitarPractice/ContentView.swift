@@ -21,7 +21,7 @@ struct ContentView: View {
             if appState.needsAPIKey {
                 APIKeySetupView(appState: appState)
             } else if appState.isPracticing {
-                PracticeView(appState: appState)
+                PracticeView(appState: appState, timerState: appState.timerState)
             } else {
                 MainContentView(appState: appState)
             }

@@ -70,28 +70,9 @@ struct GuitarPracticeApp: App {
 
         // Menu bar extra - always visible, content changes based on practice state
         MenuBarExtra {
-            MenuBarView(appState: appState)
+            MenuBarView(appState: appState, timerState: appState.timerState)
         } label: {
-            if appState.isPracticing {
-                // Show timer countdown when practicing, orange icon during overtime
-                if appState.isPracticeOvertime {
-                    HStack(spacing: 4) {
-                        Image(systemName: "guitars.fill")
-                        Text("+\(appState.practiceOvertimeFormatted)")
-                            .monospacedDigit()
-                    }
-                    .symbolRenderingMode(.palette)
-                    .foregroundStyle(.orange)
-                } else {
-                    HStack(spacing: 4) {
-                        Image(systemName: "guitars.fill")
-                        Text(appState.practiceRemainingFormatted)
-                            .monospacedDigit()
-                    }
-                }
-            } else {
-                Image(systemName: "guitars")
-            }
+            MenuBarLabel(appState: appState, timerState: appState.timerState)
         }
         .menuBarExtraStyle(.menu)
     }
@@ -99,8 +80,38 @@ struct GuitarPracticeApp: App {
 
 // MARK: - Menu Bar View
 
+// MARK: - Menu Bar Label (separate view to observe timerState)
+
+struct MenuBarLabel: View {
+    @ObservedObject var appState: AppState
+    @ObservedObject var timerState: PracticeTimerState
+
+    var body: some View {
+        if appState.isPracticing {
+            if appState.isPracticeOvertime {
+                HStack(spacing: 4) {
+                    Image(systemName: "guitars.fill")
+                    Text("+\(appState.practiceOvertimeFormatted)")
+                        .monospacedDigit()
+                }
+                .symbolRenderingMode(.palette)
+                .foregroundStyle(.orange)
+            } else {
+                HStack(spacing: 4) {
+                    Image(systemName: "guitars.fill")
+                    Text(appState.practiceRemainingFormatted)
+                        .monospacedDigit()
+                }
+            }
+        } else {
+            Image(systemName: "guitars")
+        }
+    }
+}
+
 struct MenuBarView: View {
     @ObservedObject var appState: AppState
+    @ObservedObject var timerState: PracticeTimerState
 
     var body: some View {
         if appState.isPracticing {
@@ -139,8 +150,8 @@ struct MenuBarView: View {
                 appState.toggleTimer()
             } label: {
                 Label(
-                    appState.isTimerRunning ? "Pause" : (appState.practiceElapsedSeconds == 0 ? "Start" : "Resume"),
-                    systemImage: appState.isTimerRunning ? "pause.fill" : "play.fill"
+                    timerState.isRunning ? "Pause" : (timerState.elapsedSeconds == 0 ? "Start" : "Resume"),
+                    systemImage: timerState.isRunning ? "pause.fill" : "play.fill"
                 )
             }
 

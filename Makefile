@@ -4,7 +4,7 @@ SCHEME = GuitarPractice
 APP_NAME = GuitarPractice.app
 DERIVED_DATA = ~/Library/Developer/Xcode/DerivedData/GuitarPractice-*/Build/Products
 
-.PHONY: build run release install clean
+.PHONY: build run release install clean test
 
 # Debug build
 build:
@@ -30,6 +30,10 @@ install: release
 	@echo "Installed to /Applications/$(APP_NAME)"
 	open /Applications/$(APP_NAME)
 	@sleep 1 && pgrep -x GuitarPractice > /dev/null && echo "✓ App launched successfully" || (echo "✗ App failed to launch" && exit 1)
+
+# Run tests
+test:
+	xcodebuild test -scheme $(SCHEME) -destination 'platform=macOS,arch=arm64' 2>&1 | tail -50
 
 # Clean build artifacts
 clean:
