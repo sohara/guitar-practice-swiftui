@@ -2,6 +2,7 @@ import SwiftUI
 
 struct PracticeView: View {
     @ObservedObject var appState: AppState
+    @ObservedObject var timerState: PracticeTimerState
     @FocusState private var isFocused: Bool
     @FocusState private var isNotesFocused: Bool
     @State private var notesText: String = ""
@@ -124,7 +125,7 @@ struct PracticeView: View {
                                 .monospacedDigit()
                         }
                     }
-                    .opacity(appState.isTimerRunning ? 1 : 0.4)
+                    .opacity(timerState.isRunning ? 1 : 0.4)
 
                     Spacer()
                         .frame(height: 40)
@@ -136,9 +137,9 @@ struct PracticeView: View {
                             appState.toggleTimer()
                         } label: {
                             HStack(spacing: 8) {
-                                Image(systemName: appState.isTimerRunning ? "pause.fill" : "play.fill")
+                                Image(systemName: timerState.isRunning ? "pause.fill" : "play.fill")
                                     .font(.system(size: 16))
-                                Text(appState.isTimerRunning ? "Pause" : (appState.practiceElapsedSeconds == 0 ? "Start" : "Resume"))
+                                Text(timerState.isRunning ? "Pause" : (timerState.elapsedSeconds == 0 ? "Start" : "Resume"))
                                     .font(.custom("SF Mono", size: 14))
                             }
                             .foregroundColor(.white)

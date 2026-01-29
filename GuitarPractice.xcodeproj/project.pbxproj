@@ -18,6 +18,7 @@
 		A01234560009 /* CachedModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0123456001A /* CachedModels.swift */; };
 		A0123456000A /* CacheService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0123456001B /* CacheService.swift */; };
 		A0123456000B /* StatsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0123456001C /* StatsService.swift */; };
+		A0123456000C /* PracticeTimerState.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0123456001D /* PracticeTimerState.swift */; };
 		B01234560001 /* MainContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B01234560011 /* MainContentView.swift */; };
 		B01234560002 /* HeaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B01234560012 /* HeaderView.swift */; };
 		B01234560004 /* LibrarySidebarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B01234560014 /* LibrarySidebarView.swift */; };
@@ -66,6 +67,7 @@
 		A0123456001A /* CachedModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CachedModels.swift; sourceTree = "<group>"; };
 		A0123456001B /* CacheService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CacheService.swift; sourceTree = "<group>"; };
 		A0123456001C /* StatsService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatsService.swift; sourceTree = "<group>"; };
+		A0123456001D /* PracticeTimerState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PracticeTimerState.swift; sourceTree = "<group>"; };
 		B01234560011 /* MainContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainContentView.swift; sourceTree = "<group>"; };
 		B01234560012 /* HeaderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HeaderView.swift; sourceTree = "<group>"; };
 		B01234560014 /* LibrarySidebarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibrarySidebarView.swift; sourceTree = "<group>"; };
@@ -146,6 +148,7 @@
 			children = (
 				A01234560015 /* Types.swift */,
 				A01234560016 /* AppState.swift */,
+				A0123456001D /* PracticeTimerState.swift */,
 				A0123456001A /* CachedModels.swift */,
 			);
 			path = Models;
@@ -356,6 +359,7 @@
 				A01234560009 /* CachedModels.swift in Sources */,
 				A0123456000A /* CacheService.swift in Sources */,
 				A0123456000B /* StatsService.swift in Sources */,
+				A0123456000C /* PracticeTimerState.swift in Sources */,
 				B01234560001 /* MainContentView.swift in Sources */,
 				B01234560002 /* HeaderView.swift in Sources */,
 				B01234560004 /* LibrarySidebarView.swift in Sources */,

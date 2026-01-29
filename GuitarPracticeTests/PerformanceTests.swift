@@ -27,9 +27,14 @@ final class PerformanceTests: XCTestCase {
         let items = TestHelpers.makeMockLibraryItems(count: 10)
         state.libraryState = .loaded(items)
 
-        var changeCount = 0
-        let cancellable = state.objectWillChange.sink { _ in
-            changeCount += 1
+        var appStateChangeCount = 0
+        let appCancellable = state.objectWillChange.sink { _ in
+            appStateChangeCount += 1
+        }
+
+        var timerChangeCount = 0
+        let timerCancellable = state.timerState.objectWillChange.sink { _ in
+            timerChangeCount += 1
         }
 
         state.resumeTimer()
@@ -39,12 +44,13 @@ final class PerformanceTests: XCTestCase {
 
         state.pauseTimer()
 
-        // At 10Hz for 2 seconds, expect ~20 emissions (timer updates)
-        // This is the baseline we want to reduce to 0 after Fix 1
-        print("⏱ Timer cascade: \(changeCount) objectWillChange emissions in 2 seconds")
-        XCTAssertGreaterThan(changeCount, 10, "Timer should be firing and causing objectWillChange emissions")
+        // Timer should fire on timerState only, NOT on appState
+        print("⏱ Timer cascade: appState=\(appStateChangeCount), timerState=\(timerChangeCount) objectWillChange emissions in 2 seconds")
+        XCTAssertEqual(appStateChangeCount, 0, "AppState should NOT receive objectWillChange from timer ticks")
+        XCTAssertGreaterThan(timerChangeCount, 10, "TimerState should receive objectWillChange from timer ticks")
 
-        cancellable.cancel()
+        appCancellable.cancel()
+        timerCancellable.cancel()
     }
 
     // MARK: - Test 3: filteredLibrary cache efficiency (baseline — no cache yet)

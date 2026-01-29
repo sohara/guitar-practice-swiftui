@@ -49,10 +49,7 @@ class AppState: ObservableObject {
 
     @Published var isPracticing: Bool = false
     @Published var practiceItemIndex: Int = 0
-    @Published var practiceElapsedSeconds: Double = 0
-    @Published var isTimerRunning: Bool = false
-    private var timerTask: Task<Void, Never>?
-    private var hasTriggeredOvertimeAlert: Bool = false
+    let timerState = PracticeTimerState()
 
     // Notes history for current item (loaded on practice start/switch)
     @Published var currentItemNotesHistory: [HistoricalNote] = []
@@ -196,7 +193,7 @@ class AppState: ObservableObject {
     }
 
     var practiceElapsedFormatted: String {
-        let totalSeconds = Int(practiceElapsedSeconds)
+        let totalSeconds = Int(timerState.elapsedSeconds)
         let minutes = totalSeconds / 60
         let seconds = totalSeconds % 60
         return String(format: "%d:%02d", minutes, seconds)
@@ -205,7 +202,7 @@ class AppState: ObservableObject {
     var practiceRemainingSeconds: Double {
         guard let item = currentPracticeItem else { return 0 }
         let plannedSeconds = Double(item.plannedMinutes * 60)
-        return max(0, plannedSeconds - practiceElapsedSeconds)
+        return max(0, plannedSeconds - timerState.elapsedSeconds)
     }
 
     var practiceRemainingFormatted: String {
@@ -222,7 +219,7 @@ class AppState: ObservableObject {
     var practiceOvertimeFormatted: String {
         guard let item = currentPracticeItem else { return "0:00" }
         let plannedSeconds = Double(item.plannedMinutes * 60)
-        let overtimeSeconds = max(0, practiceElapsedSeconds - plannedSeconds)
+        let overtimeSeconds = max(0, timerState.elapsedSeconds - plannedSeconds)
         let minutes = Int(overtimeSeconds) / 60
         let seconds = Int(overtimeSeconds) % 60
         return String(format: "%d:%02d", minutes, seconds)
@@ -1073,17 +1070,17 @@ class AppState: ObservableObject {
             practiceItemIndex = selectedItems.firstIndex { $0.actualMinutes == nil } ?? 0
         }
 
-        hasTriggeredOvertimeAlert = false
+        timerState.hasTriggeredOvertimeAlert = false
 
         // Resume from previous actual time if exists
         if let existingTime = selectedItems[practiceItemIndex].actualMinutes {
-            practiceElapsedSeconds = existingTime * 60
+            timerState.elapsedSeconds = existingTime * 60
             // If resuming in overtime, don't re-trigger alert
             if isPracticeOvertime {
-                hasTriggeredOvertimeAlert = true
+                timerState.hasTriggeredOvertimeAlert = true
             }
         } else {
-            practiceElapsedSeconds = 0
+            timerState.elapsedSeconds = 0
         }
 
         // Fetch notes history for current item
@@ -1097,34 +1094,20 @@ class AppState: ObservableObject {
     }
 
     func pauseTimer() {
-        isTimerRunning = false
-        timerTask?.cancel()
-        timerTask = nil
+        timerState.pause()
     }
 
     func resumeTimer() {
-        guard !isTimerRunning else { return }
-        isTimerRunning = true
-
-        timerTask = Task { [weak self] in
-            while !Task.isCancelled {
-                try? await Task.sleep(nanoseconds: 100_000_000) // 0.1 second
-                guard !Task.isCancelled else { break }
-                await MainActor.run {
-                    guard let self = self else { return }
-
-                    let wasNotOvertime = !self.isPracticeOvertime
-                    self.practiceElapsedSeconds += 0.1
-                    let isNowOvertime = self.isPracticeOvertime
-
-                    // Trigger alert when crossing into overtime
-                    if wasNotOvertime && isNowOvertime && !self.hasTriggeredOvertimeAlert {
-                        self.hasTriggeredOvertimeAlert = true
-                        self.triggerOvertimeAlert()
-                    }
-                }
-            }
+        timerState.onTick = { [weak self] in
+            self?.checkOvertimeAlert()
         }
+        timerState.resume()
+    }
+
+    private func checkOvertimeAlert() {
+        guard !timerState.hasTriggeredOvertimeAlert, isPracticeOvertime else { return }
+        timerState.hasTriggeredOvertimeAlert = true
+        triggerOvertimeAlert()
     }
 
     private func triggerOvertimeAlert() {
@@ -1160,18 +1143,17 @@ class AppState: ObservableObject {
     }
 
     func toggleTimer() {
-        if isTimerRunning {
-            pauseTimer()
-        } else {
-            resumeTimer()
+        timerState.onTick = { [weak self] in
+            self?.checkOvertimeAlert()
         }
+        timerState.toggle()
     }
 
     func finishCurrentItem() async {
         guard practiceItemIndex < selectedItems.count else { return }
 
         // Save actual time (convert seconds to minutes)
-        let actualMinutes = practiceElapsedSeconds / 60.0
+        let actualMinutes = timerState.elapsedSeconds / 60.0
         selectedItems[practiceItemIndex].actualMinutes = actualMinutes
 
         // Save to Notion immediately
@@ -1185,7 +1167,7 @@ class AppState: ObservableObject {
         guard practiceItemIndex < selectedItems.count else { return }
 
         // Save actual time (convert seconds to minutes)
-        let actualMinutes = practiceElapsedSeconds / 60.0
+        let actualMinutes = timerState.elapsedSeconds / 60.0
         selectedItems[practiceItemIndex].actualMinutes = actualMinutes
 
         // Save to Notion immediately
@@ -1244,17 +1226,17 @@ class AppState: ObservableObject {
 
     private func moveToNextPracticeItem() {
         practiceItemIndex += 1
-        hasTriggeredOvertimeAlert = false
+        timerState.hasTriggeredOvertimeAlert = false
 
         // Resume from previous actual time if exists
         if let existingTime = selectedItems[practiceItemIndex].actualMinutes {
-            practiceElapsedSeconds = existingTime * 60
+            timerState.elapsedSeconds = existingTime * 60
             // If resuming in overtime, don't re-trigger alert
             if isPracticeOvertime {
-                hasTriggeredOvertimeAlert = true
+                timerState.hasTriggeredOvertimeAlert = true
             }
         } else {
-            practiceElapsedSeconds = 0
+            timerState.elapsedSeconds = 0
         }
 
         // Fetch notes history for new item
@@ -1263,16 +1245,15 @@ class AppState: ObservableObject {
         }
 
         // Keep timer running
-        if !isTimerRunning {
+        if !timerState.isRunning {
             resumeTimer()
         }
     }
 
     func endPractice() {
-        pauseTimer()
+        timerState.reset()
         isPracticing = false
         practiceItemIndex = 0
-        practiceElapsedSeconds = 0
         currentItemNotesHistory = []
     }
 }
