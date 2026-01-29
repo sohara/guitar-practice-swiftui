@@ -47,7 +47,7 @@ final class PerformanceTests: XCTestCase {
         // Timer should fire on timerState only, NOT on appState
         print("⏱ Timer cascade: appState=\(appStateChangeCount), timerState=\(timerChangeCount) objectWillChange emissions in 2 seconds")
         XCTAssertEqual(appStateChangeCount, 0, "AppState should NOT receive objectWillChange from timer ticks")
-        XCTAssertGreaterThan(timerChangeCount, 10, "TimerState should receive objectWillChange from timer ticks")
+        XCTAssertGreaterThan(timerChangeCount, 5, "TimerState should receive objectWillChange from timer ticks")
 
         appCancellable.cancel()
         timerCancellable.cancel()

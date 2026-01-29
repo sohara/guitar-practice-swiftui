@@ -379,6 +379,7 @@ class AppState: ObservableObject {
         do {
             let sessions = try await client.fetchSessions()
             sessionsState = .loaded(sessions)
+            invalidateDaySummariesCache()
 
             // Save to cache
             cacheService?.saveSessions(sessions)
@@ -520,6 +521,7 @@ class AppState: ObservableObject {
 
             // Save to cache
             cacheService?.saveLogs(logs, forSession: session.id)
+            invalidateDaySummariesCache()
         } catch {
             // Only set error if we don't have cached data
             if selectedItems.isEmpty {
@@ -713,6 +715,7 @@ class AppState: ObservableObject {
                 updatedSessions[index] = updatedSession
                 sessionsState = .loaded(updatedSessions)
             }
+            invalidateDaySummariesCache()
 
             // Update cache
             cacheService?.saveSessions(sessions)
@@ -724,7 +727,14 @@ class AppState: ObservableObject {
     // MARK: - Calendar Day Summaries
 
     /// Compute day summaries for sessions in a given month
+    private var _daySummariesCache: [String: [Date: DaySummary]] = [:]
+
     func daySummaries(for month: Date) -> [Date: DaySummary] {
+        let monthKey = daySummariesMonthKey(for: month)
+        if let cached = _daySummariesCache[monthKey] {
+            return cached
+        }
+
         guard let cache = cacheService else { return [:] }
 
         let calendar = Calendar.current
@@ -752,7 +762,18 @@ class AppState: ObservableObject {
             )
         }
 
+        _daySummariesCache[monthKey] = summaries
         return summaries
+    }
+
+    private func daySummariesMonthKey(for date: Date) -> String {
+        let calendar = Calendar.current
+        let components = calendar.dateComponents([.year, .month], from: date)
+        return "\(components.year ?? 0)-\(components.month ?? 0)"
+    }
+
+    func invalidateDaySummariesCache() {
+        _daySummariesCache.removeAll()
     }
 
     /// Get summary for a specific date (convenience method)
@@ -1223,6 +1244,7 @@ class AppState: ObservableObject {
                     order: index,
                     notes: item.notes
                 )
+                invalidateDaySummariesCache()
             }
             // If no logId, the item hasn't been saved to session yet
             // User will need to save the session first
