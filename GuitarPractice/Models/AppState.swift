@@ -77,7 +77,15 @@ class AppState: ObservableObject {
         libraryState.value ?? []
     }
 
+    private var _filteredLibraryCache: [LibraryItem]?
+    private var _filteredLibraryCacheKey: String = ""
+
     var filteredLibrary: [LibraryItem] {
+        let cacheKey = "\(library.count)-\(searchText)-\(typeFilter?.rawValue ?? "nil")-\(showRecentOnly)-\(sortOption.rawValue)-\(sortAscending)"
+        if let cached = _filteredLibraryCache, _filteredLibraryCacheKey == cacheKey {
+            return cached
+        }
+
         var items = library
 
         // Filter by recent (practiced in last 7 days)
@@ -120,7 +128,13 @@ class AppState: ObservableObject {
             return sortAscending ? result : !result
         }
 
+        _filteredLibraryCache = items
+        _filteredLibraryCacheKey = cacheKey
         return items
+    }
+
+    func invalidateFilteredLibraryCache() {
+        _filteredLibraryCache = nil
     }
 
     var sessions: [PracticeSession] {
@@ -339,6 +353,7 @@ class AppState: ObservableObject {
         do {
             let items = try await client.fetchLibrary()
             libraryState = .loaded(items)
+            invalidateFilteredLibraryCache()
 
             // Save to cache
             cacheService?.saveLibraryItems(items)

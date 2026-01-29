@@ -60,18 +60,20 @@ final class PerformanceTests: XCTestCase {
         state.searchText = "exercise"
         state.sortOption = .name
 
-        // First call
+        // First call — computes from scratch
         let start1 = CFAbsoluteTimeGetCurrent()
         let result1 = state.filteredLibrary
         let time1 = CFAbsoluteTimeGetCurrent() - start1
 
-        // Second call (same inputs — should be same speed without cache, faster with cache)
+        // Second call — should be a cache hit
         let start2 = CFAbsoluteTimeGetCurrent()
         let result2 = state.filteredLibrary
         let time2 = CFAbsoluteTimeGetCurrent() - start2
 
-        print("📊 filteredLibrary: call1=\(String(format: "%.4f", time1))s, call2=\(String(format: "%.4f", time2))s, ratio=\(String(format: "%.2f", time1 / max(time2, 0.000001)))x")
+        print("📊 filteredLibrary: call1=\(String(format: "%.6f", time1))s, call2=\(String(format: "%.6f", time2))s, ratio=\(String(format: "%.1f", time1 / max(time2, 0.000001)))x")
         XCTAssertEqual(result1.count, result2.count)
+        // Cache hit should be at least 5x faster
+        XCTAssertGreaterThan(time1 / max(time2, 0.000001), 5.0, "Cache hit should be significantly faster than cold compute")
     }
 
     // MARK: - Test 4: Unrelated state change triggers objectWillChange

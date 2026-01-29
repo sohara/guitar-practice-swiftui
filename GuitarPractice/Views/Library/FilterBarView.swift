@@ -1,8 +1,11 @@
 import SwiftUI
+import Combine
 
 struct FilterBarView: View {
     @ObservedObject var appState: AppState
     var isSearchFocused: FocusState<Bool>.Binding
+    @State private var localSearchText: String = ""
+    @State private var debounceTask: Task<Void, Never>?
 
     var body: some View {
         VStack(spacing: 10) {
@@ -12,16 +15,28 @@ struct FilterBarView: View {
                     .font(.system(size: 12))
                     .foregroundColor(.gray)
 
-                TextField("Search...", text: $appState.searchText)
+                TextField("Search...", text: $localSearchText)
                     .font(.custom("SF Mono", size: 13))
                     .textFieldStyle(.plain)
                     .focused(isSearchFocused)
                     .onSubmit {
                         isSearchFocused.wrappedValue = false
                     }
+                    .onChange(of: localSearchText) { _, newValue in
+                        debounceTask?.cancel()
+                        debounceTask = Task {
+                            try? await Task.sleep(nanoseconds: 150_000_000) // 150ms
+                            guard !Task.isCancelled else { return }
+                            appState.searchText = newValue
+                        }
+                    }
+                    .onAppear {
+                        localSearchText = appState.searchText
+                    }
 
-                if !appState.searchText.isEmpty {
+                if !localSearchText.isEmpty {
                     Button {
+                        localSearchText = ""
                         appState.searchText = ""
                     } label: {
                         Image(systemName: "xmark.circle.fill")
